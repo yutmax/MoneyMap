@@ -1,0 +1,93 @@
+@use "functions" as fn;
+@use "breakpoints" as bp;
+
+/// Видимое кольцо фокуса.
+///
+/// :focus-visible, а не :focus. В прототипе кнопки перекрашивались после
+/// обычного клика мышью и оставались в этом состоянии — это и есть разница:
+/// :focus-visible срабатывает только тогда, когда браузер считает, что
+/// пользователь ведёт навигацию с клавиатуры.
+@mixin focus-ring($color: var(--c-focus), $offset: 2px, $width: 2px) {
+  &:focus-visible {
+    outline: $width solid $color;
+    outline-offset: $offset;
+  }
+}
+
+/// Убрать элемент с экрана, оставив его для скринридера.
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/// Поверхность-карточка: фон, рамка, радиус.
+@mixin surface($padding: var(--space-m)) {
+  padding: $padding;
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-l);
+}
+
+/// Обрезка текста в N строк.
+@mixin clamp-lines($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/// Цифры одинаковой ширины.
+///
+/// Обязательно для всего, где суммы стоят в столбец: с пропорциональными
+/// цифрами разряды не выравниваются и колонка баланса выглядит рваной.
+@mixin tabular-numbers {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/// Переход только по перечисленным свойствам, с уважением к prefers-reduced-motion.
+///
+/// Именно поэтому в проекте нет `transition: all`: all анимирует в том числе
+/// геометрию и заставляет браузер пересчитывать раскладку на каждом кадре.
+@mixin transition($properties...) {
+  transition-property: $properties;
+  transition-duration: var(--duration-base);
+  transition-timing-function: var(--ease-out);
+
+  @include bp.reduced-motion {
+    transition-duration: 1ms;
+  }
+}
+
+/// Сетка карточек, которая сама решает, сколько колонок влезет.
+/// Нужна для дашборда: количество счётов заранее неизвестно.
+@mixin auto-grid($min: 280px, $gap: var(--space-m), $mode: fill) {
+  display: grid;
+  gap: $gap;
+  grid-template-columns: repeat(auto-#{$mode}, minmax(min(#{$min}, 100%), 1fr));
+}
+
+/// Ограничивающий контейнер.
+///
+/// Замена `[class*="__container"]` из прототипа. Тот селектор был
+/// изобретательным, но работал на совпадении части имени класса: любой класс
+/// со словом container внутри неожиданно получал отступы.
+@mixin container($max: var(--container-max)) {
+  width: 100%;
+  max-width: $max;
+  margin-inline: auto;
+  padding-inline: var(--container-gutter);
+}

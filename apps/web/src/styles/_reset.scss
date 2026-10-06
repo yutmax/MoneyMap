@@ -1,0 +1,209 @@
+/// Глобальное обнуление.
+///
+/// Заменяет null.scss из прототипа. Отличия по существу, а не по вкусу:
+///
+///  * лежит в `@layer reset` — самом слабом слое каскада, поэтому никогда
+///    не конкурирует по специфичности со стилями компонентов. В прототипе
+///    обнуление и компоненты жили в одном слое, и `.login-input` приходилось
+///    выигрывать у `input` весом селектора;
+///  * ничего не «зануляет» ради самого занудения: каждое правило снимает
+///    конкретное неудобное поведение браузера по умолчанию, а не обнуляет всё
+///    подряд (`* { margin: 0; padding: 0 }` ломает, например, список в тексте);
+///  * логические свойства (margin-block, padding-inline) вместо физических —
+///    чтобы интерфейс не пришлось переписывать при добавлении RTL-локали.
+
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* Отступы снимаются только у блоков, которыми управляет раскладка.
+     Остальной текст сохраняет типографику браузера. */
+  body,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  figure,
+  blockquote,
+  dl,
+  dd {
+    margin: 0;
+  }
+
+  html {
+    /* Safari на телефоне самовольно увеличивает шрифт при повороте экрана. */
+    -webkit-text-size-adjust: 100%;
+    /* Плавная прокрутка по якорям, но не в ущерб тем, кто просил меньше движения. */
+    scroll-behavior: smooth;
+    /* Чтобы 100% высоты у .wrapper имел от чего считаться. */
+    height: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    min-height: 100%;
+    /* Тексту нужна читаемая база; заголовки переопределят её сами. */
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Заголовки наследуют размер и вес, а задаются токенами в стилях компонента.
+     Иначе h2 внутри карточки тянет за собой размер «заголовка страницы». */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+  }
+
+  /* Висячие предлоги и одинокие слова в последней строке. */
+  p,
+  li,
+  figcaption {
+    text-wrap: pretty;
+  }
+
+  /* Длинная строка без пробелов (адрес кошелька, хеш) не должна растягивать
+     раскладку по горизонтали. */
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  li,
+  dd,
+  dt,
+  td,
+  th {
+    overflow-wrap: break-word;
+  }
+
+  /* Приложение, а не документ: маркеры списков здесь всегда лишние,
+     а семантика ul/ol нужна скринридеру. */
+  ul,
+  ol {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  svg {
+    /* Иконка должна окрашиваться цветом текста рядом с ней. */
+    fill: currentcolor;
+  }
+
+  /* Поля ввода в браузерах по умолчанию не наследуют шрифт — из-за этого форма
+     выглядит набранной другим шрифтом, чем всё остальное. */
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+  }
+
+  button {
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    cursor: not-allowed;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  textarea:not([rows]) {
+    min-height: 6rem;
+  }
+
+  /* Стрелки у числового поля мешают вводу сумм: случайное колесо мыши
+     над полем меняет значение. */
+  input[type="number"] {
+    appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  /* Кольцо фокуса по умолчанию убирается только там, где компонент рисует своё.
+     Полностью снимать outline нельзя — это отрезает клавиатурную навигацию. */
+  :focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  /* Якорь не должен упираться в самый верх окна под липкой шапкой. */
+  :target {
+    scroll-margin-block: var(--space-xl);
+  }
+
+  /* Корень React: отдельный контекст наложения, чтобы z-index внутри
+     приложения не конкурировал с чем-то снаружи. */
+  #root {
+    isolation: isolate;
+    min-height: 100%;
+  }
+
+  /* Глобальный тормоз анимаций. Формулировка с 0.01ms, а не `none`, —
+     чтобы обработчики animationend/transitionend всё-таки срабатывали
+     и логика, завязанная на завершение анимации, не вставала насмерть. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

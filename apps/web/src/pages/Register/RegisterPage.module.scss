@@ -1,0 +1,21 @@
+.form {
+  display: grid;
+  row-gap: var(--space-m);
+}
+
+.fields {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.row {
+  display: grid;
+  gap: var(--space-s);
+
+  // Два поля в строку только когда для этого есть место. Контейнерный запрос,
+  // а не вьюпортный: карточка формы может стоять и в модальном окне,
+  // и её ширина не равна ширине экрана.
+  @include from("sm") {
+    grid-template-columns: 1fr 1fr;
+  }
+}

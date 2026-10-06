@@ -1,0 +1,44 @@
+.root {
+  display: grid;
+  row-gap: var(--space-l);
+  // Длинная строка настроек неудобна: ограничиваем ширину читаемой мерой.
+  max-width: rem(760);
+}
+
+.title {
+  font-size: var(--step-3);
+  font-weight: var(--weight-medium);
+}
+
+.section {
+  display: grid;
+  row-gap: var(--space-s);
+
+  @include surface(var(--space-m));
+}
+
+.sectionTitle {
+  font-size: var(--step-1);
+  font-weight: var(--weight-medium);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-s);
+
+  @include from("sm") {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.form {
+  display: grid;
+  row-gap: var(--space-s);
+  justify-items: start;
+}
+
+.note {
+  max-width: 70ch;
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}

@@ -1,0 +1,158 @@
+@use "functions" as fn;
+
+/// Токены оформления.
+///
+/// Всё, что может понадобиться поменять в рантайме, объявлено CSS-переменными,
+/// а не переменными Sass. Причина простая: $green из прототипа компилируется
+/// в конкретный цвет и переключить тему уже не может. CSS-переменная может.
+///
+/// В Sass остаётся только то, что принципиально не умеет жить в рантайме:
+/// брейкпоинты (media-запрос не читает var()), математика и миксины.
+
+/// Светлая тема вынесена в миксин, чтобы не дублировать значения между
+/// `prefers-color-scheme` и явным выбором пользователя.
+@mixin light-theme {
+  color-scheme: light;
+
+  --c-bg: #f6f7f4;
+  --c-surface: #ffffff;
+  --c-surface-raised: #ffffff;
+  --c-surface-sunken: #eceee8;
+  --c-border: #e0e3db;
+  --c-border-strong: #c7cbc0;
+
+  --c-text: #1b1c1a;
+  --c-text-muted: #595d55;
+  --c-text-faint: #8b8f86;
+
+  --c-accent: #c0e24a;
+  --c-accent-ink: #1b1c1a;
+
+  --c-income: oklch(52% 0.14 150);
+  --c-expense: oklch(53% 0.19 25);
+  --c-warning: oklch(60% 0.15 75);
+  --c-danger: oklch(53% 0.21 25);
+
+  --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.06), 0 8px 24px oklch(0% 0 0 / 0.06);
+}
+
+@layer tokens {
+  :root {
+    /* ─────────────────────────── тема по умолчанию ──────────────────────────── */
+
+    /* Тёмная: перенесена из прототипа, чтобы приложение осталось узнаваемым. */
+    color-scheme: dark;
+
+    --c-bg: #242529;
+    --c-surface: #2e2f34;
+    --c-surface-raised: #36373b;
+    --c-surface-sunken: #1e1f22;
+    --c-border: #3f4045;
+    --c-border-strong: #55565c;
+
+    --c-text: #f5f5f5;
+    --c-text-muted: #c5c5c5;
+    --c-text-faint: #8a8b90;
+
+    /* Лаймовый акцент прототипа. */
+    --c-accent: #d3f467;
+    /* Текст на акцентной плашке: тёмный, потому что сам акцент очень светлый. */
+    --c-accent-ink: #1b1c1a;
+
+    --c-income: oklch(82% 0.16 150);
+    --c-expense: oklch(72% 0.18 25);
+    --c-warning: oklch(80% 0.14 85);
+    --c-danger: oklch(68% 0.2 25);
+
+    --c-focus: var(--c-accent);
+
+    /* Производные состояния. color-mix считается в рантайме, поэтому
+       одна формула работает в обеих темах и не требует второго набора значений.
+       oklab вместо srgb: смешивание в нём не уводит цвет в серость. */
+    --c-accent-hover: color-mix(in oklab, var(--c-accent) 82%, var(--c-text));
+    --c-surface-hover: color-mix(in oklab, var(--c-surface) 88%, var(--c-text));
+    --c-overlay: color-mix(in oklab, var(--c-bg) 70%, transparent);
+
+    --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.3), 0 8px 24px oklch(0% 0 0 / 0.25);
+
+    /* ────────────────────────── типографическая шкала ──────────────────────── */
+
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
+
+    /* Шкала, а не произвольные размеры на каждом месте вызова.
+       Прототип набирал по восемь несвязанных чисел на один экран — здесь
+       семь ступеней на всё приложение, и каждая текучая. */
+    --step--2: #{fn.fluid(13, 12)};
+    --step--1: #{fn.fluid(15, 14)};
+    --step-0: #{fn.fluid(17, 16)};
+    --step-1: #{fn.fluid(21, 18)};
+    --step-2: #{fn.fluid(26, 21)};
+    --step-3: #{fn.fluid(33, 25)};
+    --step-4: #{fn.fluid(42, 30)};
+
+    --leading-tight: 1.2;
+    --leading-normal: 1.5;
+    --leading-loose: 1.7;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+
+    /* ──────────────────────────────── отступы ──────────────────────────────── */
+
+    --space-3xs: #{fn.fluid(4, 4)};
+    --space-2xs: #{fn.fluid(8, 6)};
+    --space-xs: #{fn.fluid(12, 10)};
+    --space-s: #{fn.fluid(16, 14)};
+    --space-m: #{fn.fluid(24, 18)};
+    --space-l: #{fn.fluid(36, 26)};
+    --space-xl: #{fn.fluid(56, 36)};
+    --space-2xl: #{fn.fluid(84, 48)};
+
+    /* ───────────────────────────────── формы ───────────────────────────────── */
+
+    --radius-s: #{fn.rem(6)};
+    --radius-m: #{fn.rem(10)};
+    --radius-l: #{fn.rem(16)};
+    --radius-xl: #{fn.rem(24)};
+    --radius-pill: 999px;
+
+    --border-width: 1px;
+
+    --container-max: #{fn.rem(1200)};
+    --container-gutter: #{fn.fluid(32, 16)};
+
+    --control-height: #{fn.rem(44)};
+    /* 44px — минимальный размер тач-цели, ниже него по кнопке трудно попасть пальцем. */
+
+    /* ─────────────────────────────── движение ─────────────────────────────── */
+
+    --duration-fast: 120ms;
+    --duration-base: 220ms;
+    --duration-slow: 400ms;
+
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+    /* ─────────────────────────────── слои ─────────────────────────────────── */
+
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-overlay: 300;
+    --z-modal: 400;
+    --z-toast: 500;
+  }
+
+  /* Системная настройка действует, пока пользователь не выбрал тему руками. */
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      @include light-theme;
+    }
+  }
+
+  /* Явный выбор пользователя сильнее системного. */
+  :root[data-theme="light"] {
+    @include light-theme;
+  }
+}

@@ -1,0 +1,87 @@
+.root {
+  display: grid;
+  row-gap: var(--space-m);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  align-items: start;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--step-3);
+  font-weight: var(--weight-medium);
+}
+
+.subtitle {
+  max-width: 60ch;
+  margin-block-start: var(--space-3xs);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.list {
+  display: grid;
+  row-gap: var(--space-2xs);
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  align-items: center;
+  justify-content: space-between;
+
+  @include surface(var(--space-s) var(--space-m));
+}
+
+.info {
+  display: grid;
+  row-gap: rem(2);
+  // min-width: 0 — чтобы длинный User-Agent не растягивал flex-строку
+  // за пределы карточки.
+  min-width: 0;
+}
+
+.device {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  align-items: center;
+  font-weight: var(--weight-medium);
+}
+
+.current {
+  padding: rem(1) var(--space-2xs);
+  font-size: var(--step--2);
+  font-weight: var(--weight-regular);
+  color: var(--c-accent-ink);
+  background-color: var(--c-accent);
+  border-radius: var(--radius-pill);
+}
+
+.meta {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+
+  @include tabular-numbers;
+}
+
+.skeleton {
+  height: rem(84);
+  background-color: var(--c-surface);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-l);
+  // Пульсация выключается вместе со всеми анимациями через
+  // prefers-reduced-motion в reset — отдельного правила здесь не нужно.
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}

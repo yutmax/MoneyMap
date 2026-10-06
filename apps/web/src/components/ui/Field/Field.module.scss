@@ -1,0 +1,61 @@
+.root {
+  display: grid;
+  row-gap: var(--space-3xs);
+}
+
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-s);
+}
+
+.label {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.control {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: var(--space-2xs) 0;
+  color: var(--c-text);
+  background-color: transparent;
+  // Подчёркивание вместо рамки — приём из прототипа, он тут к месту:
+  // форма входа выглядит легче, чем из коробочных полей.
+  border: 0;
+  border-bottom: 2px solid var(--c-border);
+  border-radius: 0;
+
+  @include transition(border-color, background-color);
+
+  &::placeholder {
+    color: var(--c-text-faint);
+  }
+
+  // Поле ввода — единственное место, где :focus уместнее :focus-visible:
+  // в текстовом поле каретка уже стоит, и подсветка границы ожидаема
+  // независимо от того, мышью в него попали или с клавиатуры.
+  &:focus {
+    border-bottom-color: var(--c-accent);
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.invalid {
+  border-bottom-color: var(--c-danger);
+}
+
+.error {
+  font-size: var(--step--1);
+  color: var(--c-danger);
+}
+
+.hint {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}

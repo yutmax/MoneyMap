@@ -1,0 +1,44 @@
+.root {
+  display: grid;
+  row-gap: var(--space-3xs);
+}
+
+.label {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.control {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: var(--space-2xs) var(--space-s) var(--space-2xs) 0;
+  color: var(--c-text);
+  background-color: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--c-border);
+  border-radius: 0;
+
+  @include transition(border-color);
+
+  &:focus {
+    border-bottom-color: var(--c-accent);
+    outline: none;
+  }
+
+  // Нативный <select> рисует список средствами ОС, и его фон не наследуется
+  // от страницы. color-scheme в :root заставляет систему отрисовать его
+  // в тёмном варианте — поэтому опции здесь не требуют отдельных цветов.
+  option {
+    color: var(--c-text);
+    background-color: var(--c-surface-raised);
+  }
+}
+
+.invalid {
+  border-bottom-color: var(--c-danger);
+}
+
+.error {
+  font-size: var(--step--1);
+  color: var(--c-danger);
+}

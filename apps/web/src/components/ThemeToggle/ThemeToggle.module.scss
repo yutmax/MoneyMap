@@ -1,0 +1,37 @@
+.root {
+  display: inline-flex;
+  padding: rem(3);
+  background-color: var(--c-surface-sunken);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-pill);
+}
+
+.option {
+  display: grid;
+  place-items: center;
+  width: rem(32);
+  height: rem(32);
+  color: var(--c-text-faint);
+  border-radius: var(--radius-pill);
+
+  @include transition(color, background-color);
+  @include focus-ring($offset: 1px);
+
+  @include hover {
+    color: var(--c-text);
+  }
+}
+
+.active {
+  color: var(--c-accent-ink);
+  background-color: var(--c-accent);
+
+  @include hover {
+    color: var(--c-accent-ink);
+  }
+}
+
+.icon {
+  width: rem(17);
+  height: rem(17);
+}

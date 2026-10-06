@@ -1,0 +1,107 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-sticky);
+  background-color: color-mix(in oklab, var(--c-bg) 85%, transparent);
+  border-block-end: var(--border-width) solid var(--c-border);
+  backdrop-filter: blur(10px);
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+  min-height: rem(60);
+
+  @include container;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  color: var(--c-accent);
+
+  @include focus-ring($offset: 3px);
+}
+
+.nav {
+  display: flex;
+  gap: var(--space-xs);
+  // Навигация занимает всё свободное место, прижимая правый блок к краю.
+  margin-inline-end: auto;
+
+  @include until("md") {
+    // На узком экране ссылки уезжают под шапку отдельной строкой —
+    // проще, чем бургер, и доступнее.
+    display: none;
+  }
+}
+
+.navLink {
+  padding: var(--space-3xs) var(--space-2xs);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+  border-radius: var(--radius-s);
+
+  @include transition(color, background-color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+    background-color: var(--c-surface);
+  }
+}
+
+.navLinkActive {
+  color: var(--c-text);
+  background-color: var(--c-surface);
+}
+
+.spacer {
+  margin-inline-start: auto;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.user {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+
+  @include until("sm") {
+    display: none;
+  }
+}
+
+.mobileNav {
+  display: none;
+  gap: var(--space-2xs);
+  padding-block-end: var(--space-2xs);
+  overflow-x: auto;
+
+  @include container;
+
+  @include until("md") {
+    display: flex;
+  }
+}
+
+.main {
+  // Растягиваем main, чтобы футер (когда появится) прижимался к низу.
+  flex: 1 1 auto;
+  padding-block: var(--space-l);
+
+  @include container;
+}

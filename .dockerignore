@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/build
+**/.git
+**/.env
+**/.env.local
+**/*.log
+**/coverage
+docs
+compose.*.yml
+Caddyfile

@@ -1,0 +1,39 @@
+# Разработка: в контейнерах живёт только то, что неудобно ставить локально (§4.2).
+# API и фронтенд запускаются нативно через `pnpm dev` — bind-монтирование кода
+# в контейнер на Windows ломает и Vite HMR, и подключение отладчика.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: moneymap-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: moneymap
+      POSTGRES_PASSWORD: moneymap
+      POSTGRES_DB: moneymap
+      # Коллация и кодировка задаются при initdb и потом не меняются.
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=C'
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U moneymap -d moneymap']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgweb:
+    image: sosedoff/pgweb:latest
+    container_name: moneymap-pgweb
+    restart: unless-stopped
+    environment:
+      PGWEB_DATABASE_URL: postgres://moneymap:moneymap@postgres:5432/moneymap?sslmode=disable
+    ports:
+      - '8081:8081'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:

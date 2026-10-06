@@ -1,0 +1,24 @@
+.form {
+  display: grid;
+  row-gap: var(--space-m);
+}
+
+.fields {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.forgot {
+  justify-self: center;
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+
+  @include transition(color);
+  @include focus-ring($offset: 3px);
+
+  @include hover {
+    color: var(--c-accent);
+  }
+}

@@ -1,0 +1,9 @@
+/// Фасад системы стилей. Подключается в КАЖДЫЙ *.module.scss автоматически —
+/// см. css.preprocessorOptions.scss.additionalData в vite.config.ts.
+///
+/// Здесь только то, что не печатает ни одного байта CSS: функции, миксины,
+/// брейкпоинты. Если сюда попадёт файл с правилами (например, _tokens.scss),
+/// его содержимое продублируется в каждом модуле проекта.
+@forward "functions";
+@forward "breakpoints";
+@forward "mixins";

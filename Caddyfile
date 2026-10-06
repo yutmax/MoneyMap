@@ -1,0 +1,51 @@
+{$DOMAIN} {
+	encode zstd gzip
+
+	# API. Префикс /api не срезается: от него зависит область действия
+	# refresh-куки (path=/api/auth/refresh), и путь обязан совпадать с dev.
+	handle /api/* {
+		reverse_proxy api:5000
+	}
+
+	# Статика, собранная Vite. Отдельный Node-процесс для фронтенда не нужен (§4.3).
+	handle {
+		root * /srv/web
+		# try_files с фолбэком на index.html: роутинг клиентский,
+		# и /sessions должен открываться по прямой ссылке.
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		# HSTS. Включать только когда уверены, что домен навсегда на HTTPS.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+		# CSP отдаётся здесь, а не из API (§10.1): заголовок нужен на HTML,
+		# а HTML раздаёт Caddy. 'unsafe-inline' для style-src — потому что
+		# Vite инлайнит критические стили; скрипты инлайн не допускаются,
+		# кроме одного тега с темой в index.html (его хеш надо будет добавить,
+		# если переходить на strict-dynamic).
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+		-Server
+	}
+
+	# Хешированные ассеты Vite можно кешировать навсегда — имя меняется
+	# вместе с содержимым.
+	@immutable path /assets/*
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+	# index.html кешировать нельзя: иначе пользователь застрянет на старой
+	# версии приложения с устаревшими ссылками на ассеты.
+	@html path / /index.html
+	header @html Cache-Control "no-cache"
+
+	log {
+		output stdout
+		format console
+	}
+}

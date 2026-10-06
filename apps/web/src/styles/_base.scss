@@ -1,0 +1,67 @@
+@use "functions" as fn;
+@use "mixins" as mx;
+
+/// Базовые стили элементов: то, что раньше жило в style.scss между
+/// обнулением и компонентами.
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--step-0);
+    font-weight: var(--weight-regular);
+    color: var(--c-text);
+    background-color: var(--c-bg);
+  }
+
+  ::selection {
+    color: var(--c-accent-ink);
+    background-color: var(--c-accent);
+  }
+
+  /* Полоса прокрутки в тон теме: иначе в тёмном интерфейсе она остаётся
+     светлой. color-scheme в токенах уже делает основную работу,
+     здесь — доводка ширины. */
+  @supports (scrollbar-width: thin) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--c-border-strong) transparent;
+    }
+  }
+
+  /* Резерв под полосу прокрутки, чтобы контент не прыгал по горизонтали,
+     когда страница становится длиннее экрана. */
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  /* Автозаполнение в Chrome перекрашивает поле в свой жёлтый. Отменить это
+     напрямую нельзя, но можно задавить фон огромной внутренней тенью. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--c-text);
+    box-shadow: 0 0 0 1000px var(--c-surface-raised) inset;
+    caret-color: var(--c-text);
+  }
+
+  /* Любые суммы и даты — моноширинными цифрами. */
+  time,
+  output,
+  data {
+    @include mx.tabular-numbers;
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  hr {
+    height: fn.rem(1);
+    margin: 0;
+    border: 0;
+    background-color: var(--c-border);
+  }
+}

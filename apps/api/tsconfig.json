@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    // rootDir/outDir не задаются: сборкой занимается tsup, а tsc здесь только
+    // проверяет типы — включая drizzle.config.ts и tsup.config.ts вне src.
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src", "drizzle.config.ts", "tsup.config.ts"]
+}

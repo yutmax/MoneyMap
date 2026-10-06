@@ -1,0 +1,10 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# pnpm не выполняет postinstall-скрипты, пока их явно не разрешить.
+# argon2 собирается из исходников, esbuild и @parcel/watcher скачивают бинарь.
+allowBuilds:
+  '@parcel/watcher': true
+  argon2: true
+  esbuild: true

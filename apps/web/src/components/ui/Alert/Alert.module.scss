@@ -1,0 +1,32 @@
+.root {
+  display: flex;
+  gap: var(--space-2xs);
+  padding: var(--space-xs) var(--space-s);
+  font-size: var(--step--1);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-m);
+}
+
+.error {
+  color: var(--c-danger);
+  background-color: color-mix(in oklab, var(--c-danger) 12%, transparent);
+  border-color: color-mix(in oklab, var(--c-danger) 35%, transparent);
+}
+
+.success {
+  color: var(--c-income);
+  background-color: color-mix(in oklab, var(--c-income) 12%, transparent);
+  border-color: color-mix(in oklab, var(--c-income) 35%, transparent);
+}
+
+.info {
+  color: var(--c-text-muted);
+  background-color: var(--c-surface-sunken);
+  border-color: var(--c-border);
+}
+
+.list {
+  display: grid;
+  row-gap: var(--space-3xs);
+  margin-block-start: var(--space-3xs);
+}

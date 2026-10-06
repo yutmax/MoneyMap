@@ -1,0 +1,76 @@
+@use "sass:math";
+
+/// Базовый размер шрифта, относительно которого считается rem.
+/// Меняется только здесь и только если в reset меняется html { font-size }.
+$root-font-size: 16 !default;
+
+/// Границы вьюпорта, между которыми интерполируются текучие значения.
+/// 390 — ширина современного телефона, 1440 — ширина макета.
+$fluid-width-min: 390 !default;
+$fluid-width-max: 1440 !default;
+
+/// px (без единиц) → rem.
+///
+/// rem, а не px, потому что пользователь имеет право увеличить базовый шрифт
+/// в настройках браузера, и интерфейс обязан это уважать.
+@function rem($px, $base: $root-font-size) {
+  @if math.is-unitless($px) == false {
+    @error "rem() принимает число без единиц, получено #{$px}";
+  }
+  @return math.div($px, $base) * 1rem;
+}
+
+/// px (без единиц) → em. Нужен там, где размер должен зависеть от шрифта
+/// родителя: отступы внутри кнопки, иконка рядом с текстом.
+@function em($px, $context: $root-font-size) {
+  @if math.is-unitless($px) == false {
+    @error "em() принимает число без единиц, получено #{$px}";
+  }
+  @return math.div($px, $context) * 1em;
+}
+
+/// Текучее значение: линейно растёт от $min до $max между $width-min и $width-max,
+/// за границами диапазона фиксируется.
+///
+/// Заменяет миксин adaptiveValue из прототипа. Разница принципиальная:
+///
+///  * adaptiveValue — миксин, и он печатал ТРИ media-запроса на каждый вызов
+///    (значение до диапазона, clamp внутри, значение после). Два из трёх были
+///    избыточны: clamp() зажимает значение сам, это его определение.
+///  * fluid() — функция, поэтому возвращает значение, а не правило. Его можно
+///    положить в var(), в сокращённое свойство (`padding: fluid(40,24) fluid(24,16)`),
+///    в calc() — с миксином так нельзя.
+///
+/// Наклон задаётся в vw, а смещение — в rem. Это не стилистика: чистый vw
+/// игнорировал бы пользовательский размер шрифта, чистый rem не был бы текучим.
+///
+/// @example scss
+///   font-size: fluid(35, 25);
+///   // → clamp(1.5625rem, 1.3131rem + 0.9524vw, 2.1875rem)
+@function fluid($max, $min, $width-max: $fluid-width-max, $width-min: $fluid-width-min) {
+  @if math.is-unitless($max) == false or math.is-unitless($min) == false {
+    @error "fluid() принимает числа без единиц, получено #{$max} и #{$min}";
+  }
+  @if $max == $min {
+    @return rem($max);
+  }
+  @if $width-max == $width-min {
+    @error "fluid(): границы вьюпорта совпадают, наклон посчитать нельзя";
+  }
+
+  $slope: math.div($max - $min, $width-max - $width-min);
+  $intercept: $min - $slope * $width-min;
+
+  // clamp() требует min <= max; при убывающем значении (редко, но бывает:
+  // например, отступ, который на мобильном больше) границы надо поменять.
+  $lower: math.min($min, $max);
+  $upper: math.max($min, $max);
+
+  // Округление до 4 знаков — доли пикселя на любом реальном экране.
+  // Округлять нужно уже переведённое в rem значение: если округлить пиксели,
+  // деление на 16 вернёт хвост обратно (22.0286px → 1.3767875rem).
+  $vw: math.div(math.round($slope * 100 * 10000), 10000);
+  $offset: math.div(math.round(math.div($intercept, $root-font-size) * 10000), 10000) * 1rem;
+
+  @return clamp(#{rem($lower)}, #{$offset} + #{$vw}vw, #{rem($upper)});
+}

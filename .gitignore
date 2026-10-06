@@ -1,47 +1,33 @@
-# Игнорируем node_modules для обеих частей проекта
-backend/node_modules/
-frontend/node_modules/
+# зависимости
+node_modules/
+.pnpm-store/
 
-# Игнорируем файлы окружения
-backend/.env
-frontend/.env
+# сборка
+dist/
+build/
+*.tsbuildinfo
 
-# Игнорируем логи и временные файлы
+# окружение
+.env
+.env.local
+.env.*.local
+
+# логи
 *.log
-*.tmp
-
-# Игнорируем файлы IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Игнорируем собранные файлы фронтенда (если используешь сборку)
-frontend/build/
-frontend/.DS_Store
-
-# Игнорируем зависимости фронтенда (если используешь pnpm или yarn)
-frontend/.pnp
-frontend/.pnp.js
-frontend/yarn.lock
-frontend/package-lock.json
-
-# Игнорируем кэш
-frontend/.cache/
-
-# Игнорируем coverage (если используешь тесты)
-coverage/
-
-# Игнорируем macOS системные файлы
-.DS_Store
-
-# Игнорируем файлы конфигурации редактора
-*.sublime-workspace
-*.sublime-project
-
-# Игнорируем файлы npm
 npm-debug.log*
+pnpm-debug.log*
 
-# Игнорируем файлы yarn
-yarn-debug.log*
-yarn-error.log*
+# редакторы и ОС
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# тесты
+coverage/
+.vitest/
+
+# бэкапы БД
+*.dump
+*.sql.gz

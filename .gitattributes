@@ -1,0 +1,16 @@
+# Единые переносы строк в репозитории независимо от ОС разработчика.
+# Без этого Windows-клиент коммитит CRLF, и diff превращается в шум.
+* text=auto eol=lf
+
+# Бинарные файлы не трогать.
+*.png binary
+*.jpg binary
+*.woff binary
+*.woff2 binary
+*.ico binary
+
+# Lock-файл в diff'ах не читают.
+pnpm-lock.yaml linguist-generated=true -diff
+
+# Миграции менять руками нельзя — помечаем, чтобы это было видно в ревью.
+apps/api/drizzle/** linguist-generated=true
