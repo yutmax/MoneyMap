@@ -41,7 +41,6 @@ export async function buildApp(): Promise<FastifyInstance> {
     // rate limiting будет считать все запросы с одного адреса — прокси.
     trustProxy: isProduction,
     bodyLimit: 256 * 1024,
-    disableRequestLogging: false,
   });
 
   await app.register(helmet, {
