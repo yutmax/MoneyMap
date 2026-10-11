@@ -112,6 +112,8 @@ interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   body?: unknown;
   signal?: AbortSignal;
+  /** Заголовки конкретного запроса — например, Idempotency-Key (§8.3). */
+  headers?: Record<string, string>;
 }
 
 async function request<T>(
@@ -119,9 +121,9 @@ async function request<T>(
   options: RequestOptions = {},
   allowRetry = true,
 ): Promise<T> {
-  const { method = 'GET', body, signal } = options;
+  const { method = 'GET', body, signal, headers: extra } = options;
 
-  const headers: Record<string, string> = { ...csrfHeaders(), ...localeHeaders() };
+  const headers: Record<string, string> = { ...csrfHeaders(), ...localeHeaders(), ...extra };
   if (body !== undefined) headers['content-type'] = 'application/json';
 
   const response = await fetch(`/api${path}`, {
@@ -147,7 +149,8 @@ async function request<T>(
 
 export const api = {
   get: <T>(path: string, signal?: AbortSignal) => request<T>(path, signal ? { signal } : {}),
-  post: <T>(path: string, body?: unknown) => request<T>(path, { method: 'POST', body }),
+  post: <T>(path: string, body?: unknown, headers?: Record<string, string>) =>
+    request<T>(path, { method: 'POST', body, ...(headers ? { headers } : {}) }),
   patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };

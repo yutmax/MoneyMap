@@ -9,6 +9,7 @@ import { RegisterPage } from '@/pages/register';
 import { ResetPasswordPage } from '@/pages/reset-password';
 import { SessionsPage } from '@/pages/sessions';
 import { SettingsPage } from '@/pages/settings';
+import { TransactionsPage } from '@/pages/transactions';
 import { VerifyEmailPage } from '@/pages/verify-email';
 import { ROUTES } from '@/shared/config';
 import { AppHeader } from '@/widgets/app-header';
@@ -38,6 +39,7 @@ export function Router() {
             <Route element={<OnboardingGate />}>
               <Route index element={<DashboardPage />} />
               <Route path={ROUTES.accounts} element={<AccountsPage />} />
+              <Route path={ROUTES.transactions} element={<TransactionsPage />} />
               <Route path={ROUTES.categories} element={<CategoriesPage />} />
               <Route path={ROUTES.sessions} element={<SessionsPage />} />
               <Route path={ROUTES.settings} element={<SettingsPage />} />

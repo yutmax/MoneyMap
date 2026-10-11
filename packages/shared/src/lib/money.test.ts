@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  divide,
   abs,
   add,
   compare,
@@ -129,6 +130,23 @@ describe('разбор ввода пользователя', () => {
     expect(() => parseUserAmount('-')).toThrow(MoneyError);
     expect(() => parseUserAmount('сто рублей')).toThrow(MoneyError);
     expect(() => parseUserAmount('1.2.3')).toThrow(MoneyError);
+  });
+});
+
+describe('деление', () => {
+  it('выводит кросс-курс из двух сумм', () => {
+    // 330 BYN за 100 USD — ровно то, как §7.2 получает курс перевода.
+    expect(divide('330', '100')).toBe('3.3');
+  });
+
+  it('округляет бесконечную дробь до предельной разрядности', () => {
+    const rate = divide('1', '3');
+    expect(rate.startsWith('0.333333333333333333')).toBe(true);
+    expect(rate.split('.')[1]?.length).toBeLessThanOrEqual(18);
+  });
+
+  it('деление на ноль — ошибка, а не Infinity', () => {
+    expect(() => divide('100', '0')).toThrow(MoneyError);
   });
 });
 

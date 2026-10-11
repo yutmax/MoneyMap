@@ -12,6 +12,7 @@ import { categoryRoutes } from './modules/categories/category.routes.ts';
 import { onboardingRoutes } from './modules/onboarding/onboarding.routes.ts';
 import { referenceRoutes } from './modules/reference/reference.routes.ts';
 import { settingsRoutes } from './modules/settings/settings.routes.ts';
+import { transactionRoutes } from './modules/transactions/transaction.routes.ts';
 import { registerCsrf } from './plugins/csrf.ts';
 
 /** Заголовки и поля, которые нельзя писать в лог (§10.1). */
@@ -158,6 +159,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       await api.register(authRoutes, { prefix: '/auth' });
       await api.register(accountRoutes, { prefix: '/accounts' });
       await api.register(categoryRoutes, { prefix: '/categories' });
+      await api.register(transactionRoutes, { prefix: '/transactions' });
       await api.register(onboardingRoutes, { prefix: '/onboarding' });
       await api.register(settingsRoutes, { prefix: '/settings' });
       await api.register(referenceRoutes);

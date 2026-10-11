@@ -100,6 +100,20 @@ export function isNegative(a: MoneyString): boolean {
 }
 
 /**
+ * Деление с точностью до MONEY_SCALE.
+ *
+ * Нужно ровно для одного: вывести кросс-курс перевода из двух сумм (§7.2).
+ * Деление единственное из денежных действий, которое не может быть точным,
+ * поэтому результат округляется до предельной разрядности — дальше он
+ * хранится как есть и больше не пересчитывается.
+ */
+export function divide(a: MoneyString, b: MoneyString): MoneyString {
+  const divisor = toDecimal(b);
+  if (divisor.isZero()) throw new MoneyError('Деление на ноль');
+  return toMoney(toDecimal(a).div(divisor).toDecimalPlaces(MONEY_SCALE, Decimal.ROUND_HALF_UP));
+}
+
+/**
  * Конвертация по курсу с округлением до разрядности целевой валюты.
  * Курс фиксируется в транзакции (§5.2) — здесь только арифметика.
  */

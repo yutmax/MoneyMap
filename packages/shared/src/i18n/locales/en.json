@@ -43,6 +43,14 @@
     "category": {
       "name": "Enter a category name",
       "kind": "Choose a category kind"
+    },
+    "transaction": {
+      "kind": "Choose income or expense",
+      "account": "Choose an account"
+    },
+    "transfer": {
+      "sameAccount": "Choose two different accounts",
+      "toAmountRequired": "The accounts are in different currencies — enter the amount received"
     }
   },
   "errors": {
@@ -74,7 +82,12 @@
     "categoryNotFound": "Category not found",
     "categoryDepth": "Categories nest two levels deep only",
     "categoryKindMismatch": "A subcategory must be of the same kind as its parent",
-    "categoryOwnParent": "A category cannot be nested inside itself"
+    "categoryOwnParent": "A category cannot be nested inside itself",
+    "transactionNotFound": "Transaction not found",
+    "accountArchived": "The account is archived. Restore it to add transactions.",
+    "currencyMismatch": "The transaction's currency must match the account's",
+    "transferLegEdit": "A transfer leg cannot be edited on its own — change the transfer itself",
+    "categoryKindForTransaction": "The category does not match the kind of transaction"
   },
   "theme": {
     "group": "Colour theme",
@@ -95,7 +108,8 @@
     "settings": "Settings",
     "logout": "Sign out",
     "accounts": "Accounts",
-    "categories": "Categories"
+    "categories": "Categories",
+    "transactions": "Transactions"
   },
   "auth": {
     "login": {
@@ -316,5 +330,42 @@
       "giftsOut": "Gifts",
       "otherExpense": "Other expenses"
     }
+  },
+  "transactions": {
+    "title": "Transactions",
+    "subtitle": "Income, expenses and transfers between your own accounts.",
+    "empty": "No transactions yet.",
+    "emptyFiltered": "Nothing matches these filters.",
+    "create": "New transaction",
+    "createTitle": "New transaction",
+    "editTitle": "Transaction",
+    "income": "Income",
+    "expense": "Expense",
+    "transfer": "Transfer",
+    "account": "Account",
+    "accountFrom": "From",
+    "accountTo": "To",
+    "category": "Category",
+    "categoryNone": "No category",
+    "amount": "Amount",
+    "amountReceived": "Amount received",
+    "amountReceivedHint": "The accounts differ in currency: the rate follows from the two amounts",
+    "date": "Date",
+    "note": "Note",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "created": "Transaction added",
+    "updated": "Transaction saved",
+    "deleted": "Transaction deleted",
+    "loadFailed": "Could not load the transactions",
+    "loadMore": "Show more",
+    "filters": "Filters",
+    "filterAll": "All",
+    "filterReset": "Reset",
+    "searchPlaceholder": "Search in notes",
+    "noCategory": "No category",
+    "kindFilter": "Kind",
+    "submit": "Add"
   }
 }
