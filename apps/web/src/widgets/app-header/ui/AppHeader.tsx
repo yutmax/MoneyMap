@@ -1,8 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router';
 import { useMe } from '@/entities/user';
 import { LogoutButton } from '@/features/auth-logout';
-import { LocaleSwitch } from '@/features/locale-switch';
-import { ThemeToggle } from '@/features/theme-switch';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
@@ -50,10 +48,11 @@ export function AppHeader() {
             <NavLinks />
           </nav>
 
+          {/* Язык и тема живут в настройках, а не здесь: это выбор, который
+              делают один раз, и в шапке он каждый день соперничал за внимание
+              с навигацией и остатком на счетах. */}
           <div className={cx(styles.actions, styles.spacer)}>
             {user && <span className={styles.user}>{user.name}</span>}
-            <LocaleSwitch />
-            <ThemeToggle />
             <LogoutButton onDone={() => void navigate(ROUTES.login, { replace: true })} />
           </div>
         </div>

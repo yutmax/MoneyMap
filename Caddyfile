@@ -74,6 +74,12 @@ http://{$SITE_HOST} {
 		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 
 		-Server
+
+		# Снимаем HSTS, если его всё же поставил upstream: helmet в API
+		# добавляет его на ответы /api. Решение про HSTS принимается здесь,
+		# в одном месте на весь хост, и ответ /api не должен его отменять —
+		# браузер запоминает заголовок на имя хоста целиком, а не на путь.
+		-Strict-Transport-Security
 	}
 
 	# Хешированные ассеты Vite можно кешировать навсегда — имя меняется
@@ -81,10 +87,16 @@ http://{$SITE_HOST} {
 	@immutable path /assets/*
 	header @immutable Cache-Control "public, max-age=31536000, immutable"
 
-	# index.html кешировать нельзя: иначе пользователь застрянет на старой
-	# версии приложения с устаревшими ссылками на ассеты.
-	@html path / /index.html
+	# index.html, манифест и воркер кешировать нельзя: на старом index.html
+	# пользователь застрянет с устаревшими ссылками на ассеты, а старый
+	# воркер переживёт выкат и останется в браузере сам по себе.
+	@html path / /index.html /manifest.webmanifest /sw.js
 	header @html Cache-Control "no-cache"
+
+	# Content-Type манифеста задаётся явно: расширения .webmanifest нет
+	# в таблице типов Go, и файл уехал бы как application/octet-stream.
+	@manifest path /manifest.webmanifest
+	header @manifest Content-Type "application/manifest+json; charset=utf-8"
 
 	log {
 		output stdout

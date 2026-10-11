@@ -79,6 +79,23 @@ export default tseslint.config(
     },
   })),
 
+  // Service worker: своё глобальное окружение — ни window, ни document,
+  // зато self, clients и события установки.
+  {
+    files: ['apps/web/public/sw.js'],
+    languageOptions: {
+      globals: globals.serviceworker,
+    },
+  },
+
+  // Сборочные скрипты вне src: исполняются Node напрямую.
+  {
+    files: ['**/scripts/*.mjs'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+
   // Бэкенд
   {
     files: ['apps/api/**/*.ts'],

@@ -21,3 +21,23 @@
   font-size: var(--step-1);
   font-weight: var(--weight-medium);
 }
+
+.options {
+  // dl, а не таблица и не набор div'ов: подпись и элемент управления — это
+  // пара «термин — значение», и разметка говорит ровно это.
+  display: grid;
+  gap: var(--space-2xs) var(--space-m);
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  margin: 0;
+}
+
+.optionLabel {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.optionControl {
+  margin: 0;
+  justify-self: start;
+}

@@ -27,7 +27,39 @@
       })();
     </script>
 
+    <!--
+      Иконки и манифест: без них «добавить на главный экран» даёт ярлык
+      в браузере — с адресной строкой и кнопками, — а не приложение.
+
+      - favicon.svg   — вкладка браузера, одна картинка на любой размер;
+      - favicon.ico   — для запроса /favicon.ico, который браузер шлёт сам,
+                        не заглядывая в разметку;
+      - apple-touch-icon — iOS берёт иконку домашнего экрана только отсюда
+                        и только PNG; SVG и манифест он для этого не читает.
+    -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!--
+      Цвет строки состояния в установленном приложении. Два тега с media
+      вместо одного: цвет темы в манифесте один на всё приложение, а тема
+      у нас переключается, и в тёмной светлая полоса сверху выглядит
+      обрезком чужого интерфейса.
+    -->
+    <meta name="theme-color" content="#f6f7f4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#242529" media="(prefers-color-scheme: dark)" />
+
+    <!--
+      Запуск без браузерного обрамления. display: standalone из манифеста
+      понимают Android и Safari с iOS 16.4; на более ранних iOS решает
+      только apple-mobile-web-app-capable, поэтому стоят оба.
+    -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="MoneyMap" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <clipPath id="plate">
+      <rect width="512" height="512" rx="0" />
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="0" fill="#c0e24a" />
+
+  <g clip-path="url(#plate)" fill="none" stroke="#ffffff" stroke-width="44">
+    <path d="M-40 556 552 330" />
+    <path d="M-40 330 552 556" />
+  </g>
+
+  <path d="M256 404C256 404 140 300 140 206a116 116 0 1 1 232 0c0 94-116 198-116 198Z" fill="#1b1c1a" />
+  <circle cx="256" cy="206" r="70" fill="#ffffff" />
+
+  <g
+    transform="translate(256 206) scale(4.4) translate(-12 -12)"
+    fill="none"
+    stroke="#1b1c1a"
+    stroke-width="2.4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M22 7 13.5 15.5 8.5 10.5 2 17" />
+    <path d="M16 7h6v6" />
+  </g>
+</svg>
