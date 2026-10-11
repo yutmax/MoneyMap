@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useCurrencies } from '@/entities/currency';
 import { csvUrl, useCashflowReport, useCategoryReport, useReportSummary } from '@/entities/report';
 import { useMe } from '@/entities/user';
+import { BudgetBlock } from '@/features/budgets';
 import { useT } from '@/shared/i18n';
 import { cx, formatDate } from '@/shared/lib';
 import { Alert, BarList, ColumnChart, Select, seriesColor, Spinner, StackedBar } from '@/shared/ui';
@@ -147,6 +148,11 @@ export function ReportsPage() {
               />
             </section>
           )}
+
+          <section className={styles.block}>
+            <h2 className={styles.blockTitle}>{t('budgets.title')}</h2>
+            <BudgetBlock />
+          </section>
 
           <div className={styles.columns}>
             <section className={styles.block}>

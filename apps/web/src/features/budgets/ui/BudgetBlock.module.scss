@@ -1,0 +1,97 @@
+.root {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.list {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.row {
+  display: grid;
+  column-gap: var(--space-s);
+  grid-template-areas:
+    "name numbers status"
+    "track track track"
+    "carried carried carried";
+  grid-template-columns: 1fr auto auto;
+  row-gap: rem(4);
+  align-items: baseline;
+  font-size: var(--step--1);
+}
+
+.name {
+  grid-area: name;
+  font-weight: var(--weight-medium);
+
+  @include clamp-lines(1);
+}
+
+.numbers {
+  grid-area: numbers;
+  color: var(--c-text-muted);
+
+  @include tabular-numbers;
+}
+
+.status {
+  grid-area: status;
+  white-space: nowrap;
+
+  @include tabular-numbers;
+}
+
+.ok {
+  color: var(--c-text-faint);
+}
+
+.warning {
+  color: var(--c-warning);
+}
+
+.over {
+  color: var(--c-expense);
+}
+
+.carried {
+  grid-area: carried;
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
+
+.track {
+  grid-area: track;
+  block-size: rem(6);
+  background-color: var(--c-surface-sunken);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--radius-pill);
+}
+
+.fill_ok {
+  background-color: var(--c-accent);
+}
+
+.fill_warning {
+  background-color: var(--c-warning);
+}
+
+.fill_over {
+  background-color: var(--c-expense);
+}
+
+.empty {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2xs);
+}

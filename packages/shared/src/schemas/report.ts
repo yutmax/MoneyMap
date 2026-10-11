@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { currencyCodeSchema, isoDateSchema } from './common.ts';
+import { currencyCodeSchema, isoDateSchema, moneySchema, uuidSchema } from './common.ts';
 
 /**
  * Отчёты (§8.9).
@@ -85,3 +85,49 @@ export const categoryReportQuerySchema = reportPeriodSchema.extend({
 });
 
 export type CategoryReportQuery = z.infer<typeof categoryReportQuerySchema>;
+
+/* ─────────────────────────────── бюджеты ───────────────────────────────── */
+
+/** Состояние бюджета. Цвет — не единственный признак: рядом всегда подпись. */
+export const BUDGET_STATUSES = ['ok', 'warning', 'over'] as const;
+export type BudgetStatus = (typeof BUDGET_STATUSES)[number];
+
+export const budgetsQuerySchema = z.object({
+  /** Месяц 'ГГГГ-ММ'. По умолчанию текущий у пользователя. */
+  month: z
+    .string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+    .optional(),
+});
+
+export const setBudgetsSchema = z.object({
+  budgets: z
+    .array(
+      z.object({
+        categoryId: uuidSchema,
+        /** Ноль означает «лимита нет» и убирает бюджет. */
+        amount: moneySchema,
+        rollover: z.boolean().optional(),
+      }),
+    )
+    .max(200),
+});
+
+export type SetBudgetsInput = z.infer<typeof setBudgetsSchema>;
+
+export interface BudgetRow {
+  categoryId: string;
+  categoryName: string;
+  /** Лимит, как его задал человек. */
+  amount: string;
+  /** Перенесённый остаток прошлого месяца. '0', если перенос выключен. */
+  carried: string;
+  /** Сколько можно потратить в этом месяце: лимит плюс перенос. */
+  limit: string;
+  spent: string;
+  remaining: string;
+  rollover: boolean;
+  /** Потрачено от лимита, 0..n. Больше единицы — перерасход. */
+  share: number;
+  status: BudgetStatus;
+}

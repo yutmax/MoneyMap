@@ -583,6 +583,34 @@ export const balanceSnapshots = pgTable(
   ],
 );
 
+/* ─────────────────────────────── budgets ───────────────────────────────── */
+
+/**
+ * Лимит расходов по категории на календарный месяц (§8.10).
+ *
+ * Лимит постоянный, а не заведённый на каждый месяц отдельно: «на продукты
+ * шестьсот» — это решение, а не ежемесячная работа. Месяц входит в расчёт,
+ * а не в хранение, поэтому и строка одна на категорию.
+ */
+export const budgets = pgTable(
+  'budgets',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    categoryId: uuid()
+      .notNull()
+      .references(() => categories.id, { onDelete: 'cascade' }),
+    amount: money().notNull(),
+    /** Переносить неизрасходованный остаток на следующий месяц (§8.10). */
+    rollover: boolean().notNull().default(false),
+    createdAt: timestamptzNow(),
+    updatedAt: timestamptzNow(),
+  },
+  (t) => [uniqueIndex('budgets_user_id_category_id_key').on(t.userId, t.categoryId)],
+);
+
 /* ─────────────────────────────── relations ──────────────────────────────── */
 
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -624,5 +652,6 @@ export type RecurringOccurrence = typeof recurringOccurrences.$inferSelect;
 export type Reminder = typeof reminders.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 export type BalanceSnapshot = typeof balanceSnapshots.$inferSelect;
+export type Budget = typeof budgets.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
