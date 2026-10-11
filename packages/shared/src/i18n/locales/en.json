@@ -63,6 +63,7 @@
     "invalidCredentials": "Wrong email or password",
     "emailTaken": "This email is already registered",
     "unknownCurrency": "Unknown currency",
+    "rateUnavailable": "There is no exchange rate for this currency yet. Rates load once a day — try again later.",
     "linkInvalid": "The link is invalid or has expired",
     "currentPasswordWrong": "Current password is wrong",
     "passwordCompromised": "This password appears in data breaches. Choose another one.",

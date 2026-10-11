@@ -113,24 +113,69 @@ export function divide(a: MoneyString, b: MoneyString): MoneyString {
   return toMoney(toDecimal(a).div(divisor).toDecimalPlaces(MONEY_SCALE, Decimal.ROUND_HALF_UP));
 }
 
+function assertDecimals(decimals: number): void {
+  if (!Number.isInteger(decimals) || decimals < 0 || decimals > MONEY_SCALE) {
+    throw new MoneyError(`Некорректная разрядность валюты: ${decimals}`);
+  }
+}
+
 /**
  * Конвертация по курсу с округлением до разрядности целевой валюты.
  * Курс фиксируется в транзакции (§5.2) — здесь только арифметика.
+ *
+ * Округление идёт до перевода в строку, а не после. Сумма и курс хранят по
+ * 18 знаков каждая, их произведение — до 36, и промежуточная строка просто
+ * не является денежной: `toMoney` на ней падает. Поймать это удалось только
+ * на реальном курсе (0.84690935 за евро), потому что до мультивалютности
+ * курс всегда был единицей.
  */
 export function convert(
   amount: MoneyString,
   rate: MoneyString,
   targetDecimals: number,
 ): MoneyString {
-  return quantize(toMoney(toDecimal(amount).times(toDecimal(rate))), targetDecimals);
+  assertDecimals(targetDecimals);
+  return toMoney(
+    toDecimal(amount).times(toDecimal(rate)).toDecimalPlaces(targetDecimals, Decimal.ROUND_HALF_UP),
+  );
 }
 
 /** Округление до разрядности валюты (`currencies.decimals`), half-up. */
 export function quantize(amount: MoneyString, decimals: number): MoneyString {
-  if (!Number.isInteger(decimals) || decimals < 0 || decimals > MONEY_SCALE) {
-    throw new MoneyError(`Некорректная разрядность валюты: ${decimals}`);
-  }
+  assertDecimals(decimals);
   return toMoney(toDecimal(amount).toDecimalPlaces(decimals, Decimal.ROUND_HALF_UP));
+}
+
+/**
+ * Курс из внешнего источника.
+ *
+ * Источники отдают курс числом в JSON, и короткая запись double'а легко
+ * оказывается длиннее денежной колонки: 1.2345678901234567e-5 — это
+ * двадцать один знак после запятой. Поэтому значение округляется здесь,
+ * на входе, а не падает ошибкой вставки где-то в фоновой задаче.
+ *
+ * Возвращает null на всём, что курсом быть не может: не число, не конечное,
+ * не положительное или настолько мелкое, что от него в колонке остался ноль.
+ * Решение, что делать с пропуском, принимает загрузчик — он умеет взять
+ * последний известный курс (§8.5).
+ */
+export function parseRate(value: unknown): MoneyString | null {
+  if (typeof value !== 'number' && typeof value !== 'string') return null;
+  let decimal: Decimal;
+  try {
+    decimal = new Decimal(value);
+  } catch {
+    return null;
+  }
+  if (!decimal.isFinite() || decimal.lessThanOrEqualTo(0)) return null;
+
+  const rounded = decimal.toDecimalPlaces(MONEY_SCALE, Decimal.ROUND_HALF_UP);
+  if (rounded.isZero()) return null;
+  try {
+    return toMoney(rounded);
+  } catch {
+    return null;
+  }
 }
 
 /**

@@ -9,6 +9,7 @@ import {
   invertRate,
   isMoneyString,
   MoneyError,
+  parseRate,
   parseUserAmount,
   quantize,
   subtract,
@@ -107,6 +108,42 @@ describe('конвертация по курсу', () => {
   it('обращает курс', () => {
     expect(invertRate('0.5')).toBe('2');
     expect(() => invertRate('0')).toThrow(MoneyError);
+  });
+
+  it('выдерживает курс со всеми 18 знаками', () => {
+    // 18 знаков у суммы и 18 у курса дают 36 в произведении — больше, чем
+    // бывает у денежной строки. Округлять нужно до неё, а не после.
+    // Ровно на этом падал снимок net worth при курсе 0.846909350000000000.
+    expect(convert('920', '0.846909350000000000', 2)).toBe('779.16');
+    expect(convert('0.123456789012345678', '0.987654321098765432', 18)).toBe(
+      '0.121932631137021794',
+    );
+  });
+});
+
+describe('курс из внешнего источника', () => {
+  it('принимает числа JSON, в том числе экспоненциальную запись', () => {
+    expect(parseRate(3.408666)).toBe('3.408666');
+    expect(parseRate(1.2e-7)).toBe('0.00000012');
+  });
+
+  it('обрезает знаки, которых не выдерживает колонка', () => {
+    // Короткая запись double'а бывает длиннее 18 знаков после запятой —
+    // такое значение в NUMERIC(38, 18) не влезает.
+    const rate = parseRate('0.000012345678901234567');
+    expect(rate).not.toBeNull();
+    expect((rate as string).split('.')[1]?.length).toBeLessThanOrEqual(18);
+  });
+
+  it('отвергает всё, что курсом быть не может', () => {
+    expect(parseRate(0)).toBeNull();
+    expect(parseRate(-1)).toBeNull();
+    expect(parseRate(Number.NaN)).toBeNull();
+    expect(parseRate(Number.POSITIVE_INFINITY)).toBeNull();
+    expect(parseRate(null)).toBeNull();
+    expect(parseRate('нет')).toBeNull();
+    // Меньше 1e-18: в колонке от такого курса остался бы ноль.
+    expect(parseRate(1e-25)).toBeNull();
   });
 });
 

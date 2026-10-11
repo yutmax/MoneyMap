@@ -44,6 +44,13 @@ export const forbidden = (message = 'errors.forbidden') =>
 export const notFound = (message = 'errors.notFound') =>
   new AppError({ statusCode: 404, code: ERROR_CODES.NOT_FOUND, message });
 
+/**
+ * 503, а не 400: запрос корректен, данных для ответа нет на нашей стороне.
+ * Клиенту имеет смысл повторить попытку, и об этом говорит именно 5xx.
+ */
+export const rateUnavailable = (message = 'errors.rateUnavailable') =>
+  new AppError({ statusCode: 503, code: ERROR_CODES.RATE_UNAVAILABLE, message });
+
 export const conflict = (message: string) =>
   new AppError({ statusCode: 409, code: ERROR_CODES.CONFLICT, message });
 

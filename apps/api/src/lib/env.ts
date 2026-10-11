@@ -34,6 +34,18 @@ const envSchema = z
 
     /** Проверка пароля по HIBP (§6.5). Отключается, если нет исходящей сети. */
     PASSWORD_BREACH_CHECK: booleanish(true),
+
+    /**
+     * Фоновые задачи (§8.5, §8.6). Выключаются в тестах и в dev, где
+     * лишний воркер на той же базе только мешает.
+     */
+    JOBS_ENABLED: booleanish(true),
+    /** Загрузка курсов. По умолчанию ночью по UTC: источник обновляется днём. */
+    RATES_CRON: z.string().default('15 3 * * *'),
+    /** Снимок net worth. После курсов, чтобы считать по свежим. */
+    SNAPSHOTS_CRON: z.string().default('45 3 * * *'),
+    /** Таймаут запроса к источнику курсов. */
+    RATES_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60_000).default(10_000),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;

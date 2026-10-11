@@ -22,6 +22,13 @@
       "when": 1791720604314,
       "tag": "0002_harsh_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791729269433,
+      "tag": "0003_white_franklin_storm",
+      "breakpoints": true
     }
   ]
 }

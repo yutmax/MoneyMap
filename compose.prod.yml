@@ -38,6 +38,10 @@ services:
       PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:?PUBLIC_WEB_URL обязателен}
       COOKIE_SECURE: 'true'
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Воркер курсов и снимков живёт в этом же контейнере (§8.5, §8.6).
+      # Выключать его стоит только если появится вторая реплика api —
+      # тогда задачи переедут в собственный контейнер с тем же образом.
+      JOBS_ENABLED: ${JOBS_ENABLED:-true}
     depends_on:
       postgres:
         condition: service_healthy

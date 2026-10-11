@@ -1,3 +1,4 @@
+import type { NetWorthBreakdown } from '@moneymap/shared';
 import { relations } from 'drizzle-orm';
 import {
   boolean,
@@ -5,9 +6,11 @@ import {
   date,
   index,
   integer,
+  jsonb,
   numeric,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -276,6 +279,69 @@ export const transactions = pgTable(
   ],
 );
 
+/* ───────────────────────────── exchange_rates ───────────────────────────── */
+
+/**
+ * Курсы валют (§8.5).
+ *
+ * Все строки хранятся с одной опорной валютой в base: источник отдаёт курсы
+ * относительно евро, и держать полную матрицу 340×340 на каждый день — это
+ * сто тысяч строк в сутки вместо трёхсот ради данных, которые полностью
+ * выводятся делением. Кросс-курс A→B считается как (EUR→B) / (EUR→A).
+ *
+ * Исторические строки не перезаписываются: отчёт за прошлый месяц обязан
+ * показывать то же, что показывал месяц назад.
+ */
+export const exchangeRates = pgTable(
+  'exchange_rates',
+  {
+    base: text()
+      .notNull()
+      .references(() => currencies.code),
+    quote: text()
+      .notNull()
+      .references(() => currencies.code),
+    date: date().notNull(),
+    rate: money().notNull(),
+    /** Откуда взят курс — чтобы расхождение можно было объяснить. */
+    source: text().notNull(),
+    fetchedAt: timestamptzNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.base, t.quote, t.date] }),
+    // Первичный ключ покрывает поиск курса одной валюты; этот индекс —
+    // выборку всех курсов на дату, которой нужен сводный баланс.
+    index('exchange_rates_base_date_idx').on(t.base, t.date.desc()),
+  ],
+);
+
+/* ────────────────────────── net_worth_snapshots ─────────────────────────── */
+
+/**
+ * Снимок состояния на дату (§8.6).
+ *
+ * График строится по ним, а не пересчётом всей истории на каждый запрос:
+ * иначе стоимость открытия главной страницы растёт вместе с числом операций.
+ */
+export const netWorthSnapshots = pgTable(
+  'net_worth_snapshots',
+  {
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    date: date().notNull(),
+    /** Валюта, в которой посчитан итог: сменив базовую, старые точки не врут. */
+    baseCurrency: text()
+      .notNull()
+      .references(() => currencies.code),
+    totalAmount: money().notNull(),
+    /** Разбивка по счетам — для графика и подсказок, без повторного счёта. */
+    breakdown: jsonb().$type<NetWorthBreakdown>().notNull(),
+    createdAt: timestamptzNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.date] })],
+);
+
 /* ─────────────────────────────── relations ──────────────────────────────── */
 
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -308,5 +374,8 @@ export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
 export type Category = typeof categories.$inferSelect;
 export type NewCategory = typeof categories.$inferInsert;
+export type ExchangeRate = typeof exchangeRates.$inferSelect;
+export type NewExchangeRate = typeof exchangeRates.$inferInsert;
+export type NetWorthSnapshot = typeof netWorthSnapshots.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
