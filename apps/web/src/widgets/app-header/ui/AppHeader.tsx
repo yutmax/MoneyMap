@@ -13,6 +13,7 @@ const NAV = [
   { to: ROUTES.categories, key: 'nav.categories' },
   { to: ROUTES.recurring, key: 'nav.recurring' },
   { to: ROUTES.reconciliation, key: 'nav.reconciliation' },
+  { to: ROUTES.reports, key: 'nav.reports' },
   { to: ROUTES.sessions, key: 'nav.devices' },
   { to: ROUTES.settings, key: 'nav.settings' },
 ];

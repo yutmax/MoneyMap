@@ -127,7 +127,8 @@
     "categories": "Categories",
     "transactions": "Transactions",
     "recurring": "Recurring",
-    "reconciliation": "Reconcile"
+    "reconciliation": "Reconcile",
+    "reports": "Reports"
   },
   "auth": {
     "login": {
@@ -476,6 +477,27 @@
     "correct": "Close with a transaction",
     "corrected": "Correcting transaction created",
     "closed": "closed"
+  },
+  "reports": {
+    "title": "Reports",
+    "period": "{{from}} — {{to}}",
+    "range": "Period",
+    "ranges": {
+      "month": "This month",
+      "quarter": "Three months",
+      "year": "This year"
+    },
+    "export": "Export CSV",
+    "loadFailed": "Could not build the report",
+    "noData": "No data for this period",
+    "income": "Income",
+    "expense": "Expenses",
+    "net": "Difference",
+    "count": "Transactions",
+    "cashflowTitle": "By month",
+    "byCategoryTitle": "Expenses by category",
+    "byCurrencyTitle": "Expenses by currency",
+    "largestTitle": "Largest transactions"
   },
   "reminders": {
     "title": "Balance check reminder",

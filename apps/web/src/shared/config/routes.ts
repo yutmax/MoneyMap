@@ -12,6 +12,7 @@ export const ROUTES = {
   categories: '/categories',
   recurring: '/recurring',
   reconciliation: '/reconciliation',
+  reports: '/reports',
   login: '/login',
   register: '/register',
   sessions: '/sessions',

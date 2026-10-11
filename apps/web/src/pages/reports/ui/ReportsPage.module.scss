@@ -1,0 +1,139 @@
+.root {
+  display: grid;
+  row-gap: var(--space-l);
+  align-content: start;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  align-items: start;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--step-3);
+  font-weight: var(--weight-medium);
+}
+
+.subtitle {
+  margin-block-start: var(--space-3xs);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.controls {
+  display: flex;
+  gap: var(--space-s);
+  align-items: end;
+}
+
+.export {
+  padding-block-end: rem(6);
+  font-size: var(--step--1);
+  color: var(--c-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+
+  @include focus-ring;
+}
+
+.totals {
+  @include auto-grid(rem(150), var(--space-s));
+}
+
+/* Плитка, а не график из одного столбца: одно число — это одно число. */
+.tile {
+  display: grid;
+  row-gap: rem(2);
+
+  @include surface(var(--space-s) var(--space-m));
+}
+
+.tileLabel {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tileValue {
+  font-size: var(--step-1);
+  font-weight: var(--weight-medium);
+
+  @include tabular-numbers;
+}
+
+.income {
+  color: var(--c-income);
+}
+
+.negative {
+  color: var(--c-expense);
+}
+
+.columns {
+  @include auto-grid(rem(300), var(--space-m));
+}
+
+.block {
+  display: grid;
+  row-gap: var(--space-s);
+  align-content: start;
+
+  @include surface(var(--space-m));
+}
+
+.blockTitle {
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  color: var(--c-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.empty {
+  padding-block: var(--space-m);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+  text-align: center;
+}
+
+.largest {
+  display: grid;
+  row-gap: rem(4);
+}
+
+.largestRow {
+  display: grid;
+  column-gap: var(--space-s);
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  font-size: var(--step--1);
+}
+
+.date {
+  color: var(--c-text-faint);
+
+  @include tabular-numbers;
+}
+
+.largestName {
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: baseline;
+  min-width: 0;
+
+  @include clamp-lines(1);
+}
+
+.account {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
+
+.largestAmount {
+  @include tabular-numbers;
+}

@@ -33,6 +33,18 @@
   --c-warning: oklch(60% 0.15 75);
   --c-danger: oklch(53% 0.21 25);
 
+  /// Шаги серий для графиков. Подобраны под эту поверхность и проверены
+  /// валидатором: полоса светлоты, насыщенность, различимость соседних пар
+  /// при дальтонизме, контраст с фоном.
+  --chart-series-1: #2a78d6;
+  --chart-series-2: #eb6834;
+  --chart-series-3: #1baf7a;
+  --chart-series-4: #eda100;
+  --chart-series-5: #e87ba4;
+  --chart-series-6: #4a3aa7;
+  --chart-grid: #e1e0d9;
+  --chart-axis: #c3c2b7;
+
   --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.06), 0 8px 24px oklch(0% 0 0 / 0.06);
 }
 
@@ -63,6 +75,17 @@
     --c-expense: oklch(72% 0.18 25);
     --c-warning: oklch(80% 0.14 85);
     --c-danger: oklch(68% 0.2 25);
+
+    /* Свои шаги, а не осветление светлых: автоматический переворот даёт
+       на тёмном фоне либо блёклые, либо кислотные цвета. */
+    --chart-series-1: #3987e5;
+    --chart-series-2: #d95926;
+    --chart-series-3: #199e70;
+    --chart-series-4: #c98500;
+    --chart-series-5: #d55181;
+    --chart-series-6: #9085e9;
+    --chart-grid: #2c2c2a;
+    --chart-axis: #383835;
 
     --c-focus: var(--c-accent);
 

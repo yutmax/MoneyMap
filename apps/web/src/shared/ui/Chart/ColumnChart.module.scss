@@ -1,0 +1,118 @@
+.root {
+  display: grid;
+  row-gap: var(--space-xs);
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-s);
+  flex-wrap: wrap;
+  font-size: var(--step--2);
+  color: var(--c-text-muted);
+}
+
+.legendItem {
+  display: inline-flex;
+  gap: var(--space-3xs);
+  align-items: center;
+}
+
+.swatch {
+  inline-size: rem(9);
+  block-size: rem(9);
+  border-radius: rem(2);
+}
+
+.plot {
+  display: grid;
+  column-gap: var(--space-xs);
+  grid-template-columns: auto 1fr;
+}
+
+.axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  // Подписи оси выровнены по линиям сетки, а не по столбцам: последняя
+  // строка — это ноль, и она должна совпасть с основанием.
+  padding-block-end: rem(18);
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+
+  @include tabular-numbers;
+}
+
+.tick {
+  line-height: 1;
+}
+
+.columns {
+  position: relative;
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: end;
+  // Столбцы начинаются слева и не растягиваются на всю ширину: один месяц
+  // в периоде иначе превращался бы в две широкие плиты во весь блок.
+  justify-content: start;
+}
+
+.grid {
+  position: absolute;
+  inset: 0 0 rem(18) 0;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.gridLine {
+  block-size: 1px;
+  background-color: var(--chart-grid);
+}
+
+.group {
+  display: grid;
+  row-gap: rem(4);
+  flex: 1 1 0;
+  max-inline-size: rem(96);
+  block-size: 100%;
+  grid-template-rows: 1fr auto;
+  border-radius: var(--radius-s);
+
+  @include focus-ring($offset: 1px);
+}
+
+.bars {
+  display: flex;
+  // Зазор между соседними столбцами цветом фона: без него две заливки
+  // сливаются в одну и граница ряда теряется.
+  gap: 2px;
+  align-items: end;
+  justify-content: center;
+  block-size: 100%;
+}
+
+.bar {
+  inline-size: min(46%, rem(26));
+  min-block-size: 1px;
+  border-start-start-radius: rem(4);
+  border-start-end-radius: rem(4);
+
+  @include transition(opacity);
+}
+
+.label {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+  text-align: center;
+
+  @include clamp-lines(1);
+}
+
+.tooltip {
+  min-block-size: rem(18);
+  font-size: var(--step--2);
+  color: var(--c-text-muted);
+
+  @include tabular-numbers;
+}

@@ -1,0 +1,53 @@
+.root {
+  display: grid;
+  row-gap: var(--space-xs);
+}
+
+.bar {
+  display: flex;
+  // Зазор цветом поверхности: без него соседние доли сливаются в одну.
+  gap: 2px;
+  block-size: rem(12);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+}
+
+.segment {
+  min-inline-size: 2px;
+}
+
+.legend {
+  display: grid;
+  row-gap: rem(4);
+}
+
+.item {
+  display: grid;
+  column-gap: var(--space-xs);
+  grid-template-columns: auto 1fr auto rem(48);
+  align-items: baseline;
+  font-size: var(--step--1);
+}
+
+.swatch {
+  inline-size: rem(9);
+  block-size: rem(9);
+  border-radius: rem(2);
+  align-self: center;
+}
+
+.label {
+  @include clamp-lines(1);
+}
+
+.value {
+  @include tabular-numbers;
+}
+
+.share {
+  color: var(--c-text-faint);
+  white-space: nowrap;
+  text-align: end;
+
+  @include tabular-numbers;
+}

@@ -127,7 +127,8 @@
     "categories": "Категории",
     "transactions": "Операции",
     "recurring": "Регулярные",
-    "reconciliation": "Сверка"
+    "reconciliation": "Сверка",
+    "reports": "Отчёты"
   },
   "auth": {
     "login": {
@@ -484,6 +485,27 @@
     "correct": "Закрыть операцией",
     "corrected": "Корректирующая операция создана",
     "closed": "закрыто"
+  },
+  "reports": {
+    "title": "Отчёты",
+    "period": "{{from}} — {{to}}",
+    "range": "Период",
+    "ranges": {
+      "month": "Этот месяц",
+      "quarter": "Три месяца",
+      "year": "Этот год"
+    },
+    "export": "Выгрузить CSV",
+    "loadFailed": "Не удалось построить отчёт",
+    "noData": "За этот период данных нет",
+    "income": "Доходы",
+    "expense": "Расходы",
+    "net": "Разница",
+    "count": "Операций",
+    "cashflowTitle": "По месяцам",
+    "byCategoryTitle": "Расходы по категориям",
+    "byCurrencyTitle": "Расходы по валютам",
+    "largestTitle": "Крупнейшие операции"
   },
   "reminders": {
     "title": "Напоминание о сверке",
