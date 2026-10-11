@@ -19,6 +19,10 @@ services:
     # Порт наружу не публикуется: до БД достаёт только api по внутренней сети.
 
   api:
+    # Образ собирается в CI и приходит готовым: на одноядерном сервере сборка
+    # заняла бы минуты и могла не уложиться в память. build оставлен, чтобы
+    # `docker compose build` работал локально.
+    image: ${API_IMAGE:-moneymap-api:local}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -42,6 +46,9 @@ services:
   # при нескольких репликах api это была бы гонка.
   # Запуск: docker compose -f compose.prod.yml run --rm migrate
   migrate:
+    # Тот же образ, что и api: миграции лежат в нём, и запускать их другой
+    # версией кода — верный способ применить не то, что ожидает приложение.
+    image: ${API_IMAGE:-moneymap-api:local}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -62,11 +69,18 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
+      # 443 не трогаем: он занят OpenVPN. 80 нужен только для челленджа
+      # Let's Encrypt и редиректа на HTTPS.
+      #
+      # Docker публикует порты в обход ufw, добавляя свои правила ниже его
+      # цепочек. Для Caddy это и требуется — он должен быть виден снаружи, —
+      # но означает, что открытость этих двух портов задаётся здесь, а не
+      # в ufw. Postgres поэтому и не публикуется вовсе: до него достаёт
+      # только api по внутренней сети compose.
       - '80:80'
-      - '443:443'
-      - '443:443/udp'
+      - '8443:8443'
     environment:
-      DOMAIN: ${DOMAIN:?DOMAIN обязателен}
+      SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS обязателен}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # Статика фронтенда собирается на хосте (pnpm build) и монтируется сюда.
