@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { msg } from '../i18n/index.ts';
-import { isoDateSchema, positiveMoneySchema, uuidSchema } from './common.ts';
+import { currencyCodeSchema, isoDateSchema, positiveMoneySchema, uuidSchema } from './common.ts';
 
 export const TRANSACTION_KINDS = ['income', 'expense', 'transfer'] as const;
 export type TransactionKind = (typeof TRANSACTION_KINDS)[number];
@@ -22,6 +22,22 @@ export const createTransactionSchema = z.object({
   categoryId: uuidSchema.nullable().optional(),
   kind: entryKindSchema,
   amount: positiveMoneySchema,
+  /**
+   * Валюта введённой суммы (§8.5). По умолчанию — валюта счёта.
+   *
+   * Нужна для покупки за границей: карта в рублях, чек в злотых. В учёт
+   * операция всё равно попадает в валюте счёта, но то, что человек видел
+   * на чеке, сохраняется рядом и больше не пересчитывается.
+   */
+  currency: currencyCodeSchema.optional(),
+  /**
+   * Сколько на самом деле списалось со счёта.
+   *
+   * Необязательна: без неё сумма пересчитывается по курсу на дату операции.
+   * Но курс справочника и курс, по которому списал банк, — разные числа,
+   * и когда человек видит в выписке второе, выдуманное первое ему не нужно.
+   */
+  amountAccount: positiveMoneySchema.optional(),
   occurredOn: isoDateSchema,
   note: noteSchema,
 });
@@ -52,6 +68,11 @@ export const updateTransactionSchema = z
   .object({
     categoryId: uuidSchema.nullable().optional(),
     amount: positiveMoneySchema.optional(),
+    /**
+     * Исправление суммы, списанной со счёта. Валюта операции не меняется:
+     * это была бы другая операция, а не правка этой.
+     */
+    amountAccount: positiveMoneySchema.optional(),
     occurredOn: isoDateSchema.optional(),
     note: z.string().trim().max(500).nullable().optional(),
   })

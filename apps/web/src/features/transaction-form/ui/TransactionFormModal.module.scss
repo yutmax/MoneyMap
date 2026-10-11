@@ -41,3 +41,14 @@
     color: var(--c-accent-ink);
   }
 }
+
+.amountRow {
+  // Сумма тянется, валюта занимает ровно столько, сколько нужно трём буквам.
+  display: grid;
+  gap: var(--space-s);
+  grid-template-columns: 1fr rem(104);
+  // Иначе лишнее место сетки растянуло бы внутренние строки полей, и подпись
+  // валюты разъехалась бы с подписью суммы.
+  align-content: start;
+  align-items: start;
+}

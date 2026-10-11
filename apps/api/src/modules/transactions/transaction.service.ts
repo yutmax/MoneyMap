@@ -6,12 +6,14 @@ import type {
   TransactionResponse,
   UpdateTransactionInput,
 } from '@moneymap/shared';
-import { divide, negate, toMoney } from '@moneymap/shared';
+import { convert, divide, negate, toMoney } from '@moneymap/shared';
 import { and, asc, desc, eq, gte, ilike, isNull, lte, or, sql, type SQL } from 'drizzle-orm';
 import type { Db } from '../../db/index.ts';
-import { accounts, categories, transactions } from '../../db/schema.ts';
+import { accounts, categories, currencies, transactions } from '../../db/schema.ts';
 import { badRequest, conflict, notFound } from '../../lib/errors.ts';
 import type { Scope } from '../../lib/scoping.ts';
+import { assertCurrencyExists } from '../reference/currency.service.ts';
+import { getRate } from '../rates/rate.service.ts';
 
 /* ───────────────────────────── чтение и формат ───────────────────────────── */
 
@@ -159,9 +161,12 @@ async function loadAccount(db: Db, scope: Scope, accountId: string) {
     .select({
       id: accounts.id,
       currencyCode: accounts.currencyCode,
+      // Разрядность валюты счёта: ею округляется пересчёт из чужой валюты.
+      decimals: currencies.decimals,
       isArchived: accounts.isArchived,
     })
     .from(accounts)
+    .innerJoin(currencies, eq(currencies.code, accounts.currencyCode))
     .where(scope.own(accounts, eq(accounts.id, accountId)))
     .limit(1);
 
@@ -217,6 +222,42 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
+/**
+ * Сумма операции в валюте счёта и зафиксированный курс (§5.2, §8.5).
+ *
+ * Три случая по убыванию точности:
+ *  1. валюты совпадают — курс единица, пересчитывать нечего;
+ *  2. человек ввёл, сколько списалось, — курс выводится из двух сумм,
+ *     вместе с комиссией банка, как и у перевода (§7.2);
+ *  3. не ввёл — берётся курс на дату операции.
+ *
+ * Курс сохраняется в операции и больше не пересчитывается: иначе вчерашний
+ * расход менял бы размер вместе с сегодняшними торгами.
+ */
+async function toAccountAmount(
+  db: Db,
+  args: {
+    amount: string;
+    currency: string;
+    account: { currencyCode: string; decimals: number };
+    occurredOn: string;
+    amountAccount?: string | undefined;
+  },
+): Promise<{ amount: string; fxRate: string }> {
+  if (args.currency === args.account.currencyCode) {
+    return { amount: args.amount, fxRate: '1' };
+  }
+  if (args.amountAccount) {
+    return { amount: args.amountAccount, fxRate: toMoney(divide(args.amountAccount, args.amount)) };
+  }
+
+  const rate = await getRate(db, args.currency, args.account.currencyCode, args.occurredOn);
+  return {
+    amount: convert(args.amount, rate.rate, args.account.decimals),
+    fxRate: rate.rate,
+  };
+}
+
 export async function createTransaction(
   db: Db,
   scope: Scope,
@@ -231,9 +272,21 @@ export async function createTransaction(
   const account = await loadAccount(db, scope, input.accountId);
   if (input.categoryId) await assertCategory(db, scope, input.categoryId, input.kind);
 
+  const currencyOriginal = input.currency
+    ? await assertCurrencyExists(db, input.currency, 'currency')
+    : account.currencyCode;
+
+  const converted = await toAccountAmount(db, {
+    amount: input.amount,
+    currency: currencyOriginal,
+    account,
+    occurredOn: input.occurredOn,
+    amountAccount: input.amountAccount,
+  });
+
   // Знак выводится здесь и только здесь (§7.1): клиент присылает сумму,
   // а чем она является для баланса — решает вид операции.
-  const amountAccount = input.kind === 'expense' ? negate(input.amount) : input.amount;
+  const amountAccount = input.kind === 'expense' ? negate(converted.amount) : converted.amount;
 
   try {
     const [created] = await db
@@ -244,9 +297,9 @@ export async function createTransaction(
           categoryId: input.categoryId ?? null,
           kind: input.kind,
           amountOriginal: input.amount,
-          currencyOriginal: account.currencyCode,
+          currencyOriginal,
           amountAccount,
-          fxRate: '1',
+          fxRate: converted.fxRate,
           occurredOn: input.occurredOn,
           note: input.note ?? null,
           idempotencyKey: idempotencyKey ?? null,
@@ -381,9 +434,26 @@ export async function updateTransaction(
   if (input.categoryId !== undefined) patch.categoryId = input.categoryId;
   if (input.occurredOn !== undefined) patch.occurredOn = input.occurredOn;
   if (input.note !== undefined) patch.note = input.note;
-  if (input.amount !== undefined) {
-    patch.amountOriginal = input.amount;
-    patch.amountAccount = current.kind === 'expense' ? negate(input.amount) : input.amount;
+
+  if (input.amount !== undefined || input.amountAccount !== undefined) {
+    const account = await loadAccount(db, scope, current.accountId);
+    const amount = input.amount ?? current.amountOriginal;
+
+    // Курс берётся из самой операции, а не из справочника на сегодня:
+    // правка суммы — это исправление опечатки, а не повторный обмен валюты
+    // по новому курсу. Новый курс появляется только если человек сам прислал
+    // сумму списания.
+    const converted =
+      input.amountAccount !== undefined
+        ? { amount: input.amountAccount, fxRate: toMoney(divide(input.amountAccount, amount)) }
+        : {
+            amount: convert(amount, current.fxRate, account.decimals),
+            fxRate: current.fxRate,
+          };
+
+    patch.amountOriginal = amount;
+    patch.amountAccount = current.kind === 'expense' ? negate(converted.amount) : converted.amount;
+    patch.fxRate = converted.fxRate;
   }
 
   await db

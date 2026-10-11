@@ -1,7 +1,17 @@
-import { parseUserAmount, toMoney, type TransactionResponse } from '@moneymap/shared';
+import {
+  abs,
+  formatMoney,
+  parseUserAmount,
+  todayIn,
+  toMoney,
+  type TransactionResponse,
+} from '@moneymap/shared';
 import { useMemo, useState } from 'react';
 import { useAccounts } from '@/entities/account';
 import { useCategories } from '@/entities/category';
+import { useCurrencies } from '@/entities/currency';
+import { useConvert } from '@/entities/rate';
+import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
 import { Alert, Button, Field, Modal, Select, toast } from '@/shared/ui';
 import {
@@ -13,13 +23,21 @@ import styles from './TransactionFormModal.module.scss';
 
 type Mode = 'expense' | 'income' | 'transfer';
 
+/**
+ * Сумма для запроса курса. Недописанное число — это не ошибка, а состояние
+ * поля посреди ввода, и подсказке незачем на него ругаться.
+ */
+function toSafeAmount(input: string): string {
+  try {
+    return parseUserAmount(input);
+  } catch {
+    return '0';
+  }
+}
+
 interface TransactionFormModalProps {
   transaction?: TransactionResponse;
   onClose: () => void;
-}
-
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
 }
 
 /**
@@ -30,9 +48,11 @@ function today(): string {
  * заставлять человека сначала угадать, куда идти.
  */
 export function TransactionFormModal({ transaction, onClose }: TransactionFormModalProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
+  const { user } = useMe();
   const accounts = useAccounts();
   const categories = useCategories();
+  const currencies = useCurrencies();
   const create = useCreateTransaction();
   const transfer = useCreateTransfer();
   const update = useUpdateTransaction();
@@ -49,7 +69,24 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const [categoryId, setCategoryId] = useState(transaction?.categoryId ?? '');
   const [amount, setAmount] = useState(transaction ? toMoney(transaction.amountOriginal) : '');
   const [toAmount, setToAmount] = useState('');
-  const [occurredOn, setOccurredOn] = useState(transaction?.occurredOn ?? today());
+  /**
+   * Валюта введённой суммы. Пустая строка — «как у счёта»: так выбор сам
+   * следует за сменой счёта, пока человек не указал валюту явно.
+   */
+  const [currency, setCurrency] = useState('');
+  /** Сколько списалось со счёта. Пусто — сервер посчитает по курсу дня. */
+  const [spent, setSpent] = useState(
+    // Сравниваются коды валют, а не курс: из БД он приходит как
+    // '1.000000000000000000' и ни одной строке '1' не равен.
+    transaction && transaction.currencyOriginal !== transaction.accountCurrency
+      ? toMoney(abs(transaction.amountAccount))
+      : '',
+  );
+  // Дата берётся по таймзоне пользователя, а не по UTC: в полночь по Минску
+  // форма предлагала бы вчерашнее число, и его правили бы руками каждый раз.
+  const [occurredOn, setOccurredOn] = useState(
+    transaction?.occurredOn ?? todayIn(user?.timezone ?? 'UTC'),
+  );
   const [note, setNote] = useState(transaction?.note ?? '');
 
   /**
@@ -62,6 +99,31 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const from = open.find((a) => a.id === accountId);
   const to = open.find((a) => a.id === toAccountId);
   const crossCurrency = mode === 'transfer' && from && to && from.currencyCode !== to.currencyCode;
+
+  const accountCurrency = (isEdit ? transaction.accountCurrency : from?.currencyCode) ?? '';
+  const entryCurrency = isEdit ? transaction.currencyOriginal : currency || accountCurrency;
+  // Чужая валюта — вторая сумма: сколько на самом деле ушло со счёта (§8.5).
+  const foreign =
+    mode !== 'transfer' && accountCurrency !== '' && entryCurrency !== accountCurrency;
+
+  // Подсказка со справочным курсом. Запрос уходит, только когда сумма уже
+  // введена и валюты действительно разные.
+  const reference = useConvert(
+    { from: entryCurrency, to: accountCurrency, amount: toSafeAmount(amount), on: occurredOn },
+    foreign && toSafeAmount(amount) !== '0',
+  );
+  const accountCurrencyMeta = currencies.data?.find((c) => c.code === accountCurrency);
+  const spentHint =
+    reference.data && accountCurrencyMeta
+      ? t('transactions.spentHint', {
+          amount: formatMoney(reference.data.converted, {
+            currency: accountCurrency,
+            decimals: accountCurrencyMeta.decimals,
+            locale,
+            ...(accountCurrencyMeta.symbol ? { symbol: accountCurrencyMeta.symbol } : {}),
+          }),
+        })
+      : t('transactions.spentHintEmpty');
 
   const categoryOptions = (categories.data ?? []).filter(
     (c) => c.kind === (mode === 'income' ? 'income' : 'expense'),
@@ -80,11 +142,14 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
     }
 
     try {
+      const parsedSpent = foreign && spent.trim() !== '' ? parseUserAmount(spent) : undefined;
+
       if (isEdit) {
         await update.mutateAsync({
           id: transaction.id,
           input: {
             amount: parsed,
+            ...(parsedSpent ? { amountAccount: parsedSpent } : {}),
             occurredOn,
             note: note.trim() === '' ? null : note.trim(),
             categoryId: categoryId === '' ? null : categoryId,
@@ -121,6 +186,8 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             categoryId: categoryId === '' ? null : categoryId,
             kind: mode,
             amount: parsed,
+            ...(foreign ? { currency: entryCurrency } : {}),
+            ...(parsedSpent ? { amountAccount: parsedSpent } : {}),
             occurredOn,
             ...(note.trim() ? { note: note.trim() } : {}),
           },
@@ -206,13 +273,50 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             </Select>
           )}
 
-          <Field
-            label={t('transactions.amount')}
-            inputMode="decimal"
-            autoFocus
-            value={amount}
-            onChange={(e) => setAmount(e.currentTarget.value)}
-          />
+          <div className={styles.amountRow}>
+            <Field
+              label={t('transactions.amount')}
+              inputMode="decimal"
+              autoFocus
+              value={amount}
+              onChange={(e) => setAmount(e.currentTarget.value)}
+            />
+
+            {/* Валюта суммы отдельным полем: покупка за границей вводится
+                в валюте чека, а не в валюте карты (§8.5). У перевода её нет —
+                там валюты заданы двумя счетами. */}
+            {mode !== 'transfer' && (
+              <Select
+                label={t('transactions.currency')}
+                value={entryCurrency}
+                disabled={isEdit}
+                onChange={(e) =>
+                  setCurrency(
+                    e.currentTarget.value === accountCurrency ? '' : e.currentTarget.value,
+                  )
+                }
+              >
+                {(currencies.data ?? []).map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {item.code}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </div>
+
+          {/* Сколько списалось со счёта. Пустое поле — значит «по курсу дня»:
+              подставлять справочное число в поле нельзя, человек увидит
+              в выписке другое и не заметит подмены. */}
+          {foreign && (
+            <Field
+              label={t('transactions.spent', { currency: accountCurrency })}
+              inputMode="decimal"
+              hint={spentHint}
+              value={spent}
+              onChange={(e) => setSpent(e.currentTarget.value)}
+            />
+          )}
 
           {/* Вторая сумма появляется ровно тогда, когда без неё не обойтись:
               счета в разных валютах, и курс выводится из двух чисел. */}

@@ -14,8 +14,12 @@ export function TransactionRow({ transaction, actions }: TransactionRowProps) {
   const { t, locale } = useT();
   const currencies = useCurrencies();
   const currency = currencies.data?.find((c) => c.code === transaction.accountCurrency);
+  const original = currencies.data?.find((c) => c.code === transaction.currencyOriginal);
 
   const negative = isNegative(transaction.amountAccount);
+  // Операция в чужой валюте показывает обе суммы: в валюте счёта считается
+  // баланс, а в валюте чека человек её и запомнил (§8.5).
+  const foreign = transaction.currencyOriginal !== transaction.accountCurrency;
 
   return (
     <li className={styles.root}>
@@ -35,17 +39,30 @@ export function TransactionRow({ transaction, actions }: TransactionRowProps) {
         {formatDate(transaction.occurredOn, locale)}
       </time>
 
-      <p className={cx(styles.amount, negative ? styles.negative : styles.positive)}>
-        {formatMoney(transaction.amountAccount, {
-          currency: transaction.accountCurrency,
-          decimals: currency?.decimals ?? 2,
-          locale,
-          // Плюс у поступления показывается явно: в списке, где соседствуют
-          // доходы и расходы, отсутствие минуса — слишком тихий признак.
-          signDisplay: 'always',
-          ...(currency?.symbol ? { symbol: currency.symbol } : {}),
-        })}
-      </p>
+      <div className={styles.amounts}>
+        <p className={cx(styles.amount, negative ? styles.negative : styles.positive)}>
+          {formatMoney(transaction.amountAccount, {
+            currency: transaction.accountCurrency,
+            decimals: currency?.decimals ?? 2,
+            locale,
+            // Плюс у поступления показывается явно: в списке, где соседствуют
+            // доходы и расходы, отсутствие минуса — слишком тихий признак.
+            signDisplay: 'always',
+            ...(currency?.symbol ? { symbol: currency.symbol } : {}),
+          })}
+        </p>
+
+        {foreign && (
+          <p className={styles.original}>
+            {formatMoney(transaction.amountOriginal, {
+              currency: transaction.currencyOriginal,
+              decimals: original?.decimals ?? 2,
+              locale,
+              ...(original?.symbol ? { symbol: original.symbol } : {}),
+            })}
+          </p>
+        )}
+      </div>
 
       {actions && <div className={styles.actions}>{actions}</div>}
     </li>
