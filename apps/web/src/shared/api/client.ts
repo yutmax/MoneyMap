@@ -1,4 +1,5 @@
 import { ERROR_CODES, isApiErrorBody, type ApiErrorDetail } from '@moneymap/shared';
+import { i18n } from '../i18n/config.ts';
 
 export class ApiError extends Error {
   readonly status: number;
@@ -47,10 +48,12 @@ async function toApiError(response: Response): Promise<ApiError> {
     );
   }
 
+  // Сюда попадаем, только если ответ пришёл не от нашего API (прокси, обрыв):
+  // своих сообщений в нём нет, поэтому ключ подставляем сами.
   return new ApiError(
     response.status,
     response.status === 401 ? ERROR_CODES.UNAUTHORIZED : ERROR_CODES.INTERNAL_ERROR,
-    response.status >= 500 ? 'Сервер недоступен. Попробуйте позже.' : 'Запрос не выполнен',
+    response.status >= 500 ? 'errors.serverUnavailable' : 'errors.requestFailed',
   );
 }
 
@@ -73,7 +76,7 @@ function refreshSession(): Promise<boolean> {
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
         credentials: 'include',
-        headers: csrfHeaders(),
+        headers: { ...csrfHeaders(), ...localeHeaders() },
       });
       return response.ok;
     } catch {
@@ -89,6 +92,15 @@ function refreshSession(): Promise<boolean> {
 function csrfHeaders(): Record<string, string> {
   const token = readCsrfToken();
   return token ? { 'x-csrf-token': token } : {};
+}
+
+/**
+ * Язык интерфейса уходит на сервер с каждым запросом: сообщения об ошибках
+ * собираются там (lib/errors.ts держит ключи, app.ts их переводит), и без
+ * этого заголовка английский интерфейс показывал бы русские ошибки.
+ */
+function localeHeaders(): Record<string, string> {
+  return { 'accept-language': i18n.language };
 }
 
 /* ──────────────────────────────── запросы ───────────────────────────────── */
@@ -109,7 +121,7 @@ async function request<T>(
 ): Promise<T> {
   const { method = 'GET', body, signal } = options;
 
-  const headers: Record<string, string> = { ...csrfHeaders() };
+  const headers: Record<string, string> = { ...csrfHeaders(), ...localeHeaders() };
   if (body !== undefined) headers['content-type'] = 'application/json';
 
   const response = await fetch(`/api${path}`, {

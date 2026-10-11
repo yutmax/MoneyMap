@@ -103,7 +103,7 @@ export async function register(
     // Регистрация сознательно сообщает о занятом email. Требование §6.5 о
     // неперечислимости пользователей сформулировано для входа; скрывать
     // занятость адреса на регистрации означает ломать её основной сценарий.
-    if (isUniqueViolation(error)) throw conflict('Этот email уже зарегистрирован');
+    if (isUniqueViolation(error)) throw conflict('errors.emailTaken');
     throw error;
   }
 
@@ -141,11 +141,11 @@ export async function login(
     // пользователя: без этого разница во времени отклика сама становится
     // способом перечислить зарегистрированные адреса (§6.5).
     await burnPasswordTime(args.input.password);
-    throw unauthorized('Неверный email или пароль', 'login: unknown email');
+    throw unauthorized('errors.invalidCredentials', 'login: unknown email');
   }
 
   const valid = await verifyPassword(user.passwordHash, args.input.password);
-  if (!valid) throw unauthorized('Неверный email или пароль', 'login: wrong password');
+  if (!valid) throw unauthorized('errors.invalidCredentials', 'login: wrong password');
 
   if (needsRehash(user.passwordHash)) {
     const rehashed = await hashPassword(args.input.password);
@@ -163,7 +163,7 @@ export async function login(
 
 export async function getMe(db: Db, userId: string): Promise<MeResponse> {
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  if (!user) throw notFound('Пользователь не найден');
+  if (!user) throw notFound('errors.userNotFound');
   return toMeResponse(user);
 }
 
@@ -179,7 +179,7 @@ export async function updateSettings(
     .where(eq(users.id, args.userId))
     .returning();
 
-  if (!updated) throw notFound('Пользователь не найден');
+  if (!updated) throw notFound('errors.userNotFound');
   return toMeResponse(updated);
 }
 
@@ -190,12 +190,12 @@ export async function changePassword(
   args: { userId: string; currentSessionId: string; input: ChangePasswordInput },
 ): Promise<{ revokedSessions: number }> {
   const [user] = await db.select().from(users).where(eq(users.id, args.userId)).limit(1);
-  if (!user) throw notFound('Пользователь не найден');
+  if (!user) throw notFound('errors.userNotFound');
 
   const valid = await verifyPassword(user.passwordHash, args.input.currentPassword);
   if (!valid) {
-    throw badRequest('Текущий пароль неверен', [
-      { path: 'currentPassword', message: 'Неверный пароль' },
+    throw badRequest('errors.currentPasswordWrong', [
+      { path: 'currentPassword', message: 'validation.password.wrong' },
     ]);
   }
 
@@ -265,7 +265,7 @@ export async function resetPassword(
       .limit(1);
 
     if (!row || row.expiresAt.getTime() <= Date.now()) {
-      throw badRequest('Ссылка недействительна или истекла');
+      throw badRequest('errors.linkInvalid');
     }
 
     const passwordHash = await hashPassword(args.password);
@@ -300,7 +300,7 @@ export async function verifyEmail(db: Db, token: string): Promise<void> {
       .limit(1);
 
     if (!row || row.expiresAt.getTime() <= Date.now()) {
-      throw badRequest('Ссылка недействительна или истекла');
+      throw badRequest('errors.linkInvalid');
     }
 
     await tx

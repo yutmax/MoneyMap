@@ -1,7 +1,9 @@
+import { useT } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { useLogout } from '../api/use-logout.ts';
 
 export function LogoutButton({ onDone }: { onDone: () => void }) {
+  const { t } = useT();
   const logout = useLogout();
 
   const handleClick = async () => {
@@ -15,7 +17,7 @@ export function LogoutButton({ onDone }: { onDone: () => void }) {
 
   return (
     <Button variant="secondary" size="small" onClick={handleClick} loading={logout.isPending}>
-      Выйти
+      {t('nav.logout')}
     </Button>
   );
 }

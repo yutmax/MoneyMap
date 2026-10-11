@@ -1,3 +1,4 @@
+import { useT } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
 import styles from './Spinner.module.scss';
 
@@ -7,7 +8,9 @@ interface SpinnerProps {
   label?: string;
 }
 
-export function Spinner({ fullscreen = false, label = 'Загрузка' }: SpinnerProps) {
+export function Spinner({ fullscreen = false, label }: SpinnerProps) {
+  const { t } = useT();
+
   return (
     // role="status" + aria-live: скринридер сообщит о загрузке, не выдёргивая
     // фокус из текущего места.
@@ -17,7 +20,7 @@ export function Spinner({ fullscreen = false, label = 'Загрузка' }: Spin
       aria-live="polite"
     >
       <span className={styles.spinner} aria-hidden="true" />
-      <span className="visually-hidden">{label}</span>
+      <span className="visually-hidden">{label ?? t('common.loading')}</span>
     </div>
   );
 }

@@ -1,0 +1,219 @@
+{
+  "common": {
+    "appName": "MoneyMap",
+    "loading": "Loading"
+  },
+  "validation": {
+    "email": "Enter a valid email address",
+    "name": {
+      "required": "Enter your name",
+      "max": "No more than {{count}} characters"
+    },
+    "password": {
+      "required": "Enter your password",
+      "min": "At least {{count}} characters",
+      "max": "No more than {{count}} characters",
+      "mismatch": "Passwords do not match",
+      "compromised": "Password found in breaches",
+      "wrong": "Wrong password"
+    },
+    "currency": {
+      "code": "Invalid currency code",
+      "unknown": "No such currency in the reference list"
+    },
+    "timezone": {
+      "unknown": "Unknown time zone"
+    },
+    "money": {
+      "format": "Invalid amount",
+      "positive": "Amount must be greater than zero"
+    },
+    "date": {
+      "format": "Expected a date in YYYY-MM-DD format",
+      "invalid": "No such date"
+    },
+    "id": "Invalid identifier",
+    "nothingToChange": "Nothing to change",
+    "checkFields": "Check the fields you filled in"
+  },
+  "errors": {
+    "authRequired": "Sign-in required",
+    "sessionExpired": "Session expired",
+    "sessionEnded": "Session ended",
+    "sessionReuse": "The session was revoked for security reasons. Please sign in again.",
+    "csrf": "CSRF check failed. Reload the page and try again.",
+    "rateLimited": "Too many attempts. Try again later.",
+    "invalidCredentials": "Wrong email or password",
+    "emailTaken": "This email is already registered",
+    "unknownCurrency": "Unknown currency",
+    "linkInvalid": "The link is invalid or has expired",
+    "currentPasswordWrong": "Current password is wrong",
+    "passwordCompromised": "This password appears in data breaches. Choose another one.",
+    "userNotFound": "User not found",
+    "sessionNotFound": "Session not found",
+    "onboardingDone": "Initial setup is already complete",
+    "internal": "Internal server error",
+    "routeNotFound": "Route {{method}} {{url}} not found",
+    "serverUnavailable": "The server is unavailable. Try again later.",
+    "requestFailed": "Request failed",
+    "network": "Could not reach the server. Check your connection.",
+    "forbidden": "Not enough permissions",
+    "notFound": "Not found"
+  },
+  "theme": {
+    "group": "Colour theme",
+    "light": "Light theme",
+    "system": "Match system",
+    "dark": "Dark theme"
+  },
+  "locale": {
+    "group": "Interface language",
+    "ru": "Русский",
+    "en": "English"
+  },
+  "nav": {
+    "aria": "Main navigation",
+    "ariaShort": "Navigation",
+    "overview": "Overview",
+    "devices": "Devices",
+    "settings": "Settings",
+    "logout": "Sign out"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "MoneyMap remembers you for 60 days — you won't need the password on this device again.",
+      "submit": "Sign in",
+      "forgot": "Forgot your password?",
+      "noAccount": "No account yet?",
+      "signUp": "Create one"
+    },
+    "register": {
+      "title": "Sign up",
+      "subtitle": "Accounts in any currency or cryptocurrency, one combined balance.",
+      "passwordHint": "At least {{count}} characters. Checked against breach databases.",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "forgot": {
+      "title": "Reset password",
+      "subtitle": "We'll send a link to set a new password. It works once and lasts an hour.",
+      "submit": "Send the link",
+      "sent": "If the address is registered, the email is already on its way. Check your inbox.",
+      "back": "Back to sign-in"
+    },
+    "reset": {
+      "title": "New password",
+      "subtitle": "Changing it revokes every session on every device.",
+      "newPassword": "New password",
+      "repeat": "Repeat the password",
+      "hint": "At least {{count}} characters",
+      "submit": "Change password",
+      "success": "Password changed. Sign in with the new one.",
+      "noToken": "The link is incomplete: it has no token.",
+      "requestNew": "Request a new link",
+      "toLogin": "Go to sign-in"
+    },
+    "verify": {
+      "title": "Email confirmation",
+      "checking": "Checking the link…",
+      "success": "Email confirmed.",
+      "failed": "The link is invalid or has expired.",
+      "noToken": "The link is incomplete: it has no token.",
+      "home": "Go to the app"
+    }
+  },
+  "fields": {
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "currentPassword": "Current password",
+    "showPassword": "Show",
+    "hidePassword": "Hide",
+    "baseCurrency": "Base currency",
+    "timezone": "Time zone"
+  },
+  "currency": {
+    "fiat": "Fiat",
+    "crypto": "Cryptocurrencies"
+  },
+  "onboarding": {
+    "title": "{{name}}, two more fields",
+    "titleFallback": "Two more fields",
+    "subtitle": "Without them the app doesn't know which currency to total up in, or which calendar to count dates by.",
+    "currencyHint": "Your combined balance across all accounts is shown in it",
+    "timezoneHint": "Affects the dates of recurring operations",
+    "note": "Both can be changed later in settings. The base currency is only a way to show the total: account currencies and the rates recorded in transactions do not depend on it.",
+    "submit": "Done"
+  },
+  "dashboard": {
+    "title": "Overview",
+    "subtitle": "Base currency — {{currency}}, time zone — {{timezone}}.",
+    "emailNotVerified": "Email is not confirmed. The link was sent to {{email}} — in development it is printed to the API log.",
+    "phase": "phase {{number}}",
+    "cards": {
+      "accounts": {
+        "title": "Accounts",
+        "text": "Cash, cards, deposits, crypto wallets."
+      },
+      "transactions": {
+        "title": "Transactions",
+        "text": "Income, expenses and transfers between your own accounts."
+      },
+      "netWorth": {
+        "title": "Combined balance",
+        "text": "Everything you hold, in one chosen currency."
+      },
+      "recurring": {
+        "title": "Recurring charges",
+        "text": "Subscriptions and bills create themselves."
+      },
+      "reconciliation": {
+        "title": "Balance reconciliation",
+        "text": "The gap between the real balance and the calculated one."
+      },
+      "reports": {
+        "title": "Reports",
+        "text": "Spending by category, cash flow, net worth."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Active devices",
+    "subtitle": "A session lasts 60 days and is extended as you use it. A revoked device loses access immediately, without waiting for the token to expire.",
+    "current": "this device",
+    "ipUnknown": "IP unknown",
+    "activity": "last active {{when}}",
+    "signedIn": "signed in {{when}}",
+    "expires": "expires {{when}}",
+    "revoke": "Revoke",
+    "logout": "Sign out",
+    "logoutOthers": "Sign out the others ({{count}})",
+    "loadFailed": "Could not load the device list.",
+    "revoked_one": "{{count}} session revoked.",
+    "revoked_other": "{{count}} sessions revoked.",
+    "device": {
+      "known": "{{browser}} on {{os}}",
+      "unknown": "Unknown device"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "password": "Password",
+    "timezoneHint": "Affects the dates of recurring operations",
+    "currencyNote": "Changing the base currency only changes how the combined balance is displayed. Account currencies and the rates recorded in transactions are not recalculated.",
+    "saved": "Saved.",
+    "saveFailed": "Could not save the changes.",
+    "newPassword": "New password",
+    "passwordHint": "At least {{count}} characters",
+    "changePassword": "Change password",
+    "passwordChanged": "Password changed."
+  },
+  "notFound": {
+    "title": "404",
+    "subtitle": "There is no such page.",
+    "home": "Back to the app"
+  }
+}

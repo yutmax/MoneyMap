@@ -1,5 +1,6 @@
 import type { SessionSummary } from '@moneymap/shared';
 import type { ReactNode } from 'react';
+import { useT } from '@/shared/i18n';
 import { formatDateTime, formatRelative } from '@/shared/lib';
 import styles from './SessionCard.module.scss';
 
@@ -10,21 +11,33 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ session, action }: SessionCardProps) {
+  const { t, locale } = useT();
+
+  // Подпись устройства собирается здесь, а не берётся из session.device:
+  // готовую строку сервер склеивает на одном языке, и в английском
+  // интерфейсе она осталась бы «Chrome на Windows». Разобранные browser и os
+  // язык не несут, поэтому склейка — дело интерфейса.
+  const device =
+    session.browser && session.os
+      ? t('sessions.device.known', { browser: session.browser, os: session.os })
+      : (session.browser ?? session.os ?? t('sessions.device.unknown'));
+
   return (
     <li className={styles.root}>
       <div className={styles.info}>
         <p className={styles.device}>
-          {session.device}
-          {session.isCurrent && <span className={styles.current}>это устройство</span>}
+          {device}
+          {session.isCurrent && <span className={styles.current}>{t('sessions.current')}</span>}
         </p>
         <p className={styles.meta}>
-          {session.ip ?? 'IP неизвестен'} · активность{' '}
-          <time dateTime={session.lastUsedAt} title={formatDateTime(session.lastUsedAt)}>
-            {formatRelative(session.lastUsedAt)}
+          {session.ip ?? t('sessions.ipUnknown')} ·{' '}
+          <time dateTime={session.lastUsedAt} title={formatDateTime(session.lastUsedAt, locale)}>
+            {t('sessions.activity', { when: formatRelative(session.lastUsedAt, locale) })}
           </time>
         </p>
         <p className={styles.meta}>
-          вход {formatDateTime(session.createdAt)} · истекает {formatDateTime(session.expiresAt)}
+          {t('sessions.signedIn', { when: formatDateTime(session.createdAt, locale) })} ·{' '}
+          {t('sessions.expires', { when: formatDateTime(session.expiresAt, locale) })}
         </p>
       </div>
 

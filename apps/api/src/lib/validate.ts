@@ -19,7 +19,7 @@ function toDetails(error: z.ZodError): ApiErrorDetail[] {
 export function parse<S extends z.ZodType>(schema: S, data: unknown): z.output<S> {
   const result = schema.safeParse(data);
   if (!result.success) {
-    throw badRequest('Проверьте заполненные поля', toDetails(result.error));
+    throw badRequest('validation.checkFields', toDetails(result.error));
   }
   return result.data;
 }

@@ -93,7 +93,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       const presentedToken = request.cookies[COOKIE_REFRESH];
       if (!presentedToken) {
         clearAuthCookies(reply);
-        throw unauthorized('Сессия не найдена', 'refresh called without cookie');
+        throw unauthorized('errors.sessionNotFound', 'refresh called without cookie');
       }
 
       try {
@@ -227,7 +227,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       reason: 'manual',
     });
     // Чужая или уже отозванная сессия — 404, а не 403 (§10.1).
-    if (!revoked) throw notFound('Сессия не найдена');
+    if (!revoked) throw notFound('errors.sessionNotFound');
 
     // Отзыв собственной сессии равносилен выходу: куки больше не нужны.
     if (id === sessionId) clearAuthCookies(reply);

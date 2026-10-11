@@ -55,6 +55,8 @@
 }
 
 .corner {
+  display: flex;
+  gap: var(--space-2xs);
   position: fixed;
   inset-block-start: var(--space-s);
   inset-inline-end: var(--space-s);

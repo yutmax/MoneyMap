@@ -1,4 +1,5 @@
 import { useState, type ComponentPropsWithRef } from 'react';
+import { useT } from '@/shared/i18n';
 import { Field } from '../Field/Field.tsx';
 import styles from './PasswordInput.module.scss';
 
@@ -33,19 +34,15 @@ function EyeIcon({ open }: { open: boolean }) {
  * описана для скринридера и не является частью таб-порядка формы по
  * случайности: aria-pressed сообщает текущее состояние, а не только действие.
  */
-export function PasswordInput({
-  label = 'Пароль',
-  error,
-  hint,
-  ...inputProps
-}: PasswordInputProps) {
+export function PasswordInput({ label, error, hint, ...inputProps }: PasswordInputProps) {
+  const { t } = useT();
   const [visible, setVisible] = useState(false);
 
   return (
     <Field
       {...inputProps}
       type={visible ? 'text' : 'password'}
-      label={label}
+      label={label ?? t('fields.password')}
       error={error}
       hint={hint}
       labelAside={
@@ -56,7 +53,7 @@ export function PasswordInput({
           aria-pressed={visible}
         >
           <EyeIcon open={visible} />
-          {visible ? 'Скрыть' : 'Показать'}
+          {visible ? t('fields.hidePassword') : t('fields.showPassword')}
         </button>
       }
     />

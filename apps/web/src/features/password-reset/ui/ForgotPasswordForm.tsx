@@ -2,6 +2,7 @@ import { forgotPasswordSchema } from '@moneymap/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
+import { useT } from '@/shared/i18n';
 import { Alert, Button, Field } from '@/shared/ui';
 import { useForgotPassword } from '../api/use-password-reset.ts';
 import styles from './ForgotPasswordForm.module.scss';
@@ -9,6 +10,7 @@ import styles from './ForgotPasswordForm.module.scss';
 type FormValues = z.input<typeof forgotPasswordSchema>;
 
 export function ForgotPasswordForm() {
+  const { t } = useT();
   const forgot = useForgotPassword();
   const {
     register,
@@ -25,26 +27,20 @@ export function ForgotPasswordForm() {
 
   // Ответ одинаков независимо от того, есть такой адрес или нет: иначе
   // эндпоинт превращается в проверялку зарегистрированных email.
-  if (forgot.isSuccess) {
-    return (
-      <Alert tone="success">
-        Если адрес зарегистрирован, письмо уже отправлено. Проверьте почту.
-      </Alert>
-    );
-  }
+  if (forgot.isSuccess) return <Alert tone="success">{t('auth.forgot.sent')}</Alert>;
 
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
       <Field
-        label="Email"
+        label={t('fields.email')}
         type="email"
         autoComplete="email"
         autoFocus
-        error={errors.email?.message}
+        error={t(errors.email?.message)}
         {...register('email')}
       />
       <Button type="submit" block loading={isSubmitting}>
-        Отправить ссылку
+        {t('auth.forgot.submit')}
       </Button>
     </form>
   );

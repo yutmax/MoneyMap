@@ -1,7 +1,13 @@
 import { z } from 'zod';
+import { msg } from '../i18n/index.ts';
 import { currencyCodeSchema, timezoneSchema, uuidSchema } from './common.ts';
+import { LIMITS } from './limits.ts';
 
-export const emailSchema = z.email({ message: 'Некорректный email' }).trim().toLowerCase().max(254);
+export const emailSchema = z
+  .email({ message: msg('validation.email') })
+  .trim()
+  .toLowerCase()
+  .max(LIMITS.emailMax);
 
 /**
  * Минимум 8 символов. Нижняя граница выбрана в паре с проверкой по базе
@@ -13,8 +19,12 @@ export const emailSchema = z.email({ message: 'Некорректный email' }
  */
 export const passwordSchema = z
   .string()
-  .min(8, { message: 'Минимум 8 символов' })
-  .max(200, { message: 'Не больше 200 символов' });
+  .min(LIMITS.passwordMin, {
+    message: msg('validation.password.min', { count: LIMITS.passwordMin }),
+  })
+  .max(LIMITS.passwordMax, {
+    message: msg('validation.password.max', { count: LIMITS.passwordMax }),
+  });
 
 /**
  * Регистрация спрашивает только то, без чего нельзя создать учётную запись.
@@ -24,7 +34,11 @@ export const passwordSchema = z
  */
 export const registerSchema = z.object({
   email: emailSchema,
-  name: z.string().trim().min(1, { message: 'Укажите имя' }).max(100),
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: msg('validation.name.required') })
+    .max(LIMITS.nameMax, { message: msg('validation.name.max', { count: LIMITS.nameMax }) }),
   password: passwordSchema,
 });
 
@@ -36,7 +50,10 @@ export const onboardingSchema = z.object({
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, { message: 'Введите пароль' }).max(200),
+  password: z
+    .string()
+    .min(1, { message: msg('validation.password.required') })
+    .max(LIMITS.passwordMax),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -53,17 +70,17 @@ export const verifyEmailSchema = z.object({
 });
 
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1).max(200),
+  currentPassword: z.string().min(1).max(LIMITS.passwordMax),
   newPassword: passwordSchema,
 });
 
 export const updateSettingsSchema = z
   .object({
-    name: z.string().trim().min(1).max(100).optional(),
+    name: z.string().trim().min(1).max(LIMITS.nameMax).optional(),
     baseCurrency: currencyCodeSchema.optional(),
     timezone: timezoneSchema.optional(),
   })
-  .refine((v) => Object.keys(v).length > 0, { message: 'Нечего менять' });
+  .refine((v) => Object.keys(v).length > 0, { message: msg('validation.nothingToChange') });
 
 export const sessionIdParamSchema = z.object({ id: uuidSchema });
 

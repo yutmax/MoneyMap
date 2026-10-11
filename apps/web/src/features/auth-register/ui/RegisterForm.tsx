@@ -1,8 +1,9 @@
-import { registerSchema, type RegisterInput } from '@moneymap/shared';
+import { LIMITS, registerSchema, type RegisterInput } from '@moneymap/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
+import { useT } from '@/shared/i18n';
 import { applyServerError } from '@/shared/lib';
 import { Alert, Button, Field, PasswordInput } from '@/shared/ui';
 import { useRegister } from '../api/use-register.ts';
@@ -19,6 +20,7 @@ type FormValues = z.input<typeof registerSchema>;
  * до конца формы.
  */
 export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
+  const { t } = useT();
   const signUp = useRegister();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -44,33 +46,33 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
-      {formError && <Alert>{formError}</Alert>}
+      {formError && <Alert>{t(formError)}</Alert>}
 
       <div className={styles.fields}>
         <Field
-          label="Имя"
+          label={t('fields.name')}
           autoComplete="name"
           autoFocus
-          error={errors.name?.message}
+          error={t(errors.name?.message)}
           {...register('name')}
         />
         <Field
-          label="Email"
+          label={t('fields.email')}
           type="email"
           autoComplete="email"
-          error={errors.email?.message}
+          error={t(errors.email?.message)}
           {...register('email')}
         />
         <PasswordInput
           autoComplete="new-password"
-          hint="Минимум 8 символов. Пароль проверяется по базе утечек."
-          error={errors.password?.message}
+          hint={t('auth.register.passwordHint', { count: LIMITS.passwordMin })}
+          error={t(errors.password?.message)}
           {...register('password')}
         />
       </div>
 
       <Button type="submit" block loading={isSubmitting}>
-        Создать аккаунт
+        {t('auth.register.submit')}
       </Button>
     </form>
   );

@@ -15,13 +15,13 @@ export interface AuthContext {
 /** preHandler для защищённых маршрутов. */
 export async function requireAuth(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
   const token = request.cookies[COOKIE_ACCESS];
-  if (!token) throw unauthorized('Требуется вход', 'no access cookie');
+  if (!token) throw unauthorized('errors.authRequired', 'no access cookie');
 
   const payload = verifyAccessToken(token);
-  if (!payload) throw unauthorized('Требуется вход', 'invalid or expired access token');
+  if (!payload) throw unauthorized('errors.authRequired', 'invalid or expired access token');
 
   if (!(await isSessionActive(db, payload.sessionId))) {
-    throw unauthorized('Сессия завершена', 'session revoked or expired');
+    throw unauthorized('errors.sessionEnded', 'session revoked or expired');
   }
 
   request.authContext = {
@@ -38,7 +38,7 @@ export async function requireAuth(request: FastifyRequest, _reply: FastifyReply)
  */
 export function getAuth(request: FastifyRequest): AuthContext {
   const auth = request.authContext;
-  if (!auth) throw unauthorized('Требуется вход', 'requireAuth hook missing on route');
+  if (!auth) throw unauthorized('errors.authRequired', 'requireAuth hook missing on route');
   return auth;
 }
 

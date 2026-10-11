@@ -1,17 +1,14 @@
 import { useMe } from '@/entities/user';
+import { useT } from '@/shared/i18n';
 import styles from './DashboardPage.module.scss';
 
 const CARDS = [
-  { title: 'Счета', phase: 'фаза 1', text: 'Наличные, карты, вклады, криптокошельки.' },
-  {
-    title: 'Операции',
-    phase: 'фаза 1',
-    text: 'Доходы, расходы и переводы между своими счетами.',
-  },
-  { title: 'Сводный баланс', phase: 'фаза 2', text: 'Всё состояние в одной выбранной валюте.' },
-  { title: 'Регулярные списания', phase: 'фаза 3', text: 'Подписки и платежи создаются сами.' },
-  { title: 'Сверка остатков', phase: 'фаза 4', text: 'Расхождение между фактом и расчётом.' },
-  { title: 'Отчёты', phase: 'фаза 5', text: 'Расходы по категориям, кэшфлоу, net worth.' },
+  { key: 'accounts', phase: 1 },
+  { key: 'transactions', phase: 1 },
+  { key: 'netWorth', phase: 2 },
+  { key: 'recurring', phase: 3 },
+  { key: 'reconciliation', phase: 4 },
+  { key: 'reports', phase: 5 },
 ];
 
 /**
@@ -20,32 +17,34 @@ const CARDS = [
  * что защищённый маршрут действительно отдаёт данные пользователя.
  */
 export function DashboardPage() {
+  const { t } = useT();
   const { user } = useMe();
 
   return (
     <div className={styles.root}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Обзор</h1>
+        <h1 className={styles.title}>{t('dashboard.title')}</h1>
         {/* baseCurrency и timezone здесь всегда заполнены: до онбординга
             страница недостижима (RequireOnboarded). */}
         <p className={styles.subtitle}>
-          {user ? `Базовая валюта — ${user.baseCurrency}, таймзона — ${user.timezone}.` : ''}
+          {user?.baseCurrency && user.timezone
+            ? t('dashboard.subtitle', { currency: user.baseCurrency, timezone: user.timezone })
+            : ''}
         </p>
       </header>
 
       {user && !user.emailVerified && (
         <div className={styles.notice}>
-          Email не подтверждён. Ссылка отправлена на {user.email} — в разработке она печатается в
-          лог API.
+          {t('dashboard.emailNotVerified', { email: user.email })}
         </div>
       )}
 
       <div className={styles.cards}>
         {CARDS.map((card) => (
-          <article key={card.title} className={styles.card}>
-            <h2 className={styles.cardTitle}>{card.title}</h2>
-            <p className={styles.cardText}>{card.text}</p>
-            <span className={styles.badge}>{card.phase}</span>
+          <article key={card.key} className={styles.card}>
+            <h2 className={styles.cardTitle}>{t(`dashboard.cards.${card.key}.title`)}</h2>
+            <p className={styles.cardText}>{t(`dashboard.cards.${card.key}.text`)}</p>
+            <span className={styles.badge}>{t('dashboard.phase', { number: card.phase })}</span>
           </article>
         ))}
       </div>

@@ -1,8 +1,9 @@
-import { passwordSchema } from '@moneymap/shared';
+import { LIMITS, passwordSchema, msg } from '@moneymap/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useT } from '@/shared/i18n';
 import { applyServerError } from '@/shared/lib';
 import { Alert, Button, PasswordInput } from '@/shared/ui';
 import { useResetPassword } from '../api/use-password-reset.ts';
@@ -13,13 +14,14 @@ import styles from './ResetPasswordForm.module.scss';
 const formSchema = z
   .object({ password: passwordSchema, confirm: z.string() })
   .refine((v) => v.password === v.confirm, {
-    message: 'Пароли не совпадают',
+    message: msg('validation.password.mismatch'),
     path: ['confirm'],
   });
 
 type FormValues = z.input<typeof formSchema>;
 
 export function ResetPasswordForm({ token }: { token: string }) {
+  const { t } = useT();
   const reset = useResetPassword();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -42,29 +44,27 @@ export function ResetPasswordForm({ token }: { token: string }) {
     }
   });
 
-  if (reset.isSuccess) {
-    return <Alert tone="success">Пароль изменён. Войдите с новым паролем.</Alert>;
-  }
+  if (reset.isSuccess) return <Alert tone="success">{t('auth.reset.success')}</Alert>;
 
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
-      {formError && <Alert>{formError}</Alert>}
+      {formError && <Alert>{t(formError)}</Alert>}
       <PasswordInput
-        label="Новый пароль"
+        label={t('auth.reset.newPassword')}
         autoComplete="new-password"
         autoFocus
-        hint="Минимум 8 символов"
-        error={errors.password?.message}
+        hint={t('auth.reset.hint', { count: LIMITS.passwordMin })}
+        error={t(errors.password?.message)}
         {...register('password')}
       />
       <PasswordInput
-        label="Повторите пароль"
+        label={t('auth.reset.repeat')}
         autoComplete="new-password"
-        error={errors.confirm?.message}
+        error={t(errors.confirm?.message)}
         {...register('confirm')}
       />
       <Button type="submit" block loading={isSubmitting}>
-        Сменить пароль
+        {t('auth.reset.submit')}
       </Button>
     </form>
   );

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router';
 import type { z } from 'zod';
 import { ROUTES } from '@/shared/config';
+import { useT } from '@/shared/i18n';
 import { applyServerError } from '@/shared/lib';
 import { Alert, Button, Field, PasswordInput } from '@/shared/ui';
 import { useLogin } from '../api/use-login.ts';
@@ -16,6 +17,7 @@ import styles from './LoginForm.module.scss';
 type FormValues = z.input<typeof loginSchema>;
 
 export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
+  const { t } = useT();
   const login = useLogin();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -41,30 +43,31 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
-      {formError && <Alert>{formError}</Alert>}
+      {formError && <Alert>{t(formError)}</Alert>}
 
       <div className={styles.fields}>
         <Field
-          label="Email"
+          label={t('fields.email')}
           type="email"
           autoComplete="email"
           autoFocus
-          error={errors.email?.message}
+          error={t(errors.email?.message)}
           {...register('email')}
         />
         <PasswordInput
+          label={t('fields.password')}
           autoComplete="current-password"
-          error={errors.password?.message}
+          error={t(errors.password?.message)}
           {...register('password')}
         />
       </div>
 
       <Button type="submit" block loading={isSubmitting}>
-        Войти
+        {t('auth.login.submit')}
       </Button>
 
       <Link className={styles.forgot} to={ROUTES.forgotPassword}>
-        Забыли пароль?
+        {t('auth.login.forgot')}
       </Link>
     </form>
   );

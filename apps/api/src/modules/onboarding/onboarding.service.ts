@@ -38,7 +38,7 @@ export async function completeOnboarding(
   if (updated) return toMeResponse(updated);
 
   const [existing] = await db.select().from(users).where(eq(users.id, args.userId)).limit(1);
-  if (!existing) throw notFound('Пользователь не найден');
+  if (!existing) throw notFound('errors.userNotFound');
 
-  throw conflict('Первичная настройка уже пройдена');
+  throw conflict('errors.onboardingDone');
 }

@@ -2,10 +2,12 @@ import { useNavigate } from 'react-router';
 import { SessionCard, useSessions } from '@/entities/session';
 import { useLogoutOthers, useRevokeSession } from '@/features/session-revoke';
 import { ROUTES } from '@/shared/config';
+import { useT } from '@/shared/i18n';
 import { Alert, Button } from '@/shared/ui';
 import styles from './SessionsPage.module.scss';
 
 export function SessionsPage() {
+  const { t } = useT();
   const navigate = useNavigate();
   const sessions = useSessions();
   const revoke = useRevokeSession();
@@ -24,11 +26,8 @@ export function SessionsPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>Активные устройства</h1>
-          <p className={styles.subtitle}>
-            Сессия живёт 60 дней и продлевается при использовании. Отозванное устройство теряет
-            доступ сразу, не дожидаясь истечения токена.
-          </p>
+          <h1 className={styles.title}>{t('sessions.title')}</h1>
+          <p className={styles.subtitle}>{t('sessions.subtitle')}</p>
         </div>
 
         {others.length > 0 && (
@@ -38,15 +37,15 @@ export function SessionsPage() {
             onClick={() => logoutOthers.mutate()}
             loading={logoutOthers.isPending}
           >
-            Выйти на остальных ({others.length})
+            {t('sessions.logoutOthers', { count: others.length })}
           </Button>
         )}
       </header>
 
-      {sessions.isError && <Alert>Не удалось загрузить список устройств.</Alert>}
+      {sessions.isError && <Alert>{t('sessions.loadFailed')}</Alert>}
 
       {logoutOthers.isSuccess && (
-        <Alert tone="success">Отозвано сессий: {logoutOthers.data.revoked}.</Alert>
+        <Alert tone="success">{t('sessions.revoked', { count: logoutOthers.data.revoked })}</Alert>
       )}
 
       {sessions.isPending ? (
@@ -68,7 +67,7 @@ export function SessionsPage() {
                   onClick={() => handleRevoke(session.id)}
                   loading={revoke.isPending && revoke.variables === session.id}
                 >
-                  {session.isCurrent ? 'Выйти' : 'Отозвать'}
+                  {session.isCurrent ? t('sessions.logout') : t('sessions.revoke')}
                 </Button>
               }
             />

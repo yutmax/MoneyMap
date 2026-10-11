@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { CurrencySelect } from '@/entities/currency';
+import { useT } from '@/shared/i18n';
 import { applyServerError } from '@/shared/lib';
 import { Alert, Button, Field } from '@/shared/ui';
 import { useCompleteOnboarding } from '../api/use-complete-onboarding.ts';
@@ -13,6 +14,7 @@ import styles from './OnboardingForm.module.scss';
 type FormValues = z.input<typeof onboardingSchema>;
 
 export function OnboardingForm({ onDone }: { onDone: () => void }) {
+  const { t } = useT();
   const complete = useCompleteOnboarding();
   const [formError, setFormError] = useState<string | null>(null);
   const [defaults] = useState(guessDefaults);
@@ -39,29 +41,26 @@ export function OnboardingForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
-      {formError && <Alert>{formError}</Alert>}
+      {formError && <Alert>{t(formError)}</Alert>}
 
       <div className={styles.fields}>
         <CurrencySelect
-          error={errors.baseCurrency?.message}
-          hint="В ней показывается сводный баланс по всем счетам"
+          error={t(errors.baseCurrency?.message)}
+          hint={t('onboarding.currencyHint')}
           {...register('baseCurrency')}
         />
         <Field
-          label="Таймзона"
-          hint="Влияет на даты регулярных операций"
-          error={errors.timezone?.message}
+          label={t('fields.timezone')}
+          hint={t('onboarding.timezoneHint')}
+          error={t(errors.timezone?.message)}
           {...register('timezone')}
         />
       </div>
 
-      <p className={styles.note}>
-        И то, и другое меняется позже в настройках. Базовая валюта — только способ показать итог:
-        валюты счетов и зафиксированные в операциях курсы от неё не зависят.
-      </p>
+      <p className={styles.note}>{t('onboarding.note')}</p>
 
       <Button type="submit" block loading={isSubmitting}>
-        Готово
+        {t('onboarding.submit')}
       </Button>
     </form>
   );

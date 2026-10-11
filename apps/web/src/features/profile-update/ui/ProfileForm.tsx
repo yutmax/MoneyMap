@@ -1,5 +1,6 @@
 import type { MeResponse } from '@moneymap/shared';
 import { CurrencySelect } from '@/entities/currency';
+import { useT } from '@/shared/i18n';
 import { Alert, Field } from '@/shared/ui';
 import { useUpdateSettings } from '../api/use-update-settings.ts';
 import styles from './ProfileForm.module.scss';
@@ -10,13 +11,14 @@ import styles from './ProfileForm.module.scss';
  * независимо, и подтверждать нечего.
  */
 export function ProfileForm({ user }: { user: MeResponse }) {
+  const { t } = useT();
   const update = useUpdateSettings();
 
   return (
     <>
       <div className={styles.grid}>
         <Field
-          label="Имя"
+          label={t('fields.name')}
           defaultValue={user.name}
           onBlur={(e) => {
             const name = e.currentTarget.value.trim();
@@ -30,9 +32,9 @@ export function ProfileForm({ user }: { user: MeResponse }) {
         />
 
         <Field
-          label="Таймзона"
+          label={t('fields.timezone')}
           defaultValue={user.timezone ?? ''}
-          hint="Влияет на даты регулярных операций"
+          hint={t('settings.timezoneHint')}
           onBlur={(e) => {
             const timezone = e.currentTarget.value.trim();
             if (timezone && timezone !== user.timezone) update.mutate({ timezone });
@@ -40,13 +42,10 @@ export function ProfileForm({ user }: { user: MeResponse }) {
         />
       </div>
 
-      <p className={styles.note}>
-        Смена базовой валюты меняет только отображение сводного баланса. Валюты счетов и
-        зафиксированные в операциях курсы не пересчитываются.
-      </p>
+      <p className={styles.note}>{t('settings.currencyNote')}</p>
 
-      {update.isError && <Alert>Не удалось сохранить изменения.</Alert>}
-      {update.isSuccess && <Alert tone="success">Сохранено.</Alert>}
+      {update.isError && <Alert>{t('settings.saveFailed')}</Alert>}
+      {update.isSuccess && <Alert tone="success">{t('settings.saved')}</Alert>}
     </>
   );
 }

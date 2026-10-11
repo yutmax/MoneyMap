@@ -1,8 +1,9 @@
-import { changePasswordSchema, type ChangePasswordInput } from '@moneymap/shared';
+import { LIMITS, changePasswordSchema, type ChangePasswordInput } from '@moneymap/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
+import { useT } from '@/shared/i18n';
 import { applyServerError } from '@/shared/lib';
 import { Alert, Button, PasswordInput } from '@/shared/ui';
 import { useChangePassword } from '../api/use-change-password.ts';
@@ -11,6 +12,7 @@ import styles from './ChangePasswordForm.module.scss';
 type FormValues = z.input<typeof changePasswordSchema>;
 
 export function ChangePasswordForm() {
+  const { t } = useT();
   const changePassword = useChangePassword();
   const [formError, setFormError] = useState<string | null>(null);
   const [revoked, setRevoked] = useState<number | null>(null);
@@ -40,29 +42,34 @@ export function ChangePasswordForm() {
 
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
-      {formError && <Alert>{formError}</Alert>}
+      {formError && <Alert>{t(formError)}</Alert>}
       {revoked !== null && (
-        <Alert tone="success">Пароль изменён. Отозвано других сессий: {revoked}.</Alert>
+        <Alert tone="success">
+          {t('settings.passwordChanged')}
+          {/* Про отозванные сессии сообщаем только когда их было что отзывать:
+              «отозвано 0 сессий» — это шум, а не новость. */}
+          {revoked > 0 && ` ${t('sessions.revoked', { count: revoked })}`}
+        </Alert>
       )}
 
       <div className={styles.grid}>
         <PasswordInput
-          label="Текущий пароль"
+          label={t('fields.currentPassword')}
           autoComplete="current-password"
-          error={errors.currentPassword?.message}
+          error={t(errors.currentPassword?.message)}
           {...register('currentPassword')}
         />
         <PasswordInput
-          label="Новый пароль"
+          label={t('settings.newPassword')}
           autoComplete="new-password"
-          hint="Минимум 8 символов"
-          error={errors.newPassword?.message}
+          hint={t('settings.passwordHint', { count: LIMITS.passwordMin })}
+          error={t(errors.newPassword?.message)}
           {...register('newPassword')}
         />
       </div>
 
       <Button type="submit" loading={isSubmitting}>
-        Сменить пароль
+        {t('settings.changePassword')}
       </Button>
     </form>
   );

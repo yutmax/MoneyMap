@@ -24,7 +24,7 @@ export async function assertCurrencyExists(
     .limit(1);
 
   if (!currency) {
-    throw badRequest('Неизвестная валюта', [{ path, message: 'Такой валюты нет в справочнике' }]);
+    throw badRequest('errors.unknownCurrency', [{ path, message: 'validation.currency.unknown' }]);
   }
 
   return currency.code;

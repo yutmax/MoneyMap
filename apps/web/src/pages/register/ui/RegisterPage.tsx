@@ -1,18 +1,21 @@
 import { Link, useNavigate } from 'react-router';
 import { RegisterForm } from '@/features/auth-register';
 import { ROUTES } from '@/shared/config';
+import { useT } from '@/shared/i18n';
 import { AuthCard } from '@/widgets/auth-card';
 
 export function RegisterPage() {
+  const { t } = useT();
   const navigate = useNavigate();
 
   return (
     <AuthCard
-      title="Регистрация"
-      subtitle="Счета в любых валютах и криптовалютах, сводный баланс в одной."
+      title={t('auth.register.title')}
+      subtitle={t('auth.register.subtitle')}
       footer={
         <>
-          Уже есть аккаунт? <Link to={ROUTES.login}>Войти</Link>
+          {t('auth.register.haveAccount')}{' '}
+          <Link to={ROUTES.login}>{t('auth.register.signIn')}</Link>
         </>
       }
     >

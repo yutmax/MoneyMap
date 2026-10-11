@@ -2,8 +2,8 @@ import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
-import { ERROR_CODES, type ApiErrorBody } from '@moneymap/shared';
-import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
+import { ERROR_CODES, msg, pickLocale, translate, type ApiErrorBody } from '@moneymap/shared';
+import Fastify, { type FastifyError, type FastifyInstance, type FastifyRequest } from 'fastify';
 import { allowedOrigins, env, isProduction } from './lib/env.ts';
 import { AppError } from './lib/errors.ts';
 import { authRoutes } from './modules/auth/auth.routes.ts';
@@ -74,7 +74,16 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   /* ──────────────────────────── обработка ошибок ──────────────────────────── */
 
+  /**
+   * Язык ответа — из Accept-Language запроса. Сообщения внутри приложения
+   * ходят ключами (lib/errors.ts), и готовый текст появляется ровно здесь,
+   * в одном месте на весь API.
+   */
+  const localeOf = (request: FastifyRequest) => pickLocale(request.headers['accept-language']);
+
   app.setErrorHandler((error: FastifyError, request, reply) => {
+    const locale = localeOf(request);
+
     if (error instanceof AppError) {
       // В лог уходит технический текст, пользователю — человеческий.
       request.log.info(
@@ -84,8 +93,15 @@ export async function buildApp(): Promise<FastifyInstance> {
       const body: ApiErrorBody = {
         error: {
           code: error.code,
-          message: error.message,
-          ...(error.details ? { details: error.details } : {}),
+          message: translate(locale, error.message),
+          ...(error.details
+            ? {
+                details: error.details.map((d) => ({
+                  ...d,
+                  message: translate(locale, d.message),
+                })),
+              }
+            : {}),
         },
       };
       return reply.code(error.statusCode).send(body);
@@ -95,7 +111,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       const body: ApiErrorBody = {
         error: {
           code: ERROR_CODES.RATE_LIMITED,
-          message: 'Слишком много попыток. Попробуйте позже.',
+          message: translate(locale, 'errors.rateLimited'),
         },
       };
       return reply.code(429).send(body);
@@ -111,7 +127,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     // Неожидаемая ошибка: в лог со стеком, наружу — ничего о внутренностях.
     request.log.error({ err: error }, 'Необработанная ошибка');
     const body: ApiErrorBody = {
-      error: { code: ERROR_CODES.INTERNAL_ERROR, message: 'Внутренняя ошибка сервера' },
+      error: { code: ERROR_CODES.INTERNAL_ERROR, message: translate(locale, 'errors.internal') },
     };
     return reply.code(500).send(body);
   });
@@ -120,7 +136,10 @@ export async function buildApp(): Promise<FastifyInstance> {
     const body: ApiErrorBody = {
       error: {
         code: ERROR_CODES.NOT_FOUND,
-        message: `Маршрут ${request.method} ${request.url} не найден`,
+        message: translate(
+          localeOf(request),
+          msg('errors.routeNotFound', { method: request.method, url: request.url }),
+        ),
       },
     };
     return reply.code(404).send(body);

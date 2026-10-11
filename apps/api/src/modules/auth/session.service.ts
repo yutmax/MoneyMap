@@ -197,10 +197,10 @@ export async function rotateSession(
       );
 
     case 'expired':
-      throw unauthorized('Сессия истекла', 'refresh token expired or session inactive');
+      throw unauthorized('errors.sessionExpired', 'refresh token expired or session inactive');
 
     case 'unknown':
-      throw unauthorized('Сессия не найдена', 'unknown refresh token');
+      throw unauthorized('errors.sessionNotFound', 'unknown refresh token');
   }
 }
 
