@@ -18,7 +18,8 @@ export function AccountCard({ account, actions }: AccountCardProps) {
   // Число знаков берётся из справочника: у BYN их два, у BTC восемь.
   // Пока справочник не доехал, показываем два — это верно для всех фиатных
   // валют и не мигает лишним нулём при загрузке.
-  const decimals = currencies.data?.find((c) => c.code === account.currencyCode)?.decimals ?? 2;
+  const currency = currencies.data?.find((c) => c.code === account.currencyCode);
+  const decimals = currency?.decimals ?? 2;
 
   return (
     <li className={cx(styles.root, account.isArchived && styles.archived)}>
@@ -40,6 +41,7 @@ export function AccountCard({ account, actions }: AccountCardProps) {
           currency: account.currencyCode,
           decimals,
           locale,
+          ...(currency?.symbol ? { symbol: currency.symbol } : {}),
         })}
       </p>
 

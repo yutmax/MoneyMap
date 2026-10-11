@@ -133,19 +133,36 @@ describe('разбор ввода пользователя', () => {
 });
 
 describe('форматирование', () => {
-  it('форматирует известную Intl валюту', () => {
+  it('ставит сумму перед валютой', () => {
     const result = formatMoney('1234.5', { currency: 'USD', decimals: 2, locale: 'en-US' });
-    expect(result).toContain('1,234.50');
+    expect(result).toBe('1,234.50 USD');
   });
 
-  it('не падает на криптовалюте, которой Intl не знает', () => {
-    // Для BTC Intl бросает RangeError — отсюда ветка fallback.
+  it('порядок не зависит от локали', () => {
+    // Intl со style: 'currency' поставил бы код перед числом в английской
+    // локали и после — в русской. Нам нужно одинаково.
+    const en = formatMoney('1234.5', { currency: 'USD', decimals: 2, locale: 'en-US' });
+    const ru = formatMoney('1234.5', { currency: 'USD', decimals: 2, locale: 'ru' });
+    expect(en.endsWith('USD')).toBe(true);
+    expect(ru.endsWith('USD')).toBe(true);
+  });
+
+  it('показывает знак валюты, когда он известен', () => {
+    const result = formatMoney('2404.18', {
+      currency: 'BYN',
+      decimals: 2,
+      locale: 'en-US',
+      symbol: 'Br',
+    });
+    expect(result).toBe('2,404.18 Br');
+  });
+
+  it('работает с криптовалютой, которой Intl не знает', () => {
     const result = formatMoney('0.12345678', { currency: 'BTC', decimals: 8, locale: 'en-US' });
-    expect(result).toContain('BTC');
-    expect(result).toContain('0.12345678');
+    expect(result).toBe('0.12345678 BTC');
   });
 
-  it('показывает знак, когда попросили', () => {
+  it('показывает знак числа, когда попросили', () => {
     const result = formatMoney('250', {
       currency: 'EUR',
       decimals: 2,

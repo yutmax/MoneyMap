@@ -2,6 +2,7 @@ import type { ComponentPropsWithRef } from 'react';
 import { useT } from '@/shared/i18n';
 import { Select } from '@/shared/ui';
 import { useCurrencies } from '../api/currency-queries.ts';
+import { currencyName } from '../lib/currency-name.ts';
 
 // label исключается из Omit и объявляется заново необязательным: у выбора
 // валюты есть осмысленная подпись по умолчанию.
@@ -20,7 +21,7 @@ type CurrencySelectProps = Omit<ComponentPropsWithRef<typeof Select>, 'children'
  * и одну и ту же обработку загрузки.
  */
 export function CurrencySelect({ label, ...props }: CurrencySelectProps) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const currencies = useCurrencies();
 
   const fiat = currencies.data?.filter((c) => c.kind === 'fiat') ?? [];
@@ -35,14 +36,14 @@ export function CurrencySelect({ label, ...props }: CurrencySelectProps) {
       <optgroup label={t('currency.fiat')}>
         {fiat.map((c) => (
           <option key={c.code} value={c.code}>
-            {c.code} — {c.name}
+            {c.code} — {currencyName(c.code, c.name, locale)}
           </option>
         ))}
       </optgroup>
       <optgroup label={t('currency.crypto')}>
         {crypto.map((c) => (
           <option key={c.code} value={c.code}>
-            {c.code} — {c.name}
+            {c.code} — {currencyName(c.code, c.name, locale)}
           </option>
         ))}
       </optgroup>

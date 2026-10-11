@@ -1,0 +1,86 @@
+.root {
+  display: grid;
+  row-gap: var(--space-m);
+  align-content: start;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  align-items: start;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--step-3);
+  font-weight: var(--weight-medium);
+}
+
+.subtitle {
+  max-width: 60ch;
+  margin-block-start: var(--space-3xs);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.trees {
+  display: grid;
+  gap: var(--space-m);
+
+  // Доходы и расходы — рядом, когда есть место: это два независимых дерева,
+  // и сравнивать их удобнее бок о бок, чем прокруткой.
+  @include from("md") {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.tree {
+  display: grid;
+  row-gap: var(--space-s);
+
+  @include surface(var(--space-m));
+}
+
+.treeHeader {
+  display: flex;
+  gap: var(--space-s);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.treeTitle {
+  font-size: var(--step-1);
+  font-weight: var(--weight-medium);
+}
+
+.list {
+  display: grid;
+  row-gap: var(--space-3xs);
+}
+
+.group {
+  display: grid;
+  row-gap: var(--space-3xs);
+}
+
+.empty {
+  padding-block: var(--space-s);
+  font-size: var(--step--1);
+  color: var(--c-text-faint);
+}
+
+.skeleton {
+  height: rem(120);
+  background-color: var(--c-surface);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-l);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}

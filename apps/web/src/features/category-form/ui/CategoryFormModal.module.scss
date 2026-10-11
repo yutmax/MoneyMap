@@ -1,0 +1,20 @@
+.form {
+  display: grid;
+  row-gap: var(--space-m);
+}
+
+.fields {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.note {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2xs);
+  justify-content: end;
+}

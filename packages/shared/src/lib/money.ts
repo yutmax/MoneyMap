@@ -143,7 +143,17 @@ export function parseUserAmount(input: string): MoneyString {
   return toMoney(normalized);
 }
 
-/** Форматирование для вывода. Валюту-крипту Intl не знает — отсюда ветка fallback. */
+/**
+ * Форматирование для вывода: сначала сумма, затем обозначение валюты.
+ *
+ * Порядок задан нами, а не локалью. `Intl` со `style: 'currency'` ставит
+ * код перед числом в английской локали и после — в русской, и одна и та же
+ * строка интерфейса прыгала бы при смене языка. В приложении, где колонка
+ * сумм читается сверху вниз, число должно начинаться в одном и том же месте.
+ *
+ * Заодно исчезла ветка для криптовалют: `Intl` не знает BTC и бросал
+ * RangeError, а форматирование простого числа работает для любого кода.
+ */
 export function formatMoney(
   amount: MoneyString,
   options: {
@@ -151,25 +161,19 @@ export function formatMoney(
     decimals: number;
     locale?: string;
     signDisplay?: 'auto' | 'always' | 'never';
+    /** Знак валюты из справочника. Без него показывается код. */
+    symbol?: string;
   },
 ): string {
-  const { currency, decimals, locale = 'ru', signDisplay = 'auto' } = options;
+  const { currency, decimals, locale = 'ru', signDisplay = 'auto', symbol } = options;
   const value = Number(toDecimal(amount).toFixed(Math.min(decimals, 18)));
 
-  try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: Math.min(decimals, 2),
-      maximumFractionDigits: Math.min(decimals, 20),
-      signDisplay,
-    }).format(value);
-  } catch {
-    const number = new Intl.NumberFormat(locale, {
-      minimumFractionDigits: Math.min(decimals, 2),
-      maximumFractionDigits: Math.min(decimals, 20),
-      signDisplay,
-    }).format(value);
-    return `${number}\u00a0${currency}`;
-  }
+  const number = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: Math.min(decimals, 2),
+    maximumFractionDigits: Math.min(decimals, 20),
+    signDisplay,
+  }).format(value);
+
+  // Неразрывный пробел: сумма и её валюта не должны расходиться по строкам.
+  return `${number}\u00a0${symbol ?? currency}`;
 }

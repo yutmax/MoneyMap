@@ -39,6 +39,10 @@
     "account": {
       "name": "Enter an account name",
       "type": "Choose an account type"
+    },
+    "category": {
+      "name": "Enter a category name",
+      "kind": "Choose a category kind"
     }
   },
   "errors": {
@@ -66,7 +70,11 @@
     "notFound": "Not found",
     "accountNotFound": "Account not found",
     "accountHasTransactions": "The account has transactions. It can be archived, but not deleted.",
-    "accountCurrencyImmutable": "An account's currency cannot be changed"
+    "accountCurrencyImmutable": "An account's currency cannot be changed",
+    "categoryNotFound": "Category not found",
+    "categoryDepth": "Categories nest two levels deep only",
+    "categoryKindMismatch": "A subcategory must be of the same kind as its parent",
+    "categoryOwnParent": "A category cannot be nested inside itself"
   },
   "theme": {
     "group": "Colour theme",
@@ -86,7 +94,8 @@
     "devices": "Devices",
     "settings": "Settings",
     "logout": "Sign out",
-    "accounts": "Accounts"
+    "accounts": "Accounts",
+    "categories": "Categories"
   },
   "auth": {
     "login": {
@@ -256,5 +265,56 @@
     "type_savings": "Deposit",
     "type_crypto_wallet": "Crypto wallet",
     "edit": "Edit"
+  },
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Two levels: a group and the categories inside it. Income and expenses are separate trees.",
+    "income": "Income",
+    "expense": "Expenses",
+    "empty": "No categories of this kind yet.",
+    "create": "New category",
+    "createTitle": "New category",
+    "editTitle": "Category",
+    "name": "Name",
+    "kind": "Kind",
+    "parent": "Parent category",
+    "parentNone": "No parent — this is a group",
+    "parentHint": "Can only be nested inside a top-level category",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "created": "Category created",
+    "updated": "Category saved",
+    "deleted": "Category deleted",
+    "loadFailed": "Could not load the categories",
+    "transactions_one": "{{count}} transaction",
+    "transactions_other": "{{count}} transactions",
+    "promoted_one": "A nested category was moved to the top level",
+    "promoted_other": "{{count}} nested categories were moved to the top level",
+    "deleteTitle": "Delete “{{name}}”?",
+    "deleteWithTransactions_one": "The category has {{count}} transaction. Choose where to move it.",
+    "deleteWithTransactions_other": "The category has {{count}} transactions. Choose where to move them.",
+    "moveTo": "Move transactions",
+    "moveToNone": "Leave without a category",
+    "cancel": "Cancel"
+  },
+  "defaults": {
+    "categories": {
+      "salary": "Salary",
+      "sideIncome": "Side income",
+      "giftsIn": "Gifts",
+      "interest": "Interest",
+      "otherIncome": "Other income",
+      "groceries": "Groceries",
+      "eatingOut": "Eating out",
+      "transport": "Transport",
+      "housing": "Housing",
+      "utilities": "Utilities and phone",
+      "health": "Health",
+      "clothes": "Clothes",
+      "entertainment": "Entertainment",
+      "giftsOut": "Gifts",
+      "otherExpense": "Other expenses"
+    }
   }
 }

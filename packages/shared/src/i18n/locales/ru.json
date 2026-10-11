@@ -39,6 +39,10 @@
     "account": {
       "name": "Укажите название счёта",
       "type": "Выберите тип счёта"
+    },
+    "category": {
+      "name": "Укажите название категории",
+      "kind": "Выберите вид категории"
     }
   },
   "errors": {
@@ -66,7 +70,11 @@
     "notFound": "Не найдено",
     "accountNotFound": "Счёт не найден",
     "accountHasTransactions": "По счёту есть операции. Его можно архивировать, но не удалить.",
-    "accountCurrencyImmutable": "Валюту счёта изменить нельзя"
+    "accountCurrencyImmutable": "Валюту счёта изменить нельзя",
+    "categoryNotFound": "Категория не найдена",
+    "categoryDepth": "Категории вкладываются только на два уровня",
+    "categoryKindMismatch": "Подкатегория должна быть того же вида, что и родитель",
+    "categoryOwnParent": "Категория не может быть вложена сама в себя"
   },
   "theme": {
     "group": "Тема оформления",
@@ -86,7 +94,8 @@
     "devices": "Устройства",
     "settings": "Настройки",
     "logout": "Выйти",
-    "accounts": "Счета"
+    "accounts": "Счета",
+    "categories": "Категории"
   },
   "auth": {
     "login": {
@@ -258,5 +267,62 @@
     "type_savings": "Вклад",
     "type_crypto_wallet": "Криптокошелёк",
     "edit": "Изменить"
+  },
+  "categories": {
+    "title": "Категории",
+    "subtitle": "Два уровня: группа и вложенные в неё категории. Доходы и расходы — отдельными деревьями.",
+    "income": "Доходы",
+    "expense": "Расходы",
+    "empty": "Категорий этого вида пока нет.",
+    "create": "Новая категория",
+    "createTitle": "Новая категория",
+    "editTitle": "Категория",
+    "name": "Название",
+    "kind": "Вид",
+    "parent": "Родительская категория",
+    "parentNone": "Без родителя — это группа",
+    "parentHint": "Вложить можно только в категорию верхнего уровня",
+    "save": "Сохранить",
+    "edit": "Изменить",
+    "delete": "Удалить",
+    "created": "Категория создана",
+    "updated": "Категория сохранена",
+    "deleted": "Категория удалена",
+    "loadFailed": "Не удалось загрузить категории",
+    "transactions_one": "{{count}} операция",
+    "transactions_few": "{{count}} операции",
+    "transactions_many": "{{count}} операций",
+    "transactions_other": "{{count}} операций",
+    "promoted_one": "Вложенная категория поднята на верхний уровень",
+    "promoted_few": "{{count}} вложенные категории подняты на верхний уровень",
+    "promoted_many": "{{count}} вложенных категорий подняты на верхний уровень",
+    "promoted_other": "{{count}} вложенных категорий подняты на верхний уровень",
+    "deleteTitle": "Удалить «{{name}}»?",
+    "deleteWithTransactions_one": "На категории {{count}} операция. Выберите, куда её перенести.",
+    "deleteWithTransactions_few": "На категории {{count}} операции. Выберите, куда их перенести.",
+    "deleteWithTransactions_many": "На категории {{count}} операций. Выберите, куда их перенести.",
+    "deleteWithTransactions_other": "На категории {{count}} операций. Выберите, куда их перенести.",
+    "moveTo": "Перенести операции",
+    "moveToNone": "Оставить без категории",
+    "cancel": "Отмена"
+  },
+  "defaults": {
+    "categories": {
+      "salary": "Зарплата",
+      "sideIncome": "Подработка",
+      "giftsIn": "Подарки",
+      "interest": "Проценты",
+      "otherIncome": "Прочие доходы",
+      "groceries": "Продукты",
+      "eatingOut": "Кафе и рестораны",
+      "transport": "Транспорт",
+      "housing": "Жильё",
+      "utilities": "Связь и коммунальные",
+      "health": "Здоровье",
+      "clothes": "Одежда",
+      "entertainment": "Развлечения",
+      "giftsOut": "Подарки",
+      "otherExpense": "Прочие расходы"
+    }
   }
 }
