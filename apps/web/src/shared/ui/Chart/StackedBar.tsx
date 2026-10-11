@@ -1,3 +1,4 @@
+import { cx } from '@/shared/lib';
 import styles from './StackedBar.module.scss';
 
 export interface StackedSegment {
@@ -8,6 +9,8 @@ export interface StackedSegment {
   /** Отформатированная сумма для легенды. */
   value: string;
   color: string;
+  /** Отрицательная величина: долг — тоже доля, но другого знака. */
+  negative?: boolean;
 }
 
 interface StackedBarProps {
@@ -15,15 +18,17 @@ interface StackedBarProps {
 }
 
 /**
- * Одна полоса, разложенная на доли, с легендой под ней.
+ * Доли одной величины: цветные сегменты в строку и легенда под ними.
  *
- * Вместо круговой диаграммы: доли длины сравниваются глазом точно,
- * доли площади — нет, а подписи у секторов либо наезжают друг на друга,
- * либо уезжают на выноски.
+ * Вместо круговой диаграммы: доли длины глаз сравнивает точно, доли
+ * площади — нет, а подписи у секторов либо наезжают друг на друга, либо
+ * уезжают на выноски.
  *
- * Между сегментами оставлен зазор цветом фона: без него две соседние
- * заливки сливаются в одну, и граница доли теряется ровно там, где её
- * и надо увидеть. Легенда есть всегда — цвет не единственный признак.
+ * Сегменты скруглены и разделены зазором цветом фона, а не состыкованы
+ * вплотную: две соседние заливки иначе сливаются в одну, и граница доли
+ * теряется ровно там, где её и надо увидеть. Зазор постоянный, поэтому
+ * сумма ширин чуть меньше ста процентов — на счёт это не влияет, проценты
+ * в легенде считаются из самих долей.
  */
 export function StackedBar({ segments }: StackedBarProps) {
   return (
@@ -32,8 +37,13 @@ export function StackedBar({ segments }: StackedBarProps) {
         {segments.map((segment) => (
           <span
             key={segment.key}
-            className={styles.segment}
-            style={{ inlineSize: `${segment.share * 100}%`, backgroundColor: segment.color }}
+            className={cx(styles.segment, segment.negative && styles.negative)}
+            style={{
+              // Минимум, чтобы доля в полпроцента осталась видимой:
+              // сегмент тоньше скругления превращается в точку.
+              flexBasis: `${Math.max(segment.share * 100, 2)}%`,
+              backgroundColor: segment.color,
+            }}
             title={`${segment.label}: ${segment.value}`}
           />
         ))}
@@ -42,10 +52,10 @@ export function StackedBar({ segments }: StackedBarProps) {
       <ul className={styles.legend}>
         {segments.map((segment) => (
           <li key={segment.key} className={styles.item}>
-            <span className={styles.swatch} style={{ backgroundColor: segment.color }} />
+            <span className={styles.dot} style={{ backgroundColor: segment.color }} />
             <span className={styles.label}>{segment.label}</span>
+            <span className={styles.share}>({Math.round(segment.share * 100)}%)</span>
             <span className={styles.value}>{segment.value}</span>
-            <span className={styles.share}>{Math.round(segment.share * 100)}%</span>
           </li>
         ))}
       </ul>

@@ -203,30 +203,7 @@
   "dashboard": {
     "title": "Overview",
     "subtitle": "Base currency — {{currency}}, time zone — {{timezone}}.",
-    "emailNotVerified": "Email is not confirmed. The link was sent to {{email}} — in development it is printed to the API log.",
-    "phase": "phase {{number}}",
-    "cards": {
-      "accounts": {
-        "title": "Accounts",
-        "text": "Cash, cards, deposits, crypto wallets."
-      },
-      "transactions": {
-        "title": "Transactions",
-        "text": "Income, expenses and transfers between your own accounts."
-      },
-      "recurring": {
-        "title": "Recurring charges",
-        "text": "Subscriptions and bills create themselves."
-      },
-      "reconciliation": {
-        "title": "Balance reconciliation",
-        "text": "The gap between the real balance and the calculated one."
-      },
-      "reports": {
-        "title": "Reports",
-        "text": "Spending by category, cash flow, net worth."
-      }
-    }
+    "emailNotVerified": "Email is not confirmed. The link was sent to {{email}} — in development it is printed to the API log."
   },
   "summary": {
     "title": "Total balance",
@@ -234,7 +211,7 @@
     "empty": "No accounts yet — add the first one and the total will appear here.",
     "stale": "The rate is not from today ({{currencies}}) — the total is approximate.",
     "missing": "No rate for {{currencies}}: those balances are not in the total.",
-    "chart": "Total balance from {{from}} to {{to}}"
+    "change": "over {{days}} days: {{amount}}"
   },
   "sessions": {
     "title": "Active devices",
@@ -413,8 +390,12 @@
     "loadFailed": "Could not load the rules",
     "name": "Name",
     "freq": "Repeat",
-    "interval": "Every",
-    "intervalHint": "1 — every period",
+    "intervalHint": {
+      "daily": "1 — every day, 2 — every other day",
+      "weekly": "1 — every week, 2 — every other week",
+      "monthly": "1 — every month, 3 — once a quarter",
+      "yearly": "1 — every year"
+    },
     "weekday": "Day of the week",
     "dayOfMonth": "Day of the month",
     "fromStart": "Same as the start date",
@@ -458,6 +439,13 @@
     "policy": {
       "clamp": "on the last day of the month",
       "skip": "skip that month"
+    },
+    "currency": "Currency",
+    "intervalLabel": {
+      "daily": "Every how many days",
+      "weekly": "Every how many weeks",
+      "monthly": "Every how many months",
+      "yearly": "Every how many years"
     }
   },
   "reconciliation": {

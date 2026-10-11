@@ -1,13 +1,20 @@
-import { formatMoney, isNegative, type CurrencyBucket } from '@moneymap/shared';
-import { useState } from 'react';
+import { formatMoney, isNegative } from '@moneymap/shared';
+import { lazy, Suspense, useState } from 'react';
 import { useCurrencies } from '@/entities/currency';
 import { useNetWorth, useSummary } from '@/entities/summary';
 import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
-import { Select, Spinner } from '@/shared/ui';
-import { Sparkline } from './Sparkline.tsx';
+import { Select, seriesColor, Spinner, StackedBar } from '@/shared/ui';
 import styles from './TotalBalance.module.scss';
+
+/**
+ * График подгружается отдельным кусочком: recharts весит заметно, и ждать
+ * его ради первого экрана незачем — цифра баланса важнее линии под ней.
+ */
+const NetWorthChart = lazy(() =>
+  import('./NetWorthChart.tsx').then((module) => ({ default: module.NetWorthChart })),
+);
 
 /**
  * Сводный баланс крупными цифрами (§8.6).
@@ -43,7 +50,9 @@ export function TotalBalance() {
     });
   };
 
-  const points = netWorth.data?.points ?? [];
+  // Месяц, как просили: длиннее — линия сжимается в кардиограмму, короче —
+  // по ней нечего отслеживать.
+  const points = (netWorth.data?.points ?? []).slice(-31);
 
   return (
     <section className={styles.root} aria-labelledby="total-balance-title">
@@ -84,13 +93,14 @@ export function TotalBalance() {
           </p>
 
           {points.length > 1 && (
-            <Sparkline
-              points={points}
-              label={t('summary.chart', {
-                from: points[0]?.date ?? '',
-                to: points.at(-1)?.date ?? '',
-              })}
-            />
+            <Suspense fallback={<div className={styles.chartPlaceholder} />}>
+              <NetWorthChart
+                points={points}
+                currency={base}
+                decimals={decimals}
+                symbol={currency?.symbol}
+              />
+            </Suspense>
           )}
 
           {data && data.stale.length > 0 && (
@@ -106,29 +116,18 @@ export function TotalBalance() {
           )}
 
           {data && data.byCurrency.length > 0 ? (
-            <ul className={styles.breakdown}>
-              {data.byCurrency.map((bucket: CurrencyBucket) => (
-                <li className={styles.row} key={bucket.currencyCode}>
-                  <span className={styles.code}>{bucket.currencyCode}</span>
-                  <span className={styles.own}>{money(bucket.total, bucket.currencyCode)}</span>
-                  <span className={styles.converted}>
-                    {bucket.currencyCode === base ? '' : money(bucket.totalBase)}
-                  </span>
-                  <span className={styles.share}>
-                    {/* Доля в процентах без знаков после запятой: 55,6 %
-                        и 56 % говорят одно и то же, второе читается быстрее. */}
-                    {Math.round(bucket.share * 100)}%
-                  </span>
-                  {/* Долг — это тоже доля, но другого знака: одинаковый цвет
-                      у остатка и у задолженности делал бы полосы под строками
-                      бессмысленными. */}
-                  <span
-                    className={cx(styles.bar, isNegative(bucket.totalBase) && styles.barNegative)}
-                    style={{ inlineSize: `${Math.max(bucket.share * 100, 1)}%` }}
-                  />
-                </li>
-              ))}
-            </ul>
+            <StackedBar
+              segments={data.byCurrency.map((bucket, index) => ({
+                key: bucket.currencyCode,
+                label: bucket.currencyCode,
+                share: bucket.share,
+                // В легенде валюта показана в себе самой: «2 370,57 Br»
+                // человек узнаёт, а пересчёт в доллары стоит рядом в итоге.
+                value: money(bucket.total, bucket.currencyCode),
+                color: seriesColor(index),
+                negative: isNegative(bucket.totalBase),
+              }))}
+            />
           ) : (
             <p className={styles.note}>{t('summary.empty')}</p>
           )}

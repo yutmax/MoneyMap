@@ -4,17 +4,12 @@ import { NotificationList } from '@/widgets/notifications';
 import { TotalBalance } from '@/widgets/total-balance';
 import styles from './DashboardPage.module.scss';
 
-const CARDS = [
-  { key: 'accounts', phase: 1 },
-  { key: 'transactions', phase: 1 },
-  { key: 'recurring', phase: 3 },
-  { key: 'reconciliation', phase: 4 },
-  { key: 'reports', phase: 5 },
-];
-
 /**
- * Обзор. Сводный баланс (§8.6) — первое, что видно на странице; карточки под
- * ним перечисляют то, чего ещё нет, и уходят по мере готовности фаз.
+ * Обзор. Сводный баланс (§8.6) и то, что требует внимания.
+ *
+ * Карточек с перечнем возможностей здесь больше нет: они были списком
+ * обещаний на время, пока возможностей не было, а теперь всё это есть
+ * в навигации и занимает место зря.
  */
 export function DashboardPage() {
   const { t } = useT();
@@ -42,16 +37,6 @@ export function DashboardPage() {
       <NotificationList />
 
       <TotalBalance />
-
-      <div className={styles.cards}>
-        {CARDS.map((card) => (
-          <article key={card.key} className={styles.card}>
-            <h2 className={styles.cardTitle}>{t(`dashboard.cards.${card.key}.title`)}</h2>
-            <p className={styles.cardText}>{t(`dashboard.cards.${card.key}.text`)}</p>
-            <span className={styles.badge}>{t('dashboard.phase', { number: card.phase })}</span>
-          </article>
-        ))}
-      </div>
     </div>
   );
 }

@@ -1,0 +1,32 @@
+.root {
+  display: grid;
+  row-gap: var(--space-3xs);
+}
+
+.tooltip {
+  display: grid;
+  row-gap: rem(1);
+  padding: var(--space-3xs) var(--space-2xs);
+  font-size: var(--step--2);
+  background-color: var(--c-surface-raised);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-card);
+}
+
+.tooltipDate {
+  color: var(--c-text-faint);
+}
+
+.tooltipValue {
+  font-weight: var(--weight-medium);
+
+  @include tabular-numbers;
+}
+
+.caption {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+
+  @include tabular-numbers;
+}

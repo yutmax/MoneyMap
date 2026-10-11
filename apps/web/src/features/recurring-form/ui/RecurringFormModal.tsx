@@ -9,6 +9,7 @@ import {
 import { useState } from 'react';
 import { useAccounts } from '@/entities/account';
 import { useCategories } from '@/entities/category';
+import { useCurrencies } from '@/entities/currency';
 import { weekdayName } from '@/entities/recurring';
 import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
@@ -28,6 +29,7 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
   const { user } = useMe();
   const accounts = useAccounts();
   const categories = useCategories();
+  const currencies = useCurrencies();
   const create = useCreateRecurringRule();
   const update = useUpdateRecurringRule();
 
@@ -39,6 +41,11 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
   const [accountId, setAccountId] = useState(rule?.accountId ?? '');
   const [categoryId, setCategoryId] = useState(rule?.categoryId ?? '');
   const [amount, setAmount] = useState(rule ? toMoney(rule.amount) : '');
+  /**
+   * Валюта суммы. Пустая строка — «как у счёта»: так выбор сам следует
+   * за сменой счёта, пока человек не указал валюту явно.
+   */
+  const [currency, setCurrency] = useState(rule?.currencyCode ?? '');
   const [freq, setFreq] = useState(rule?.freq ?? 'monthly');
   const [interval, setInterval] = useState(String(rule?.interval ?? 1));
   const [startOn, setStartOn] = useState(rule?.startOn ?? todayIn(user?.timezone ?? 'UTC'));
@@ -61,6 +68,9 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
   const selectedAccountId = accountId || open[0]?.id || '';
 
   const categoryOptions = (categories.data ?? []).filter((c) => c.kind === kind);
+  const accountCurrency =
+    open.find((a) => a.id === selectedAccountId)?.currencyCode ?? rule?.accountCurrency ?? '';
+  const entryCurrency = currency || accountCurrency;
   const needsDay = freq === 'monthly' || freq === 'yearly';
   const needsWeekday = freq === 'weekly';
   // О коротком месяце спрашиваем только тогда, когда он случится: для
@@ -105,6 +115,9 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
         await create.mutateAsync({
           name: name.trim(),
           accountId: selectedAccountId,
+          ...(entryCurrency && entryCurrency !== accountCurrency
+            ? { currency: entryCurrency }
+            : {}),
           categoryId: categoryId === '' ? null : categoryId,
           kind,
           amount: parsed,
@@ -183,12 +196,32 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
             ))}
           </Select>
 
-          <Field
-            label={t('transactions.amount')}
-            inputMode="decimal"
-            value={amount}
-            onChange={(e) => setAmount(e.currentTarget.value)}
-          />
+          <div className={styles.amountRow}>
+            <Field
+              label={t('transactions.amount')}
+              inputMode="decimal"
+              value={amount}
+              onChange={(e) => setAmount(e.currentTarget.value)}
+            />
+
+            {/* Валюта списания: счёт в рублях, подписка в долларах — обычное
+                дело, и сумма тогда задаётся в долларах. Пересчёт по курсу
+                на день списания делает сервер, курс остаётся в операции. */}
+            <Select
+              label={t('recurring.currency')}
+              value={entryCurrency}
+              disabled={isEdit}
+              onChange={(e) =>
+                setCurrency(e.currentTarget.value === accountCurrency ? '' : e.currentTarget.value)
+              }
+            >
+              {(currencies.data ?? []).map((item) => (
+                <option key={item.code} value={item.code}>
+                  {item.code}
+                </option>
+              ))}
+            </Select>
+          </div>
 
           <div className={styles.row}>
             <Select
@@ -204,11 +237,11 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
             </Select>
 
             <Field
-              label={t('recurring.interval')}
+              label={t(`recurring.intervalLabel.${freq}`)}
               type="number"
               min={1}
               max={366}
-              hint={t('recurring.intervalHint')}
+              hint={t(`recurring.intervalHint.${freq}`, { count: Number(interval) || 1 })}
               value={interval}
               onChange={(e) => setInterval(e.currentTarget.value)}
             />

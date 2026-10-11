@@ -49,60 +49,7 @@
   color: var(--c-warning);
 }
 
-.breakdown {
-  display: grid;
-  row-gap: var(--space-xs);
-}
-
-.row {
-  // Код, сумма в своей валюте, пересчёт, доля — и полоса под ними во всю
-  // ширину строки. Полоса в последней строке сетки, а не фоном у .row:
-  // фон нельзя тянуть по доле, не трогая саму строку.
-  display: grid;
-  column-gap: var(--space-xs);
-  grid-template-areas:
-    "code own converted share"
-    "bar bar bar bar";
-  grid-template-columns: auto 1fr auto rem(40);
-  row-gap: rem(4);
-  align-items: baseline;
-  font-size: var(--step--1);
-}
-
-.code {
-  grid-area: code;
-  font-weight: var(--weight-medium);
-}
-
-.own {
-  grid-area: own;
-  text-align: end;
-
-  @include tabular-numbers;
-}
-
-.converted {
-  grid-area: converted;
-  color: var(--c-text-faint);
-
-  @include tabular-numbers;
-}
-
-.share {
-  grid-area: share;
-  color: var(--c-text-muted);
-  text-align: end;
-
-  @include tabular-numbers;
-}
-
-.bar {
-  grid-area: bar;
-  block-size: rem(3);
-  background-color: var(--c-accent);
-  border-radius: var(--radius-pill);
-}
-
-.barNegative {
-  background-color: var(--c-expense);
+.chartPlaceholder {
+  // Та же высота, что у графика: иначе карточка прыгает, когда он доезжает.
+  block-size: rem(176);
 }

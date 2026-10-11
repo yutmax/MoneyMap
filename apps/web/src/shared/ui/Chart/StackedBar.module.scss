@@ -6,48 +6,62 @@
 .bar {
   display: flex;
   // Зазор цветом поверхности: без него соседние доли сливаются в одну.
-  gap: 2px;
-  block-size: rem(12);
-  overflow: hidden;
-  border-radius: var(--radius-pill);
+  gap: rem(5);
+  block-size: rem(14);
 }
 
 .segment {
-  min-inline-size: 2px;
+  flex-grow: 0;
+  flex-shrink: 1;
+  min-inline-size: rem(6);
+  // Каждый сегмент скруглён сам по себе, а не обрезается общей маской:
+  // так граница доли видна и на краю полосы, и в середине.
+  border-radius: var(--radius-pill);
+}
+
+/* Долг рисуется полосатым: цвет кодирует валюту и не может заодно
+   кодировать знак, а штриховка не занимает собой ни одного оттенка. */
+.negative {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(0 0 0 / 28%) 0 rem(3),
+    transparent rem(3) rem(6)
+  );
 }
 
 .legend {
-  display: grid;
-  row-gap: rem(4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3xs) var(--space-m);
 }
 
 .item {
-  display: grid;
-  column-gap: var(--space-xs);
-  grid-template-columns: auto 1fr auto rem(48);
+  display: inline-flex;
+  gap: var(--space-3xs);
   align-items: baseline;
   font-size: var(--step--1);
 }
 
-.swatch {
-  inline-size: rem(9);
-  block-size: rem(9);
-  border-radius: rem(2);
+.dot {
+  inline-size: rem(8);
+  block-size: rem(8);
+  border-radius: 50%;
   align-self: center;
+  flex-shrink: 0;
 }
 
 .label {
-  @include clamp-lines(1);
-}
-
-.value {
-  @include tabular-numbers;
+  font-weight: var(--weight-medium);
 }
 
 .share {
   color: var(--c-text-faint);
-  white-space: nowrap;
-  text-align: end;
+
+  @include tabular-numbers;
+}
+
+.value {
+  color: var(--c-text-muted);
 
   @include tabular-numbers;
 }
