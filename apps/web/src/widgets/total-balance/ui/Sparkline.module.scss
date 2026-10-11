@@ -1,0 +1,14 @@
+.root {
+  inline-size: 100%;
+  // Высота задаётся здесь, а не в viewBox: viewBox — это условные единицы,
+  // а на экране линии нужно ровно столько места.
+  block-size: rem(34);
+}
+
+.up {
+  stroke: var(--c-income);
+}
+
+.down {
+  stroke: var(--c-expense);
+}

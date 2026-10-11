@@ -1,0 +1,108 @@
+.root {
+  display: grid;
+  row-gap: var(--space-s);
+
+  @include surface(var(--space-m));
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  align-items: start;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--step--1);
+  font-weight: var(--weight-regular);
+  color: var(--c-text-muted);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.picker {
+  // Выбор валюты не должен конкурировать с итогом: достаточно трёх букв.
+  inline-size: rem(104);
+  font-size: var(--step--2);
+}
+
+.total {
+  // Самая крупная цифра в приложении: с неё начинают смотреть на экран.
+  font-size: var(--step-4);
+  font-weight: var(--weight-medium);
+  line-height: 1.1;
+
+  @include tabular-numbers;
+}
+
+.negative {
+  color: var(--c-expense);
+}
+
+.note {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
+
+.warning {
+  color: var(--c-warning);
+}
+
+.breakdown {
+  display: grid;
+  row-gap: var(--space-xs);
+}
+
+.row {
+  // Код, сумма в своей валюте, пересчёт, доля — и полоса под ними во всю
+  // ширину строки. Полоса в последней строке сетки, а не фоном у .row:
+  // фон нельзя тянуть по доле, не трогая саму строку.
+  display: grid;
+  column-gap: var(--space-xs);
+  grid-template-areas:
+    "code own converted share"
+    "bar bar bar bar";
+  grid-template-columns: auto 1fr auto rem(40);
+  row-gap: rem(4);
+  align-items: baseline;
+  font-size: var(--step--1);
+}
+
+.code {
+  grid-area: code;
+  font-weight: var(--weight-medium);
+}
+
+.own {
+  grid-area: own;
+  text-align: end;
+
+  @include tabular-numbers;
+}
+
+.converted {
+  grid-area: converted;
+  color: var(--c-text-faint);
+
+  @include tabular-numbers;
+}
+
+.share {
+  grid-area: share;
+  color: var(--c-text-muted);
+  text-align: end;
+
+  @include tabular-numbers;
+}
+
+.bar {
+  grid-area: bar;
+  block-size: rem(3);
+  background-color: var(--c-accent);
+  border-radius: var(--radius-pill);
+}
+
+.barNegative {
+  background-color: var(--c-expense);
+}

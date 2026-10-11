@@ -194,10 +194,6 @@
         "title": "Transactions",
         "text": "Income, expenses and transfers between your own accounts."
       },
-      "netWorth": {
-        "title": "Combined balance",
-        "text": "Everything you hold, in one chosen currency."
-      },
       "recurring": {
         "title": "Recurring charges",
         "text": "Subscriptions and bills create themselves."
@@ -211,6 +207,14 @@
         "text": "Spending by category, cash flow, net worth."
       }
     }
+  },
+  "summary": {
+    "title": "Total balance",
+    "displayIn": "Currency",
+    "empty": "No accounts yet — add the first one and the total will appear here.",
+    "stale": "The rate is not from today ({{currencies}}) — the total is approximate.",
+    "missing": "No rate for {{currencies}}: those balances are not in the total.",
+    "chart": "Total balance from {{from}} to {{to}}"
   },
   "sessions": {
     "title": "Active devices",

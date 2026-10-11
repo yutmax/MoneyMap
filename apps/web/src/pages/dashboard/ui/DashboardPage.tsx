@@ -1,20 +1,19 @@
 import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
+import { TotalBalance } from '@/widgets/total-balance';
 import styles from './DashboardPage.module.scss';
 
 const CARDS = [
   { key: 'accounts', phase: 1 },
   { key: 'transactions', phase: 1 },
-  { key: 'netWorth', phase: 2 },
   { key: 'recurring', phase: 3 },
   { key: 'reconciliation', phase: 4 },
   { key: 'reports', phase: 5 },
 ];
 
 /**
- * Заглушка обзора. Содержимое появляется в фазе 1 (счета и транзакции) и
- * фазе 2 (сводный баланс) — здесь пока только каркас страницы и проверка того,
- * что защищённый маршрут действительно отдаёт данные пользователя.
+ * Обзор. Сводный баланс (§8.6) — первое, что видно на странице; карточки под
+ * ним перечисляют то, чего ещё нет, и уходят по мере готовности фаз.
  */
 export function DashboardPage() {
   const { t } = useT();
@@ -38,6 +37,8 @@ export function DashboardPage() {
           {t('dashboard.emailNotVerified', { email: user.email })}
         </div>
       )}
+
+      <TotalBalance />
 
       <div className={styles.cards}>
         {CARDS.map((card) => (
