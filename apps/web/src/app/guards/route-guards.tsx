@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { isOnboarded, useMe } from '@/entities/user';
+import { useMe } from '@/entities/user';
 import { ROUTES } from '@/shared/config';
 import { Spinner } from '@/shared/ui';
 
@@ -11,29 +11,6 @@ export function RequireAuth() {
   if (isLoading) return <Spinner fullscreen />;
   // state.from — чтобы после входа вернуть человека туда, куда он шёл.
   if (!user) return <Navigate to={ROUTES.login} replace state={{ from: location.pathname }} />;
-
-  return <Outlet />;
-}
-
-/**
- * Основное приложение: доступно только тому, кто прошёл первичную настройку.
- *
- * Гард отдельный от RequireAuth, потому что сама страница онбординга тоже
- * требует входа — её нельзя положить ни в публичную, ни в основную ветку.
- */
-export function RequireOnboarded() {
-  const { user } = useMe();
-
-  if (user && !isOnboarded(user)) return <Navigate to={ROUTES.onboarding} replace />;
-
-  return <Outlet />;
-}
-
-/** Страница онбординга: пройденный её больше не увидит. */
-export function RequireNotOnboarded() {
-  const { user } = useMe();
-
-  if (user && isOnboarded(user)) return <Navigate to={ROUTES.home} replace />;
 
   return <Outlet />;
 }

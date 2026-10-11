@@ -139,9 +139,9 @@
     "crypto": "Cryptocurrencies"
   },
   "onboarding": {
-    "title": "{{name}}, two more fields",
-    "titleFallback": "Two more fields",
-    "subtitle": "Without them the app doesn't know which currency to total up in, or which calendar to count dates by.",
+    "title": "{{name}}, one more step",
+    "titleFallback": "One more step",
+    "subtitle": "Two settings the app cannot count without: which currency to total up in, and which calendar to date things by.",
     "currencyHint": "Your combined balance across all accounts is shown in it",
     "timezoneHint": "Affects the dates of recurring operations",
     "note": "Both can be changed later in settings. The base currency is only a way to show the total: account currencies and the rates recorded in transactions do not depend on it.",

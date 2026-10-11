@@ -19,8 +19,9 @@ export function RegisterPage() {
         </>
       }
     >
-      {/* Настройки спросим после входа: см. ROUTES.onboarding. */}
-      <RegisterForm onSuccess={() => void navigate(ROUTES.onboarding, { replace: true })} />
+      {/* Настройки спросим уже внутри приложения: OnboardingGate покажет
+          окно поверх главной. */}
+      <RegisterForm onSuccess={() => void navigate(ROUTES.home, { replace: true })} />
     </AuthCard>
   );
 }

@@ -1,25 +1,31 @@
 import { onboardingSchema, type OnboardingInput } from '@moneymap/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { CurrencySelect } from '@/entities/currency';
 import { useT } from '@/shared/i18n';
 import { applyServerError } from '@/shared/lib';
-import { Alert, Button, Field } from '@/shared/ui';
+import { Alert, Button, TimezoneSelect } from '@/shared/ui';
 import { useCompleteOnboarding } from '../api/use-complete-onboarding.ts';
 import { guessDefaults } from '../lib/guess-defaults.ts';
 import styles from './OnboardingForm.module.scss';
 
 type FormValues = z.input<typeof onboardingSchema>;
 
-export function OnboardingForm({ onDone }: { onDone: () => void }) {
+/**
+ * Форма ничего не делает после успеха и не принимает колбэка: ответ сервера
+ * кладётся в кеш пользователя, onboardedAt перестаёт быть пустым, и окно
+ * пропадает само — тем же условием, которым появилось.
+ */
+export function OnboardingForm() {
   const { t } = useT();
   const complete = useCompleteOnboarding();
   const [formError, setFormError] = useState<string | null>(null);
   const [defaults] = useState(guessDefaults);
 
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -33,7 +39,6 @@ export function OnboardingForm({ onDone }: { onDone: () => void }) {
     setFormError(null);
     try {
       await complete.mutateAsync(values);
-      onDone();
     } catch (error) {
       setFormError(applyServerError(error, setError, ['baseCurrency', 'timezone']));
     }
@@ -49,11 +54,20 @@ export function OnboardingForm({ onDone }: { onDone: () => void }) {
           hint={t('onboarding.currencyHint')}
           {...register('baseCurrency')}
         />
-        <Field
-          label={t('fields.timezone')}
-          hint={t('onboarding.timezoneHint')}
-          error={t(errors.timezone?.message)}
-          {...register('timezone')}
+
+        {/* Controller, а не register: список таймзон собирается в useMemo,
+            и неуправляемый select выставлял бы значение раньше, чем
+            появляются его option — браузер сбрасывал бы выбор на первый. */}
+        <Controller
+          control={control}
+          name="timezone"
+          render={({ field }) => (
+            <TimezoneSelect
+              {...field}
+              hint={t('onboarding.timezoneHint')}
+              error={t(errors.timezone?.message)}
+            />
+          )}
         />
       </div>
 

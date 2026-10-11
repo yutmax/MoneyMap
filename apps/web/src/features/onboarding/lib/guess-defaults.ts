@@ -1,11 +1,13 @@
+import { detectTimezone } from '@/shared/ui';
+
 /**
  * Предзаполнение онбординга по данным браузера: почти всегда угадывается
  * верно, а поправить — один выбор из списка.
  */
 export function guessDefaults(): { timezone: string; currency: string } {
-  const resolved = Intl.DateTimeFormat().resolvedOptions();
   const byRegion: Record<string, string> = {
     BY: 'BYN',
+    RU: 'RUB',
     UA: 'UAH',
     PL: 'PLN',
     KZ: 'KZT',
@@ -17,9 +19,16 @@ export function guessDefaults(): { timezone: string; currency: string } {
     JP: 'JPY',
     US: 'USD',
   };
-  const region = new Intl.Locale(resolved.locale).region ?? '';
+
+  let region = '';
+  try {
+    region = new Intl.Locale(Intl.DateTimeFormat().resolvedOptions().locale).region ?? '';
+  } catch {
+    // Экзотическая локаль — останется валюта по умолчанию.
+  }
+
   return {
-    timezone: resolved.timeZone,
+    timezone: detectTimezone(),
     currency: byRegion[region] ?? 'EUR',
   };
 }

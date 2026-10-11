@@ -9,7 +9,6 @@ export const ROUTES = {
   home: '/',
   login: '/login',
   register: '/register',
-  onboarding: '/onboarding',
   sessions: '/sessions',
   settings: '/settings',
   forgotPassword: '/forgot-password',

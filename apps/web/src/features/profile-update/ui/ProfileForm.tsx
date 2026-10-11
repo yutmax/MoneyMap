@@ -1,7 +1,7 @@
 import type { MeResponse } from '@moneymap/shared';
 import { CurrencySelect } from '@/entities/currency';
 import { useT } from '@/shared/i18n';
-import { Alert, Field } from '@/shared/ui';
+import { Alert, Field, TimezoneSelect } from '@/shared/ui';
 import { useUpdateSettings } from '../api/use-update-settings.ts';
 import styles from './ProfileForm.module.scss';
 
@@ -31,14 +31,10 @@ export function ProfileForm({ user }: { user: MeResponse }) {
           onChange={(e) => update.mutate({ baseCurrency: e.currentTarget.value })}
         />
 
-        <Field
-          label={t('fields.timezone')}
-          defaultValue={user.timezone ?? ''}
+        <TimezoneSelect
+          value={user.timezone ?? ''}
           hint={t('settings.timezoneHint')}
-          onBlur={(e) => {
-            const timezone = e.currentTarget.value.trim();
-            if (timezone && timezone !== user.timezone) update.mutate({ timezone });
-          }}
+          onChange={(e) => update.mutate({ timezone: e.currentTarget.value })}
         />
       </div>
 

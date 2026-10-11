@@ -3,7 +3,6 @@ import { DashboardPage } from '@/pages/dashboard';
 import { ForgotPasswordPage } from '@/pages/forgot-password';
 import { LoginPage } from '@/pages/login';
 import { NotFoundPage } from '@/pages/not-found';
-import { OnboardingPage } from '@/pages/onboarding';
 import { RegisterPage } from '@/pages/register';
 import { ResetPasswordPage } from '@/pages/reset-password';
 import { SessionsPage } from '@/pages/sessions';
@@ -11,12 +10,8 @@ import { SettingsPage } from '@/pages/settings';
 import { VerifyEmailPage } from '@/pages/verify-email';
 import { ROUTES } from '@/shared/config';
 import { AppHeader } from '@/widgets/app-header';
-import {
-  RedirectIfAuthenticated,
-  RequireAuth,
-  RequireNotOnboarded,
-  RequireOnboarded,
-} from './guards/route-guards.tsx';
+import { OnboardingGate } from '@/widgets/onboarding-gate';
+import { RedirectIfAuthenticated, RequireAuth } from './guards/route-guards.tsx';
 
 export function Router() {
   return (
@@ -34,14 +29,11 @@ export function Router() {
         </Route>
 
         <Route element={<RequireAuth />}>
-          {/* Онбординг — внутри авторизованной зоны, но до шапки: навигация
-              по разделам, которые ещё не настроены, только мешала бы. */}
-          <Route element={<RequireNotOnboarded />}>
-            <Route path={ROUTES.onboarding} element={<OnboardingPage />} />
-          </Route>
-
-          <Route element={<RequireOnboarded />}>
-            <Route element={<AppHeader />}>
+          <Route element={<AppHeader />}>
+            {/* Первичная настройка — не маршрут, а окно поверх того, куда
+                человек и так попал. Отдельная страница показывала бы форму
+                на пустом экране, не объясняя, ради чего отвечать. */}
+            <Route element={<OnboardingGate />}>
               <Route index element={<DashboardPage />} />
               <Route path={ROUTES.sessions} element={<SessionsPage />} />
               <Route path={ROUTES.settings} element={<SettingsPage />} />
