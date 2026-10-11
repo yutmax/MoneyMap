@@ -81,6 +81,7 @@ services:
       - '8443:8443'
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS обязателен}
+      SITE_HOST: ${SITE_HOST:?SITE_HOST обязателен}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # Статика фронтенда собирается на хосте (pnpm build) и монтируется сюда.

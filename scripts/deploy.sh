@@ -70,8 +70,11 @@ docker pull "$IMAGE"
 set_env API_IMAGE "$IMAGE"
 
 log "Postgres"
+# Ждать готовности здесь не нужно и нечем: `docker compose wait` ждёт
+# ОСТАНОВКИ контейнера, а не его здоровья, и на работающем Postgres висит
+# вечно. Готовность обеспечивает depends_on: service_healthy — и migrate,
+# и api стартуют только после healthcheck'а базы.
 $COMPOSE up -d --no-build postgres
-$COMPOSE wait postgres 2>/dev/null || true
 
 log "Миграции"
 # Отдельным шагом, до старта нового api (§10.2): в стартовом хендлере
@@ -82,8 +85,25 @@ if ! $COMPOSE run --rm migrate; then
   exit 1
 fi
 
+log "Справочник валют"
+# Сид гоняется на каждом выкате, а не однажды руками: это не тестовые
+# данные, а справочник, который обязан совпадать с кодом — иначе счёт
+# в валюте, добавленной в этом релизе, создать нельзя. Внутри upsert
+# по коду валюты, так что повтор безвреден.
+if ! $COMPOSE run --rm migrate node dist/scripts/seed.js; then
+  log "Справочник не залился"
+  rollback
+  exit 1
+fi
+
 log "Запуск api и caddy"
 $COMPOSE up -d --no-build api caddy
+
+# Caddyfile примонтирован файлом, поэтому его правка не меняет описание
+# контейнера — compose считает caddy актуальным и не трогает его. Без
+# явной перезагрузки новый конфиг просто не вступил бы в силу.
+# reload, а не restart: Caddy подхватывает конфиг без разрыва соединений.
+$COMPOSE exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
 
 # ───────────────────────────── проверка ───────────────────────────────────
 

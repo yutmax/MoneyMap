@@ -116,6 +116,11 @@ jobs:
           # хост, а деплой несёт секреты окружения.
           printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
+          # Выгрузка образа и миграции идут молча минутами, а NAT между
+          # раннером и сервером рвёт соединение, простоявшее без трафика
+          # около пяти минут. Пустые пакеты держат его живым.
+          printf 'Host *\n  ServerAliveInterval 30\n  ServerAliveCountMax 20\n' > ~/.ssh/config
+          chmod 600 ~/.ssh/config
 
       - name: Отправить файлы на сервер
         env:
