@@ -11,7 +11,7 @@ import { authRoutes } from './modules/auth/auth.routes.ts';
 import { categoryRoutes } from './modules/categories/category.routes.ts';
 import { onboardingRoutes } from './modules/onboarding/onboarding.routes.ts';
 import { rateRoutes } from './modules/rates/rate.routes.ts';
-import { budgetRoutes, reportRoutes } from './modules/reports/report.routes.ts';
+import { budgetRoutes, importRoutes, reportRoutes } from './modules/reports/report.routes.ts';
 import {
   notificationRoutes,
   reminderRoutes,
@@ -198,6 +198,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       await api.register(notificationRoutes, { prefix: '/notifications' });
       await api.register(reportRoutes, { prefix: '/reports' });
       await api.register(budgetRoutes, { prefix: '/budgets' });
+      await api.register(importRoutes, { prefix: '/imports' });
       await api.register(referenceRoutes);
     },
     { prefix: '/api' },

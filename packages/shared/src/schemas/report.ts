@@ -131,3 +131,55 @@ export interface BudgetRow {
   share: number;
   status: BudgetStatus;
 }
+
+/* ───────────────────────────── импорт CSV ─────────────────────────────── */
+
+/** Какая колонка файла за что отвечает. null — колонки нет. */
+export interface ImportMapping {
+  date: number;
+  amount: number;
+  note: number | null;
+  category: number | null;
+}
+
+export interface ImportPreview {
+  delimiter: string;
+  columns: string[];
+  /** Первые строки файла — чтобы человек увидел, что разобралось. */
+  rows: string[][];
+  total: number;
+  /** Догадка по заголовкам. Решение всё равно за человеком. */
+  suggested: {
+    date: number | null;
+    amount: number | null;
+    note: number | null;
+    category: number | null;
+  };
+}
+
+export interface ImportResult {
+  imported: number;
+  /** Строки, уже бывшие в базе: повторный импорт того же файла. */
+  duplicates: number;
+  /** Номера строк файла, которые не разобрались. */
+  failed: number[];
+}
+
+/** Файл приходит текстом: читает его браузер, а не сервер из формы. */
+export const importPreviewSchema = z.object({
+  csv: z.string().min(1).max(5_000_000),
+});
+
+export const importRunSchema = z.object({
+  csv: z.string().min(1).max(5_000_000),
+  accountId: uuidSchema,
+  delimiter: z.string().min(1).max(1).optional(),
+  mapping: z.object({
+    date: z.number().int().min(0),
+    amount: z.number().int().min(0),
+    note: z.number().int().min(0).nullable(),
+    category: z.number().int().min(0).nullable(),
+  }),
+});
+
+export type ImportRunInput = z.infer<typeof importRunSchema>;

@@ -1,5 +1,7 @@
 import {
   budgetsQuerySchema,
+  importPreviewSchema,
+  importRunSchema,
   categoryReportQuerySchema,
   reportPeriodSchema,
   setBudgetsSchema,
@@ -10,6 +12,7 @@ import { scopeOf } from '../../lib/scoping.ts';
 import { parse } from '../../lib/validate.ts';
 import { getAuth, requireAuth } from '../../plugins/require-auth.ts';
 import { listBudgets, setBudgets } from './budget.service.ts';
+import { importCsv, previewCsv } from './import.service.ts';
 import { cashflowReport, categoryReport, exportCsv, summaryReport } from './report.service.ts';
 
 export async function reportRoutes(app: FastifyInstance): Promise<void> {
@@ -75,5 +78,25 @@ export async function budgetRoutes(app: FastifyInstance): Promise<void> {
     const input = parse(setBudgetsSchema, request.body);
     await setBudgets(db, scope, input);
     return reply.send(await listBudgets(db, scope));
+  });
+}
+
+/** Импорт выписки (§8.11). */
+export async function importRoutes(app: FastifyInstance): Promise<void> {
+  app.addHook('preHandler', requireAuth);
+
+  // Файл приезжает в теле запроса строкой, поэтому предел тела поднят:
+  // выписка за год — это сотни килобайт, и стандартного мегабайта ей мало.
+  const bodyLimit = 6 * 1024 * 1024;
+
+  app.post('/preview', { bodyLimit }, async (request, reply) => {
+    const { csv } = parse(importPreviewSchema, request.body);
+    return reply.send({ preview: previewCsv(csv) });
+  });
+
+  app.post('/', { bodyLimit }, async (request, reply) => {
+    const scope = scopeOf(getAuth(request).userId);
+    const input = parse(importRunSchema, request.body);
+    return reply.send({ result: await importCsv(db, scope, input) });
   });
 }

@@ -100,6 +100,8 @@
     "snapshotCorrected": "The gap has already been closed by a transaction",
     "snapshotMatches": "There is no gap to close",
     "reminderNotFound": "Reminder not found",
+    "importEmpty": "The file is empty",
+    "importTooLarge": "Too many rows in the file",
     "accountArchived": "The account is archived. Restore it to add transactions.",
     "currencyMismatch": "The transaction's currency must match the account's",
     "transferLegEdit": "A transfer leg cannot be edited on its own — change the transfer itself",
@@ -514,6 +516,25 @@
     "save": "Save",
     "cancel": "Cancel",
     "saved": "Limits saved"
+  },
+  "import": {
+    "open": "Import CSV",
+    "title": "Import a statement",
+    "file": "Statement file",
+    "fileHint": "A CSV from your bank. The delimiter and encoding are detected.",
+    "noColumn": "No such column",
+    "column": "Column {{index}}",
+    "rows": "Rows in the file: {{count}}",
+    "submit": "Import",
+    "done": "Imported {{count}} transactions",
+    "result": "Added: {{imported}}. Already there: {{duplicates}}. Not parsed: {{failed}}.",
+    "failedRows": "Rows that did not parse: {{rows}}",
+    "field": {
+      "date": "Date",
+      "amount": "Amount",
+      "note": "Description",
+      "category": "Category"
+    }
   },
   "reminders": {
     "title": "Balance check reminder",

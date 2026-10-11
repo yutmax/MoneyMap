@@ -291,6 +291,15 @@ export const transactions = pgTable(
     }),
     /** Ключ из заголовка Idempotency-Key (§8.3). */
     idempotencyKey: text(),
+    /**
+     * Отпечаток строки импортированного файла (§8.11).
+     *
+     * По нему повторный импорт того же выгруженного периода не создаёт
+     * вторую копию операций. Считается от счёта, даты, суммы и примечания —
+     * то есть от того, что в выписке и есть; идентификатора у строки банк
+     * не даёт.
+     */
+    importHash: text(),
     createdAt: timestamptzNow(),
     updatedAt: timestamptzNow(),
     deletedAt: timestamptz(),
@@ -302,6 +311,9 @@ export const transactions = pgTable(
     // Повторная отправка того же запроса возвращает существующую запись,
     // а не создаёт дубль в учёте (§8.3).
     uniqueIndex('transactions_user_id_idempotency_key_key').on(t.userId, t.idempotencyKey),
+    // Та же защита, что и у Idempotency-Key, но для импорта: повтор файла
+    // отсекается БД, а не сравнением в приложении.
+    uniqueIndex('transactions_user_id_import_hash_key').on(t.userId, t.importHash),
   ],
 );
 

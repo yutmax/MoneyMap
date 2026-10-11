@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAccounts } from '@/entities/account';
 import { useCategories } from '@/entities/category';
 import { TransactionRow, useTransactions, type TransactionFilters } from '@/entities/transaction';
+import { ImportModal } from '@/features/import-csv';
 import { TransactionFormModal, useDeleteTransaction } from '@/features/transaction-form';
 import { useT } from '@/shared/i18n';
 import { Alert, Button, Field, Select, toast } from '@/shared/ui';
@@ -16,6 +17,7 @@ export function TransactionsPage() {
   const { t } = useT();
   const [filters, setFilters] = useState<TransactionFilters>(EMPTY);
   const [form, setForm] = useState<FormState>(null);
+  const [importing, setImporting] = useState(false);
 
   const accounts = useAccounts();
   const categories = useCategories();
@@ -42,9 +44,14 @@ export function TransactionsPage() {
           <h1 className={styles.title}>{t('transactions.title')}</h1>
           <p className={styles.subtitle}>{t('transactions.subtitle')}</p>
         </div>
-        <Button size="small" onClick={() => setForm('new')}>
-          {t('transactions.create')}
-        </Button>
+        <div className={styles.headerActions}>
+          <Button variant="secondary" size="small" onClick={() => setImporting(true)}>
+            {t('import.open')}
+          </Button>
+          <Button size="small" onClick={() => setForm('new')}>
+            {t('transactions.create')}
+          </Button>
+        </div>
       </header>
 
       <section className={styles.filters} aria-label={t('transactions.filters')}>
@@ -165,6 +172,7 @@ export function TransactionsPage() {
           onClose={() => setForm(null)}
         />
       )}
+      {importing && <ImportModal onClose={() => setImporting(false)} />}
     </div>
   );
 }

@@ -65,3 +65,9 @@
     opacity: 0.55;
   }
 }
+
+.headerActions {
+  display: flex;
+  gap: var(--space-2xs);
+  flex-wrap: wrap;
+}
