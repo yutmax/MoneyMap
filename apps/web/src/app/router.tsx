@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
 import { AccountsPage } from '@/pages/accounts';
 import { CategoriesPage } from '@/pages/categories';
+import { ReconciliationPage } from '@/pages/reconciliation';
 import { RecurringPage } from '@/pages/recurring';
 import { DashboardPage } from '@/pages/dashboard';
 import { ForgotPasswordPage } from '@/pages/forgot-password';
@@ -43,6 +44,7 @@ export function Router() {
               <Route path={ROUTES.transactions} element={<TransactionsPage />} />
               <Route path={ROUTES.categories} element={<CategoriesPage />} />
               <Route path={ROUTES.recurring} element={<RecurringPage />} />
+              <Route path={ROUTES.reconciliation} element={<ReconciliationPage />} />
               <Route path={ROUTES.sessions} element={<SessionsPage />} />
               <Route path={ROUTES.settings} element={<SettingsPage />} />
             </Route>

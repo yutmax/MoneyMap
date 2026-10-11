@@ -6,4 +6,5 @@ export * from './category.ts';
 export * from './transaction.ts';
 export * from './rate.ts';
 export * from './recurring.ts';
+export * from './reconciliation.ts';
 export * from './summary.ts';

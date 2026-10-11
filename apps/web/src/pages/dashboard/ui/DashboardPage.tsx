@@ -1,5 +1,6 @@
 import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
+import { NotificationList } from '@/widgets/notifications';
 import { TotalBalance } from '@/widgets/total-balance';
 import styles from './DashboardPage.module.scss';
 
@@ -37,6 +38,8 @@ export function DashboardPage() {
           {t('dashboard.emailNotVerified', { email: user.email })}
         </div>
       )}
+
+      <NotificationList />
 
       <TotalBalance />
 

@@ -12,6 +12,7 @@ const NAV = [
   { to: ROUTES.transactions, key: 'nav.transactions' },
   { to: ROUTES.categories, key: 'nav.categories' },
   { to: ROUTES.recurring, key: 'nav.recurring' },
+  { to: ROUTES.reconciliation, key: 'nav.reconciliation' },
   { to: ROUTES.sessions, key: 'nav.devices' },
   { to: ROUTES.settings, key: 'nav.settings' },
 ];

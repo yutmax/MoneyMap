@@ -2,6 +2,7 @@ import { useMe } from '@/entities/user';
 import { LocaleSwitch } from '@/features/locale-switch';
 import { ChangePasswordForm } from '@/features/password-change';
 import { ProfileForm } from '@/features/profile-update';
+import { ReminderSettings } from '@/features/reconciliation';
 import { ThemeToggle } from '@/features/theme-switch';
 import { useT } from '@/shared/i18n';
 import styles from './SettingsPage.module.scss';
@@ -40,6 +41,11 @@ export function SettingsPage() {
             <ThemeToggle />
           </dd>
         </dl>
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>{t('reminders.title')}</h2>
+        <ReminderSettings />
       </section>
 
       <section className={styles.section}>

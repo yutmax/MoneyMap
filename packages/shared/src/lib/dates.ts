@@ -33,17 +33,42 @@ export function todayUtc(): IsoDate {
  * 'YYYY-MM-DD', и собирать строку из частей вручную не нужно.
  */
 export function todayIn(timeZone: string): IsoDate {
+  return dateIn(timeZone, new Date());
+}
+
+/** Дата момента в указанной таймзоне. */
+export function dateIn(timeZone: string, at: Date): IsoDate {
   try {
     return new Intl.DateTimeFormat('en-CA', {
       timeZone,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-    }).format(new Date());
+    }).format(at);
   } catch {
     // Неизвестная таймзона не повод отказываться отвечать: дата по UTC
     // отличается от нужной не больше чем на сутки.
-    return todayUtc();
+    return isoDateOf(at);
+  }
+}
+
+/**
+ * Местное время момента, 'ЧЧ:ММ'.
+ *
+ * hourCycle: 'h23' задан явно: с hour12: false часть локалей печатает
+ * полночь как 24:00, и сравнение времён ломается ровно в тот час, когда
+ * его труднее всего заметить.
+ */
+export function timeIn(timeZone: string, at: Date): string {
+  try {
+    return new Intl.DateTimeFormat('en-GB', {
+      timeZone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(at);
+  } catch {
+    return at.toISOString().slice(11, 16);
   }
 }
 

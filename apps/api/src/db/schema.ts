@@ -12,6 +12,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  time,
   timestamp,
   uniqueIndex,
   uuid,
@@ -58,6 +59,7 @@ export const transactionKind = pgEnum('transaction_kind', ['income', 'expense', 
 export const recurrenceFreq = pgEnum('recurrence_freq', ['daily', 'weekly', 'monthly', 'yearly']);
 export const monthEndPolicy = pgEnum('month_end_policy', ['clamp', 'skip']);
 export const occurrenceStatus = pgEnum('occurrence_status', ['pending', 'posted', 'skipped']);
+export const reminderKind = pgEnum('reminder_kind', ['balance_check']);
 
 /**
  * Денежная колонка (§5.1).
@@ -475,6 +477,112 @@ export const recurringOccurrences = pgTable(
   ],
 );
 
+/* ────────────────────────────── reminders ──────────────────────────────── */
+
+/**
+ * Напоминание о сверке остатков (§8.8).
+ *
+ * Одно на пользователя и вид: напоминаний «проверить остатки» не бывает
+ * два, а уникальность по (user_id, kind) заодно делает настройку
+ * идемпотентной — её можно создавать по факту обращения, не спрашивая,
+ * существует ли она.
+ */
+export const reminders = pgTable(
+  'reminders',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    kind: reminderKind().notNull(),
+    /** 1..31. Игнорируется, когда выбран последний день месяца. */
+    dayOfMonth: integer().notNull().default(1),
+    /**
+     * «Последний день месяца» вместо фиксированного числа (§8.8). Отдельный
+     * флаг, а не число 31 с политикой: «последний день» — это намерение,
+     * а 31-е с прижатием — совпадение, которое верно не для всех месяцев.
+     */
+    useLastDay: boolean().notNull().default(false),
+    /** Местное время пользователя, без зоны: зона лежит в его профиле. */
+    timeOfDay: time().notNull().default('10:00'),
+    /** 'in_app' | 'email'. Массив, потому что каналы складываются. */
+    channels: text().array().notNull().default(['in_app']),
+    isEnabled: boolean().notNull().default(false),
+    /**
+     * Когда сработало в последний раз. По нему задача отличает «ещё не
+     * напоминали сегодня» от «уже напомнили»: иначе ежечасный прогон
+     * повторял бы напоминание до конца суток.
+     */
+    lastFiredAt: timestamptz(),
+    createdAt: timestamptzNow(),
+    updatedAt: timestamptzNow(),
+  },
+  (t) => [uniqueIndex('reminders_user_id_kind_key').on(t.userId, t.kind)],
+);
+
+/* ───────────────────────────── notifications ───────────────────────────── */
+
+/**
+ * Внутреннее уведомление (§8.8).
+ *
+ * kind — текст, а не перечисление, в отличие от остальных справочных полей
+ * схемы: видов уведомлений будет прибавляться вместе с каждой новой
+ * возможностью, и миграция типа на каждое из них — плата ни за что.
+ * Payload хранит только параметры; текст собирает интерфейс на своём языке.
+ */
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    kind: text().notNull(),
+    payload: jsonb().$type<Record<string, string | number>>().notNull().default({}),
+    readAt: timestamptz(),
+    createdAt: timestamptzNow(),
+  },
+  (t) => [index('notifications_user_id_created_at_idx').on(t.userId, t.createdAt.desc())],
+);
+
+/* ────────────────────────── balance_snapshots ──────────────────────────── */
+
+/**
+ * Сверка остатка по счёту (§8.8).
+ *
+ * Хранятся оба числа: введённое человеком и рассчитанное приложением
+ * на момент ввода. Расчётное именно запоминается, а не пересчитывается
+ * при чтении: смысл записи в том, каким расхождение было тогда, а поздняя
+ * операция задним числом изменила бы расчёт и стёрла сам факт расхождения.
+ */
+export const balanceSnapshots = pgTable(
+  'balance_snapshots',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accountId: uuid()
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    asOf: date().notNull(),
+    /** Что человек увидел в банке. */
+    reportedAmount: money().notNull(),
+    /** Что в этот момент насчитало приложение. */
+    computedAmount: money().notNull(),
+    note: text(),
+    /** Операция, которой закрыли расхождение. null — не закрывали. */
+    correctionId: uuid().references(() => transactions.id),
+    createdAt: timestamptzNow(),
+  },
+  (t) => [
+    // Сверка счёта на дату одна: вторая означала бы два разных ответа
+    // на вопрос, сколько было на счёте в тот день.
+    uniqueIndex('balance_snapshots_account_id_as_of_key').on(t.accountId, t.asOf),
+    index('balance_snapshots_user_id_as_of_idx').on(t.userId, t.asOf.desc()),
+  ],
+);
+
 /* ─────────────────────────────── relations ──────────────────────────────── */
 
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -513,5 +621,8 @@ export type NetWorthSnapshot = typeof netWorthSnapshots.$inferSelect;
 export type RecurringRule = typeof recurringRules.$inferSelect;
 export type NewRecurringRule = typeof recurringRules.$inferInsert;
 export type RecurringOccurrence = typeof recurringOccurrences.$inferSelect;
+export type Reminder = typeof reminders.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
+export type BalanceSnapshot = typeof balanceSnapshots.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;

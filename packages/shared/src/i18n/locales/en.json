@@ -56,6 +56,9 @@
       "name": "Name the rule",
       "freq": "Choose how often it repeats",
       "endBeforeStart": "The end is earlier than the start"
+    },
+    "reminder": {
+      "time": "Time as HH:MM"
     }
   },
   "errors": {
@@ -93,6 +96,10 @@
     "recurringRuleNotFound": "Rule not found",
     "occurrenceNotFound": "Charge not found",
     "occurrenceResolved": "This charge has already been handled",
+    "snapshotNotFound": "Check not found",
+    "snapshotCorrected": "The gap has already been closed by a transaction",
+    "snapshotMatches": "There is no gap to close",
+    "reminderNotFound": "Reminder not found",
     "accountArchived": "The account is archived. Restore it to add transactions.",
     "currencyMismatch": "The transaction's currency must match the account's",
     "transferLegEdit": "A transfer leg cannot be edited on its own — change the transfer itself",
@@ -119,7 +126,8 @@
     "accounts": "Accounts",
     "categories": "Categories",
     "transactions": "Transactions",
-    "recurring": "Recurring"
+    "recurring": "Recurring",
+    "reconciliation": "Reconcile"
   },
   "auth": {
     "login": {
@@ -447,6 +455,49 @@
     "policy": {
       "clamp": "on the last day of the month",
       "skip": "skip that month"
+    }
+  },
+  "reconciliation": {
+    "title": "Balance check",
+    "subtitle": "Enter what the bank shows. A gap against the computed balance means a transaction nobody recorded — this is the main check on the quality of the books.",
+    "accountsTitle": "Accounts",
+    "historyTitle": "History",
+    "loadFailed": "Could not load the accounts",
+    "noAccounts": "Nothing to check yet — there are no active accounts.",
+    "computed": "computed {{amount}}",
+    "lastChecked": "checked {{when}}",
+    "reported": "Actual, {{currency}}",
+    "reportedShort": "actual {{amount}}",
+    "computedShort": "computed {{amount}}",
+    "check": "Check",
+    "matched": "It matches",
+    "matchedShort": "matches",
+    "gap": "Gap of {{amount}}",
+    "correct": "Close with a transaction",
+    "corrected": "Correcting transaction created",
+    "closed": "closed"
+  },
+  "reminders": {
+    "title": "Balance check reminder",
+    "enable": "Remind me to check balances",
+    "enableHint": "Once a month, on the chosen day and time in your timezone.",
+    "day": "Day",
+    "lastDay": "Last day of the month",
+    "time": "Time",
+    "timeHint": "In your timezone",
+    "channels": "Where",
+    "channel": {
+      "in_app": "In the app",
+      "email": "By email"
+    },
+    "channelRequired": "Keep at least one channel"
+  },
+  "notifications": {
+    "open": "Open the check",
+    "dismiss": "Got it",
+    "balance_check": {
+      "title": "Time to check your balances",
+      "body": "Reminder from {{when}}: enter the actual balances of your accounts."
     }
   }
 }

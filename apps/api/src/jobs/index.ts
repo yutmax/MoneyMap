@@ -4,6 +4,7 @@ import { PgBoss, type Job } from 'pg-boss';
 import { db } from '../db/index.ts';
 import { env } from '../lib/env.ts';
 import { refreshRates } from '../modules/rates/rate.service.ts';
+import { fireDueReminders } from '../modules/reconciliation/reminder.service.ts';
 import { generateDue } from '../modules/recurring/recurring.service.ts';
 import { saveSnapshot, usersForSnapshots } from '../modules/summary/summary.service.ts';
 import { scopeOf } from '../lib/scoping.ts';
@@ -22,6 +23,7 @@ const QUEUES = {
   rates: 'rates.refresh',
   snapshots: 'net-worth.snapshot',
   recurring: 'recurring.generate',
+  reminders: 'reminders.fire',
 } as const;
 
 /** Дата, на которую считать. Пустая — значит сегодня. */
@@ -126,6 +128,19 @@ async function recurringJob(log: FastifyBaseLogger): Promise<void> {
   }
 }
 
+/**
+ * Напоминания о сверке (§8.8).
+ *
+ * Раз в час, а не раз в сутки: у напоминания есть время в местной зоне
+ * пользователя, и суточный прогон попадал бы в него только у тех, чья зона
+ * совпала с серверной. Повторов это не даёт — внутри сервис проверяет,
+ * не напоминали ли уже сегодня.
+ */
+async function remindersJob(log: FastifyBaseLogger): Promise<void> {
+  const result = await fireDueReminders(db, log);
+  if (result.fired > 0) log.info(result, 'Напоминания отправлены');
+}
+
 export async function startJobs(log: FastifyBaseLogger): Promise<Jobs | null> {
   if (!env.JOBS_ENABLED) {
     log.info('Фоновые задачи выключены (JOBS_ENABLED=false)');
@@ -168,15 +183,24 @@ export async function startJobs(log: FastifyBaseLogger): Promise<Jobs | null> {
   await boss.work(QUEUES.recurring, { batchSize: 1 }, async () =>
     logged(log, QUEUES.recurring, () => recurringJob(log)),
   );
+  await boss.work(QUEUES.reminders, { batchSize: 1 }, async () =>
+    logged(log, QUEUES.reminders, () => remindersJob(log)),
+  );
 
   // Расписание в UTC, а не в таймзоне сервера: дата курса — величина по UTC,
   // и смена таймзоны машины не должна сдвигать загрузку на другие сутки.
   await boss.schedule(QUEUES.rates, env.RATES_CRON, null, { tz: 'UTC', missed: 'once' });
   await boss.schedule(QUEUES.snapshots, env.SNAPSHOTS_CRON, null, { tz: 'UTC', missed: 'once' });
   await boss.schedule(QUEUES.recurring, env.RECURRING_CRON, null, { tz: 'UTC', missed: 'once' });
+  await boss.schedule(QUEUES.reminders, env.REMINDERS_CRON, null, { tz: 'UTC', missed: 'once' });
 
   log.info(
-    { rates: env.RATES_CRON, snapshots: env.SNAPSHOTS_CRON, recurring: env.RECURRING_CRON },
+    {
+      rates: env.RATES_CRON,
+      snapshots: env.SNAPSHOTS_CRON,
+      recurring: env.RECURRING_CRON,
+      reminders: env.REMINDERS_CRON,
+    },
     'Фоновые задачи запущены',
   );
 

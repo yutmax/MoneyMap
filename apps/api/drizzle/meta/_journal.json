@@ -43,6 +43,13 @@
       "when": 1791737109434,
       "tag": "0005_overjoyed_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791738294772,
+      "tag": "0006_thankful_mariko_yashida",
+      "breakpoints": true
     }
   ]
 }
