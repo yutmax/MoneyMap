@@ -53,3 +53,32 @@ export function shiftDays(date: IsoDate, days: number): IsoDate {
   shifted.setUTCDate(shifted.getUTCDate() + days);
   return isoDateOf(shifted);
 }
+
+/** Сколько суток от a до b. Отрицательное, если b раньше. */
+export function daysBetween(a: IsoDate, b: IsoDate): number {
+  const ms = Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`);
+  return Math.round(ms / 86_400_000);
+}
+
+/** Сколько календарных месяцев от a до b, без учёта числа. */
+export function monthsBetween(a: IsoDate, b: IsoDate): number {
+  const [ay, am] = a.split('-').map(Number) as [number, number, number];
+  const [by, bm] = b.split('-').map(Number) as [number, number, number];
+  return (by - ay) * 12 + (bm - am);
+}
+
+/** День недели: 0 — воскресенье, 6 — суббота (как у Date.getUTCDay). */
+export function weekdayOf(date: IsoDate): number {
+  return new Date(`${date}T00:00:00Z`).getUTCDay();
+}
+
+/** Сколько суток в месяце. month — 1..12. */
+export function daysInMonth(year: number, month: number): number {
+  // Нулевой день следующего месяца — это последний день текущего.
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+/** Собирает дату из частей. Месяц — 1..12, выход за пределы нормализуется. */
+export function isoFrom(year: number, month: number, day: number): IsoDate {
+  return isoDateOf(new Date(Date.UTC(year, month - 1, day)));
+}

@@ -55,6 +55,9 @@ export const accountType = pgEnum('account_type', [
 ]);
 export const categoryKind = pgEnum('category_kind', ['income', 'expense']);
 export const transactionKind = pgEnum('transaction_kind', ['income', 'expense', 'transfer']);
+export const recurrenceFreq = pgEnum('recurrence_freq', ['daily', 'weekly', 'monthly', 'yearly']);
+export const monthEndPolicy = pgEnum('month_end_policy', ['clamp', 'skip']);
+export const occurrenceStatus = pgEnum('occurrence_status', ['pending', 'posted', 'skipped']);
 
 /**
  * Денежная колонка (§5.1).
@@ -276,6 +279,14 @@ export const transactions = pgTable(
     note: text(),
     /** Связывает две ноги одного перевода (§7.2). */
     transferGroupId: uuid(),
+    /**
+     * Правило, из которого операция родилась (§8.7). Нужно, чтобы по
+     * списанию было видно, что оно регулярное, и чтобы правило могло
+     * показать свою историю.
+     */
+    recurringRuleId: uuid().references((): AnyPgColumn => recurringRules.id, {
+      onDelete: 'set null',
+    }),
     /** Ключ из заголовка Idempotency-Key (§8.3). */
     idempotencyKey: text(),
     createdAt: timestamptzNow(),
@@ -355,6 +366,115 @@ export const netWorthSnapshots = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.date] })],
 );
 
+/* ───────────────────────────── recurring_rules ──────────────────────────── */
+
+/**
+ * Правило повторяющейся операции (§8.7).
+ *
+ * Правило — шаблон, а не расписание уже созданных операций: правка правила
+ * не трогает то, что оно успело создать. Иначе смена суммы подписки
+ * переписала бы историю платежей за год назад.
+ */
+export const recurringRules = pgTable(
+  'recurring_rules',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accountId: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    categoryId: uuid().references(() => categories.id, { onDelete: 'set null' }),
+    /** Как человек называет это списание: «Netflix», «Аренда». */
+    name: text().notNull(),
+    /**
+     * Доход или расход — тот же набор значений, что у категорий. Отдельный
+     * тип Postgres ради тех же двух значений был бы лишней сущностью.
+     */
+    kind: categoryKind().notNull(),
+    amount: money().notNull(),
+    currencyCode: text()
+      .notNull()
+      .references(() => currencies.code),
+
+    freq: recurrenceFreq().notNull(),
+    /** Каждые N периодов. */
+    interval: integer().notNull().default(1),
+    /** 1..31, для monthly и yearly. */
+    dayOfMonth: integer(),
+    /** 0 — воскресенье, 6 — суббота; для weekly. */
+    weekday: integer(),
+    /** Что делать с 31-м числом в коротком месяце (§8.7). */
+    monthEndPolicy: monthEndPolicy().notNull().default('clamp'),
+
+    startOn: date().notNull(),
+    endOn: date(),
+    /**
+     * Когда правило сработает в следующий раз. Выводится из расписания,
+     * но хранится: иначе ежедневная задача считала бы расписание всех
+     * правил всех пользователей, чтобы найти несколько сработавших.
+     * null — правило закончилось.
+     */
+    nextOccurrenceOn: date(),
+
+    /** Создавать операцию сразу или спрашивать подтверждение (§8.7). */
+    autoPost: boolean().notNull().default(true),
+    /** Пауза без удаления: правило остаётся вместе со своей историей. */
+    isPaused: boolean().notNull().default(false),
+
+    createdAt: timestamptzNow(),
+    updatedAt: timestamptzNow(),
+    deletedAt: timestamptz(),
+  },
+  (t) => [
+    index('recurring_rules_user_id_idx').on(t.userId, t.nextOccurrenceOn),
+    // Отбор сработавших правил идёт по всем пользователям сразу, поэтому
+    // индекс не начинается с user_id.
+    index('recurring_rules_due_idx').on(t.nextOccurrenceOn),
+  ],
+);
+
+/* ─────────────────────────── recurring_occurrences ──────────────────────── */
+
+/**
+ * Одно срабатывание правила на конкретную дату (§8.7).
+ *
+ * Отдельная таблица, а не только `transactions.occurrence_date` из спеки:
+ * у срабатывания есть состояния, которых у операции не бывает. Списание
+ * с подтверждением сначала ждёт человека, а он может его и отклонить —
+ * и отклонённое должно остаться отклонённым, иначе догоняющая генерация
+ * предложит его снова завтра.
+ *
+ * Уникальность по (rule_id, due_on) — то, на чём держится идемпотентность
+ * генерации (§10.3). Ежедневная задача и догоняющая генерация при входе
+ * работают независимо и могут столкнуться; дубль списания при этом
+ * невозможен не по договорённости, а по ограничению БД.
+ */
+export const recurringOccurrences = pgTable(
+  'recurring_occurrences',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    ruleId: uuid()
+      .notNull()
+      .references(() => recurringRules.id, { onDelete: 'cascade' }),
+    dueOn: date().notNull(),
+    status: occurrenceStatus().notNull().default('pending'),
+    /** Операция, которой обернулось срабатывание. null, пока не подтверждено. */
+    transactionId: uuid().references(() => transactions.id),
+    createdAt: timestamptzNow(),
+    /** Когда перестало быть ожидающим. */
+    resolvedAt: timestamptz(),
+  },
+  (t) => [
+    uniqueIndex('recurring_occurrences_rule_id_due_on_key').on(t.ruleId, t.dueOn),
+    index('recurring_occurrences_user_id_status_idx').on(t.userId, t.status, t.dueOn),
+  ],
+);
+
 /* ─────────────────────────────── relations ──────────────────────────────── */
 
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -390,5 +510,8 @@ export type NewCategory = typeof categories.$inferInsert;
 export type ExchangeRate = typeof exchangeRates.$inferSelect;
 export type NewExchangeRate = typeof exchangeRates.$inferInsert;
 export type NetWorthSnapshot = typeof netWorthSnapshots.$inferSelect;
+export type RecurringRule = typeof recurringRules.$inferSelect;
+export type NewRecurringRule = typeof recurringRules.$inferInsert;
+export type RecurringOccurrence = typeof recurringOccurrences.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;

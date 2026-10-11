@@ -50,6 +50,11 @@ const envSchema = z
     RATES_CRON: z.string().default('15 3 * * *'),
     /** Снимок net worth. После курсов, чтобы считать по свежим. */
     SNAPSHOTS_CRON: z.string().default('45 3 * * *'),
+    /**
+     * Генерация регулярных операций. Раньше снимка: списание, созданное
+     * сегодня, должно попасть в сегодняшний снимок, а не в завтрашний.
+     */
+    RECURRING_CRON: z.string().default('5 3 * * *'),
     /** Таймаут запроса к источнику курсов. */
     RATES_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60_000).default(10_000),
   })

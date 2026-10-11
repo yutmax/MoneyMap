@@ -4,6 +4,7 @@ import { PgBoss, type Job } from 'pg-boss';
 import { db } from '../db/index.ts';
 import { env } from '../lib/env.ts';
 import { refreshRates } from '../modules/rates/rate.service.ts';
+import { generateDue } from '../modules/recurring/recurring.service.ts';
 import { saveSnapshot, usersForSnapshots } from '../modules/summary/summary.service.ts';
 import { scopeOf } from '../lib/scoping.ts';
 
@@ -20,6 +21,7 @@ import { scopeOf } from '../lib/scoping.ts';
 const QUEUES = {
   rates: 'rates.refresh',
   snapshots: 'net-worth.snapshot',
+  recurring: 'recurring.generate',
 } as const;
 
 /** Дата, на которую считать. Пустая — значит сегодня. */
@@ -110,6 +112,20 @@ async function snapshotJob(log: FastifyBaseLogger, date = todayUtc()): Promise<v
   log.info({ date, saved, total: userIds.length }, 'Снимки net worth посчитаны');
 }
 
+/**
+ * Ежедневная генерация регулярных операций (§8.7).
+ *
+ * Расписание стоит рано утром, но точность тут не важна: задача — лишь один
+ * из двух триггеров. Второй, догоняющая генерация при входе, обязателен
+ * по спеке именно потому, что сервер мог проспать свой час.
+ */
+async function recurringJob(log: FastifyBaseLogger): Promise<void> {
+  const result = await generateDue(db, { log });
+  if (result.created > 0 || result.posted > 0) {
+    log.info(result, 'Регулярные операции сгенерированы');
+  }
+}
+
 export async function startJobs(log: FastifyBaseLogger): Promise<Jobs | null> {
   if (!env.JOBS_ENABLED) {
     log.info('Фоновые задачи выключены (JOBS_ENABLED=false)');
@@ -149,13 +165,20 @@ export async function startJobs(log: FastifyBaseLogger): Promise<Jobs | null> {
   await boss.work<DatedJob>(QUEUES.snapshots, { batchSize: 1 }, async ([job]) =>
     logged(log, QUEUES.snapshots, () => snapshotJob(log, dateOf(job))),
   );
+  await boss.work(QUEUES.recurring, { batchSize: 1 }, async () =>
+    logged(log, QUEUES.recurring, () => recurringJob(log)),
+  );
 
   // Расписание в UTC, а не в таймзоне сервера: дата курса — величина по UTC,
   // и смена таймзоны машины не должна сдвигать загрузку на другие сутки.
   await boss.schedule(QUEUES.rates, env.RATES_CRON, null, { tz: 'UTC', missed: 'once' });
   await boss.schedule(QUEUES.snapshots, env.SNAPSHOTS_CRON, null, { tz: 'UTC', missed: 'once' });
+  await boss.schedule(QUEUES.recurring, env.RECURRING_CRON, null, { tz: 'UTC', missed: 'once' });
 
-  log.info({ rates: env.RATES_CRON, snapshots: env.SNAPSHOTS_CRON }, 'Фоновые задачи запущены');
+  log.info(
+    { rates: env.RATES_CRON, snapshots: env.SNAPSHOTS_CRON, recurring: env.RECURRING_CRON },
+    'Фоновые задачи запущены',
+  );
 
   return {
     run: async (queue, date) => {

@@ -27,6 +27,7 @@ import {
 import { Scope } from '../../lib/scoping.ts';
 import { addHours, generateOpaqueToken, hashToken } from '../../lib/tokens.ts';
 import { assertCurrencyExists } from '../reference/currency.service.ts';
+import { catchUp } from '../recurring/recurring.service.ts';
 import type { DeviceInfo, IssuedAuth } from './session.service.ts';
 import { createSession, revokeAllSessions } from './session.service.ts';
 
@@ -132,7 +133,7 @@ export async function register(
 
 export async function login(
   db: Db,
-  args: { input: LoginInput; device: DeviceInfo },
+  args: { input: LoginInput; device: DeviceInfo; log: FastifyBaseLogger },
 ): Promise<{ user: MeResponse; auth: IssuedAuth }> {
   const [user] = await db.select().from(users).where(eq(users.email, args.input.email)).limit(1);
 
@@ -146,6 +147,10 @@ export async function login(
 
   const valid = await verifyPassword(user.passwordHash, args.input.password);
   if (!valid) throw unauthorized('errors.invalidCredentials', 'login: wrong password');
+
+  // Догоняющая генерация регулярных операций (§8.7): всё, что должно было
+  // случиться, пока человека не было, досоздаётся при его возвращении.
+  catchUp(db, user.id, args.log);
 
   if (needsRehash(user.passwordHash)) {
     const rehashed = await hashPassword(args.input.password);

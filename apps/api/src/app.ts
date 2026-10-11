@@ -11,6 +11,10 @@ import { authRoutes } from './modules/auth/auth.routes.ts';
 import { categoryRoutes } from './modules/categories/category.routes.ts';
 import { onboardingRoutes } from './modules/onboarding/onboarding.routes.ts';
 import { rateRoutes } from './modules/rates/rate.routes.ts';
+import {
+  recurringOccurrenceRoutes,
+  recurringRuleRoutes,
+} from './modules/recurring/recurring.routes.ts';
 import { referenceRoutes } from './modules/reference/reference.routes.ts';
 import { settingsRoutes } from './modules/settings/settings.routes.ts';
 import { summaryRoutes } from './modules/summary/summary.routes.ts';
@@ -181,6 +185,8 @@ export async function buildApp(): Promise<FastifyInstance> {
       await api.register(settingsRoutes, { prefix: '/settings' });
       await api.register(summaryRoutes, { prefix: '/summary' });
       await api.register(rateRoutes, { prefix: '/rates' });
+      await api.register(recurringRuleRoutes, { prefix: '/recurring-rules' });
+      await api.register(recurringOccurrenceRoutes, { prefix: '/recurring-occurrences' });
       await api.register(referenceRoutes);
     },
     { prefix: '/api' },

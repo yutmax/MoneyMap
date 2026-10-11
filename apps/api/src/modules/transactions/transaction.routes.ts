@@ -47,7 +47,9 @@ export async function transactionRoutes(app: FastifyInstance): Promise<void> {
   app.post('/', async (request, reply) => {
     const scope = scopeOf(getAuth(request).userId);
     const input = parse(createTransactionSchema, request.body);
-    const transaction = await createTransaction(db, scope, input, idempotencyKeyOf(request));
+    const transaction = await createTransaction(db, scope, input, {
+      idempotencyKey: idempotencyKeyOf(request),
+    });
     return reply.code(201).send({ transaction });
   });
 

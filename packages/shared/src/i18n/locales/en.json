@@ -51,6 +51,11 @@
     "transfer": {
       "sameAccount": "Choose two different accounts",
       "toAmountRequired": "The accounts are in different currencies — enter the amount received"
+    },
+    "recurring": {
+      "name": "Name the rule",
+      "freq": "Choose how often it repeats",
+      "endBeforeStart": "The end is earlier than the start"
     }
   },
   "errors": {
@@ -85,6 +90,9 @@
     "categoryKindMismatch": "A subcategory must be of the same kind as its parent",
     "categoryOwnParent": "A category cannot be nested inside itself",
     "transactionNotFound": "Transaction not found",
+    "recurringRuleNotFound": "Rule not found",
+    "occurrenceNotFound": "Charge not found",
+    "occurrenceResolved": "This charge has already been handled",
     "accountArchived": "The account is archived. Restore it to add transactions.",
     "currencyMismatch": "The transaction's currency must match the account's",
     "transferLegEdit": "A transfer leg cannot be edited on its own — change the transfer itself",

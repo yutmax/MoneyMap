@@ -78,7 +78,11 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request, reply) => {
       const input = parse(loginSchema, request.body);
-      const { user, auth } = await authService.login(db, { input, device: deviceOf(request) });
+      const { user, auth } = await authService.login(db, {
+        input,
+        device: deviceOf(request),
+        log: request.log,
+      });
       applyAuthCookies(reply, auth);
       return reply.send({ user });
     },

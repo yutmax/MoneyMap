@@ -258,12 +258,21 @@ async function toAccountAmount(
   };
 }
 
+/** Откуда операция взялась, если не из формы. */
+export interface TransactionOrigin {
+  idempotencyKey?: string | undefined;
+  /** Правило, сгенерировавшее операцию (§8.7). */
+  recurringRuleId?: string | undefined;
+}
+
 export async function createTransaction(
   db: Db,
   scope: Scope,
   input: CreateTransactionInput,
-  idempotencyKey?: string,
+  origin: TransactionOrigin = {},
 ): Promise<TransactionResponse> {
+  const { idempotencyKey, recurringRuleId } = origin;
+
   if (idempotencyKey) {
     const existing = await findByIdempotencyKey(db, scope, idempotencyKey);
     if (existing) return existing;
@@ -302,6 +311,7 @@ export async function createTransaction(
           fxRate: converted.fxRate,
           occurredOn: input.occurredOn,
           note: input.note ?? null,
+          recurringRuleId: recurringRuleId ?? null,
           idempotencyKey: idempotencyKey ?? null,
         }),
       )
