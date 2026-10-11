@@ -28,9 +28,15 @@ const citext = customType<{ data: string }>({
   dataType: () => 'citext',
 });
 
-/** inet — нативный тип Postgres для IP-адресов, валидирует значение сам. */
+/**
+ * inet — нативный тип Postgres для IP-адресов, валидирует значение сам.
+ *
+ * На чтении снимается маска: Postgres отдаёт адрес как '1.2.3.4/32', и это
+ * уезжало в интерфейс прямо так, вместе с '/32' в списке устройств.
+ */
 const inet = customType<{ data: string }>({
   dataType: () => 'inet',
+  fromDriver: (value) => String(value).replace(/\/\d+$/, ''),
 });
 
 // Два отдельных хелпера, а не один с флагом: ветвящийся возвращал объединение
@@ -119,6 +125,13 @@ export const sessions = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     userAgent: text(),
     ip: inet(),
+    /**
+     * Откуда вошли (§6.4). Хранится код страны, а не название: название
+     * зависит от языка интерфейса и собирается на стороне клиента.
+     * Город — как его назвал источник, то есть по-английски.
+     */
+    countryCode: text(),
+    city: text(),
     createdAt: timestamptzNow(),
     /** Обновляется при каждом refresh — по нему строится «последняя активность». */
     lastUsedAt: timestamptzNow(),

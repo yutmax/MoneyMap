@@ -119,6 +119,13 @@ export interface SessionSummary {
   browser: string | null;
   os: string | null;
   ip: string | null;
+  /**
+   * ISO-3166-1 alpha-2 или null. Код, а не название: название страны
+   * зависит от языка интерфейса, и собрать его умеет Intl на клиенте.
+   */
+  countryCode: string | null;
+  /** Город по данным источника, по-английски. */
+  city: string | null;
   createdAt: string;
   lastUsedAt: string;
   expiresAt: string;

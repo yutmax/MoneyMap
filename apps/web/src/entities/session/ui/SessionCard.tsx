@@ -1,7 +1,7 @@
 import type { SessionSummary } from '@moneymap/shared';
 import type { ReactNode } from 'react';
 import { useT } from '@/shared/i18n';
-import { formatDateTime, formatRelative } from '@/shared/lib';
+import { formatDateTime, formatRelative, regionName } from '@/shared/lib';
 import styles from './SessionCard.module.scss';
 
 interface SessionCardProps {
@@ -22,6 +22,11 @@ export function SessionCard({ session, action }: SessionCardProps) {
       ? t('sessions.device.known', { browser: session.browser, os: session.os })
       : (session.browser ?? session.os ?? t('sessions.device.unknown'));
 
+  // Место входа: город как есть, страна — на языке интерфейса. Любая
+  // половина может отсутствовать, поэтому строка собирается из того, что есть.
+  const country = session.countryCode ? regionName(session.countryCode, locale) : null;
+  const place = [session.city, country].filter(Boolean).join(', ');
+
   return (
     <li className={styles.root}>
       <div className={styles.info}>
@@ -30,6 +35,7 @@ export function SessionCard({ session, action }: SessionCardProps) {
           {session.isCurrent && <span className={styles.current}>{t('sessions.current')}</span>}
         </p>
         <p className={styles.meta}>
+          {place && <>{place} · </>}
           {session.ip ?? t('sessions.ipUnknown')} ·{' '}
           <time dateTime={session.lastUsedAt} title={formatDateTime(session.lastUsedAt, locale)}>
             {t('sessions.activity', { when: formatRelative(session.lastUsedAt, locale) })}

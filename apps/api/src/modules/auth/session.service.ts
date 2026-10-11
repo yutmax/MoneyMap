@@ -1,9 +1,10 @@
 import type { SessionSummary } from '@moneymap/shared';
-import { and, desc, eq, gt, isNull, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, isNull, ne } from 'drizzle-orm';
 import type { FastifyBaseLogger } from 'fastify';
-import type { Db, DbExecutor } from '../../db/index.ts';
+import { db as pool, type Db, type DbExecutor } from '../../db/index.ts';
 import { refreshTokens, sessions, users } from '../../db/schema.ts';
 import { env } from '../../lib/env.ts';
+import { lookupLocation, normalizeIp } from '../../lib/geoip.ts';
 import { sessionReuseDetected, unauthorized } from '../../lib/errors.ts';
 import { sendMail } from '../../lib/mailer.ts';
 import type { Scope } from '../../lib/scoping.ts';
@@ -38,6 +39,31 @@ function newRefreshToken() {
   return { token, hash: hashToken(token) };
 }
 
+/**
+ * Определяет место входа и дописывает его в сессию — в фоне.
+ *
+ * Запрос к чужому сервису на пути входа означал бы, что вход ждёт его
+ * ответа, а при недоступности — ждёт таймаута. Место в списке устройств
+ * того не стоит: сессия уже создана, строка допишется через секунду.
+ *
+ * Пул берётся напрямую, а не переданный executor: тот может быть
+ * транзакцией, которая к моменту ответа сервиса давно закрыта.
+ */
+function resolveLocation(sessionId: string, ip: string | null): void {
+  void lookupLocation(ip)
+    .then(async (place) => {
+      if (!place) return;
+      await pool
+        .update(sessions)
+        .set({ countryCode: place.countryCode, city: place.city })
+        .where(eq(sessions.id, sessionId));
+    })
+    .catch(() => {
+      // Неизвестное место — пустые поля в списке устройств, и только.
+      // Ронять процесс необработанным отказом промиса из-за этого незачем.
+    });
+}
+
 /** Создаёт сессию устройства и первый refresh-токен. */
 export async function createSession(
   db: DbExecutor,
@@ -57,6 +83,8 @@ export async function createSession(
     .returning({ id: sessions.id });
 
   if (!session) throw new Error('Не удалось создать сессию');
+
+  resolveLocation(session.id, args.device.ip);
 
   await db.insert(refreshTokens).values({
     sessionId: session.id,
@@ -147,14 +175,25 @@ export async function rotateSession(
       .set({ usedAt: new Date(), replacedBy: created.id })
       .where(eq(refreshTokens.id, existing.id));
 
+    const ip = args.device.ip ?? session.ip;
+    const moved = !ip || !session.ip || normalizeIp(ip) !== normalizeIp(session.ip);
+
     await tx
       .update(sessions)
       .set({
         lastUsedAt: new Date(),
         userAgent: args.device.userAgent ?? session.userAgent,
-        ip: args.device.ip ?? session.ip,
+        ip,
+        // Место принадлежит адресу. Сменился адрес — прежнее место неверно
+        // уже сейчас, не дожидаясь, пока выяснится новое: строка, где адрес
+        // минский, а город франкфуртский, хуже строки без города.
+        ...(moved ? { countryCode: null, city: null } : {}),
       })
       .where(eq(sessions.id, session.id));
+
+    // Второе условие дописывает место сессиям, заведённым до появления
+    // этих колонок: адрес у них не менялся, но и места нет.
+    if (ip && (moved || !session.countryCode)) resolveLocation(session.id, ip);
 
     return {
       kind: 'rotated' as const,
@@ -266,8 +305,9 @@ export async function listSessions(
     .select({
       id: sessions.id,
       userAgent: sessions.userAgent,
-      // inet приводится к тексту явно: иначе драйвер отдаёт его как объект.
-      ip: sql<string | null>`${sessions.ip}::text`,
+      ip: sessions.ip,
+      countryCode: sessions.countryCode,
+      city: sessions.city,
       createdAt: sessions.createdAt,
       lastUsedAt: sessions.lastUsedAt,
       expiresAt: sessions.expiresAt,
@@ -284,6 +324,8 @@ export async function listSessions(
       browser: ua.browser,
       os: ua.os,
       ip: row.ip,
+      countryCode: row.countryCode,
+      city: row.city,
       createdAt: row.createdAt.toISOString(),
       lastUsedAt: row.lastUsedAt.toISOString(),
       expiresAt: row.expiresAt.toISOString(),
