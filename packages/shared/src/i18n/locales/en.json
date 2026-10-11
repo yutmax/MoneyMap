@@ -196,7 +196,8 @@
     "device": {
       "known": "{{browser}} on {{os}}",
       "unknown": "Unknown device"
-    }
+    },
+    "revokeFailed": "Could not revoke the device"
   },
   "settings": {
     "title": "Settings",
@@ -204,8 +205,8 @@
     "password": "Password",
     "timezoneHint": "Affects the dates of recurring operations",
     "currencyNote": "Changing the base currency only changes how the combined balance is displayed. Account currencies and the rates recorded in transactions are not recalculated.",
-    "saved": "Saved.",
-    "saveFailed": "Could not save the changes.",
+    "saved": "Saved",
+    "saveFailed": "Could not save the changes",
     "newPassword": "New password",
     "passwordHint": "At least {{count}} characters",
     "changePassword": "Change password",

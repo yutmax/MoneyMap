@@ -3,7 +3,7 @@ import { SessionCard, useSessions } from '@/entities/session';
 import { useLogoutOthers, useRevokeSession } from '@/features/session-revoke';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
-import { Alert, Button } from '@/shared/ui';
+import { Alert, Button, toast } from '@/shared/ui';
 import styles from './SessionsPage.module.scss';
 
 export function SessionsPage() {
@@ -15,9 +15,27 @@ export function SessionsPage() {
 
   const handleRevoke = async (id: string) => {
     const result = await revoke.mutateAsync(id).catch(() => null);
+
+    if (!result) {
+      toast.error(t('sessions.revokeFailed'));
+      return;
+    }
+
     // Отзыв собственной сессии — это выход: оставаться на защищённой странице
-    // уже нельзя.
-    if (result?.wasCurrent) void navigate(ROUTES.login, { replace: true });
+    // уже нельзя, и уведомление показывать некому.
+    if (result.wasCurrent) {
+      void navigate(ROUTES.login, { replace: true });
+      return;
+    }
+
+    toast.success(t('sessions.revoked', { count: 1 }));
+  };
+
+  const handleLogoutOthers = () => {
+    logoutOthers.mutate(undefined, {
+      onSuccess: (result) => toast.success(t('sessions.revoked', { count: result.revoked })),
+      onError: () => toast.error(t('sessions.revokeFailed')),
+    });
   };
 
   const others = (sessions.data ?? []).filter((s) => !s.isCurrent);
@@ -34,7 +52,7 @@ export function SessionsPage() {
           <Button
             variant="secondary"
             size="small"
-            onClick={() => logoutOthers.mutate()}
+            onClick={handleLogoutOthers}
             loading={logoutOthers.isPending}
           >
             {t('sessions.logoutOthers', { count: others.length })}
@@ -42,11 +60,10 @@ export function SessionsPage() {
         )}
       </header>
 
+      {/* Ошибка загрузки остаётся на месте списка: она объясняет, почему
+          список пуст, и обязана висеть, пока это так. Результат отзыва,
+          наоборот, разовый — он уходит в уведомление. */}
       {sessions.isError && <Alert>{t('sessions.loadFailed')}</Alert>}
-
-      {logoutOthers.isSuccess && (
-        <Alert tone="success">{t('sessions.revoked', { count: logoutOthers.data.revoked })}</Alert>
-      )}
 
       {sessions.isPending ? (
         <ul className={styles.list} aria-busy="true">

@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
+import { useTheme } from '@/features/theme-switch';
 import { ApiError } from '@/shared/api';
+import { Toaster } from '@/shared/ui';
 
 function createQueryClient(): QueryClient {
   return new QueryClient({
@@ -30,5 +32,12 @@ export function Providers({ children }: { children: ReactNode }) {
   // useState, а не модульная константа: иначе в тестах и при HMR клиент
   // переживает размонтирование приложения вместе со своим кешем.
   const [queryClient] = useState(createQueryClient);
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  const { choice } = useTheme();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <Toaster theme={choice} />
+    </QueryClientProvider>
+  );
 }

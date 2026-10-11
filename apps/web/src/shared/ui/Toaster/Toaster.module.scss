@@ -1,0 +1,97 @@
+/* Классы попадают к элементам sonner через toastOptions.classNames.
+   Оформление целиком наше: тост помечен unstyled, поэтому перебивать
+   библиотечные правила не нужно — их просто нет. */
+
+.toast {
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: start;
+  width: 100%;
+  padding: var(--space-xs) var(--space-s);
+  font-family: inherit;
+  font-size: var(--step--1);
+  color: var(--c-text);
+  background-color: var(--c-surface-raised);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-card);
+}
+
+.content {
+  display: grid;
+  row-gap: var(--space-3xs);
+  // Длинное сообщение не должно распирать тост за пределы его ширины.
+  min-width: 0;
+}
+
+.title {
+  font-weight: var(--weight-medium);
+  line-height: 1.35;
+}
+
+.description {
+  font-size: var(--step--2);
+  color: var(--c-text-muted);
+}
+
+.icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  // Выравниваем по первой строке заголовка, а не по центру тоста: описание
+  // может быть длинным, и значок уезжал бы вниз.
+  height: calc(var(--step--1) * 1.35);
+
+  svg {
+    width: 1.05em;
+    height: 1.05em;
+  }
+}
+
+/* Тона повторяют Alert: одно и то же сообщение не должно выглядеть
+   по-разному в зависимости от того, попало оно в форму или во всплывающее
+   уведомление. */
+.success {
+  color: var(--c-income);
+  background-color: color-mix(in oklab, var(--c-income) 12%, var(--c-surface-raised));
+  border-color: color-mix(in oklab, var(--c-income) 35%, transparent);
+}
+
+.error {
+  color: var(--c-danger);
+  background-color: color-mix(in oklab, var(--c-danger) 12%, var(--c-surface-raised));
+  border-color: color-mix(in oklab, var(--c-danger) 35%, transparent);
+}
+
+.info {
+  color: var(--c-text-muted);
+}
+
+.close {
+  display: grid;
+  // В разметке sonner кнопка закрытия идёт первым узлом, до значка
+  // и текста. Её собственное позиционирование снято вместе с остальным
+  // оформлением, поэтому порядок задаём мы.
+  order: 1;
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  place-items: center;
+  width: rem(20);
+  height: rem(20);
+  color: var(--c-text-faint);
+  background-color: var(--c-surface-raised);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-pill);
+
+  @include transition(color, background-color);
+  @include focus-ring($offset: 1px);
+
+  @include hover {
+    color: var(--c-text);
+  }
+
+  svg {
+    width: rem(11);
+    height: rem(11);
+  }
+}

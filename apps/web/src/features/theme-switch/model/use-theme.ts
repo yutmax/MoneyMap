@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { create } from 'zustand';
 
 export type ThemeChoice = 'system' | 'light' | 'dark';
 
@@ -23,26 +23,44 @@ function apply(choice: ThemeChoice): void {
   }
 }
 
+function persist(choice: ThemeChoice): void {
+  try {
+    if (choice === 'system') localStorage.removeItem(STORAGE_KEY);
+    else localStorage.setItem(STORAGE_KEY, choice);
+  } catch {
+    /* выбор не сохранится, но в текущей сессии работает */
+  }
+}
+
+interface ThemeState {
+  choice: ThemeChoice;
+  setChoice: (choice: ThemeChoice) => void;
+}
+
 /**
  * Тема живёт в data-theme на <html>, а переключение — в CSS-переменных
- * (styles/_tokens.scss). React здесь только проставляет атрибут: ни один
- * компонент не знает ни одного цвета.
+ * (shared/styles/_tokens.scss). React здесь только проставляет атрибут:
+ * ни один компонент не знает ни одного цвета.
  *
  * Начальное значение атрибута ставит инлайн-скрипт в index.html — до первой
  * отрисовки, иначе была бы видна вспышка чужой темы.
+ *
+ * Состояние вынесено в стор, а не в useState внутри хука: выбор темы читает
+ * не только переключатель. Всплывающие уведомления рисуются вне нашей
+ * вёрстки и получают тему пропом, и на useState они видели бы собственную
+ * копию значения, застывшую на моменте монтирования.
  */
-export function useTheme() {
-  const [choice, setChoice] = useState<ThemeChoice>(read);
-
-  useEffect(() => {
+const useThemeStore = create<ThemeState>((set) => ({
+  choice: read(),
+  setChoice: (choice) => {
     apply(choice);
-    try {
-      if (choice === 'system') localStorage.removeItem(STORAGE_KEY);
-      else localStorage.setItem(STORAGE_KEY, choice);
-    } catch {
-      /* выбор не сохранится, но в текущей сессии работает */
-    }
-  }, [choice]);
+    persist(choice);
+    set({ choice });
+  },
+}));
 
+export function useTheme() {
+  const choice = useThemeStore((state) => state.choice);
+  const setChoice = useThemeStore((state) => state.setChoice);
   return { choice, setChoice };
 }

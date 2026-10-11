@@ -5,7 +5,11 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/build/**', '**/drizzle/**', '**/node_modules/**'] },
+  {
+    // .vite — кеш пребандленных зависимостей: чужой сгенерированный код,
+    // на который линтер выдаёт тысячи замечаний не по адресу.
+    ignores: ['**/dist/**', '**/build/**', '**/drizzle/**', '**/node_modules/**', '**/.vite/**'],
+  },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
