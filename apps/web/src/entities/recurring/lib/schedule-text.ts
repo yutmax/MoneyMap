@@ -11,8 +11,12 @@ type Translate = (key: string, params?: Record<string, string | number>) => stri
  * в заранее переведённый шаблон.
  */
 export function scheduleText(rule: RecurringRuleResponse, t: Translate, locale: string): string {
-  const every =
-    rule.interval === 1
+  // Квартал назван кварталом, а не «каждые 3 мес.»: в форме он выбирается
+  // именно так, и карточка должна говорить то же самое.
+  const quarterly = rule.freq === 'monthly' && rule.interval === 3;
+  const every = quarterly
+    ? t('recurring.repeat.quarterly')
+    : rule.interval === 1
       ? t(`recurring.every.${rule.freq}`)
       : t(`recurring.everyN.${rule.freq}`, { count: rule.interval });
 

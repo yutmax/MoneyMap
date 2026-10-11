@@ -390,20 +390,11 @@
     "loadFailed": "Could not load the rules",
     "name": "Name",
     "freq": "Repeat",
-    "intervalHint": {
-      "daily": "1 — every day, 2 — every other day",
-      "weekly": "1 — every week, 2 — every other week",
-      "monthly": "1 — every month, 3 — once a quarter",
-      "yearly": "1 — every year"
-    },
-    "weekday": "Day of the week",
-    "dayOfMonth": "Day of the month",
-    "fromStart": "Same as the start date",
     "monthEnd": "When there is no such day",
     "monthEndHint": "The 31st does not happen every month",
-    "startOn": "Starts",
-    "endOn": "Ends",
-    "endOnHint": "Empty — no end",
+    "startOn": "Charge date",
+    "endOn": "Subscription ends",
+    "endOnHint": "No charges after this date. Empty — no end",
     "askFirst": "Ask before creating",
     "askFirstHint": "The charge will wait in a queue for your confirmation.",
     "submit": "Create rule",
@@ -441,12 +432,14 @@
       "skip": "skip that month"
     },
     "currency": "Currency",
-    "intervalLabel": {
-      "daily": "Every how many days",
-      "weekly": "Every how many weeks",
-      "monthly": "Every how many months",
-      "yearly": "Every how many years"
-    }
+    "repeat": {
+      "daily": "Every day",
+      "weekly": "Every week",
+      "monthly": "Every month",
+      "quarterly": "Every quarter",
+      "yearly": "Every year"
+    },
+    "startOnHint": "The first charge. The repeating day comes from it"
   },
   "reconciliation": {
     "title": "Balance check",

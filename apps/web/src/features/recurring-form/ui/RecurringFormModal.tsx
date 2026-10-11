@@ -1,6 +1,5 @@
 import {
   MONTH_END_POLICIES,
-  RECURRENCE_FREQS,
   parseUserAmount,
   todayIn,
   toMoney,
@@ -10,7 +9,7 @@ import { useState } from 'react';
 import { useAccounts } from '@/entities/account';
 import { useCategories } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
-import { weekdayName } from '@/entities/recurring';
+import { scheduleText } from '@/entities/recurring';
 import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
 import { Alert, Button, Field, Modal, Select, toast } from '@/shared/ui';
@@ -22,7 +21,26 @@ interface RecurringFormModalProps {
   onClose: () => void;
 }
 
-const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
+/**
+ * Готовые периодичности вместо пары «частота + интервал».
+ *
+ * «Каждые сколько месяцев: 1» рядом с выбором «каждый месяц» — это один
+ * и тот же вопрос, заданный дважды. Модель остаётся общей (частота и шаг),
+ * форма предлагает те пять вариантов, которыми пользуются.
+ */
+const PRESETS = [
+  { key: 'daily', freq: 'daily', interval: 1 },
+  { key: 'weekly', freq: 'weekly', interval: 1 },
+  { key: 'monthly', freq: 'monthly', interval: 1 },
+  { key: 'quarterly', freq: 'monthly', interval: 3 },
+  { key: 'yearly', freq: 'yearly', interval: 1 },
+] as const;
+
+type PresetKey = (typeof PRESETS)[number]['key'];
+
+function presetOf(freq: string, interval: number): PresetKey | null {
+  return PRESETS.find((p) => p.freq === freq && p.interval === interval)?.key ?? null;
+}
 
 export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
   const { t, locale } = useT();
@@ -46,14 +64,13 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
    * за сменой счёта, пока человек не указал валюту явно.
    */
   const [currency, setCurrency] = useState(rule?.currencyCode ?? '');
-  const [freq, setFreq] = useState(rule?.freq ?? 'monthly');
-  const [interval, setInterval] = useState(String(rule?.interval ?? 1));
+  // null — расписание, заведённое не отсюда: «каждые два месяца» через API.
+  // Такое показывается отдельной строкой и не теряется при сохранении.
+  const [preset, setPreset] = useState<PresetKey | null>(
+    rule ? presetOf(rule.freq, rule.interval) : 'monthly',
+  );
   const [startOn, setStartOn] = useState(rule?.startOn ?? todayIn(user?.timezone ?? 'UTC'));
   const [endOn, setEndOn] = useState(rule?.endOn ?? '');
-  const [dayOfMonth, setDayOfMonth] = useState(rule?.dayOfMonth ? String(rule.dayOfMonth) : '');
-  const [weekday, setWeekday] = useState(
-    rule?.weekday !== null && rule?.weekday !== undefined ? String(rule.weekday) : '',
-  );
   const [monthEndPolicy, setMonthEndPolicy] = useState(rule?.monthEndPolicy ?? 'clamp');
   const [autoPost, setAutoPost] = useState(rule?.autoPost ?? true);
   const [error, setError] = useState<string | null>(null);
@@ -71,11 +88,13 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
   const accountCurrency =
     open.find((a) => a.id === selectedAccountId)?.currencyCode ?? rule?.accountCurrency ?? '';
   const entryCurrency = currency || accountCurrency;
-  const needsDay = freq === 'monthly' || freq === 'yearly';
-  const needsWeekday = freq === 'weekly';
-  // О коротком месяце спрашиваем только тогда, когда он случится: для
-  // 15-го числа этот выбор не значит ничего.
-  const needsPolicy = needsDay && Number(dayOfMonth || startOn.slice(8, 10)) > 28;
+  const schedule = PRESETS.find((p) => p.key === preset);
+  // День повторения берётся из даты списания, поэтому про короткий месяц
+  // спрашиваем, только когда она попадает на 29-е и дальше — и только
+  // у месячных и годовых правил, где короткий месяц вообще случается.
+  const needsPolicy =
+    (schedule?.freq === 'monthly' || schedule?.freq === 'yearly') &&
+    Number(startOn.slice(8, 10)) > 28;
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -89,12 +108,21 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
       return;
     }
 
-    const schedule = {
-      freq,
-      interval: Number(interval) || 1,
+    // Частоту и шаг отправляем, только если человек выбрал вариант из
+    // списка: иначе правило оставляет своё — то самое «каждые два месяца».
+    const timing = schedule
+      ? { freq: schedule.freq, interval: schedule.interval }
+      : rule
+        ? { freq: rule.freq, interval: rule.interval }
+        : { freq: 'monthly' as const, interval: 1 };
+
+    const scheduleInput = {
+      ...timing,
       monthEndPolicy,
-      dayOfMonth: needsDay && dayOfMonth ? Number(dayOfMonth) : null,
-      weekday: needsWeekday && weekday !== '' ? Number(weekday) : null,
+      // День недели и число месяца выводятся из даты списания: спрашивать
+      // о них отдельно значит спрашивать дважды об одном.
+      dayOfMonth: null,
+      weekday: null,
       endOn: endOn === '' ? null : endOn,
       autoPost,
     };
@@ -107,7 +135,7 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
             name: name.trim(),
             amount: parsed,
             categoryId: categoryId === '' ? null : categoryId,
-            ...schedule,
+            ...scheduleInput,
           },
         });
         toast.success(t('recurring.updated'));
@@ -122,7 +150,7 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
           kind,
           amount: parsed,
           startOn,
-          ...schedule,
+          ...scheduleInput,
         });
         toast.success(t('recurring.created'));
       }
@@ -223,56 +251,22 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
             </Select>
           </div>
 
-          <div className={styles.row}>
-            <Select
-              label={t('recurring.freq')}
-              value={freq}
-              onChange={(e) => setFreq(e.currentTarget.value as typeof freq)}
-            >
-              {RECURRENCE_FREQS.map((value) => (
-                <option key={value} value={value}>
-                  {t(`recurring.every.${value}`)}
-                </option>
-              ))}
-            </Select>
-
-            <Field
-              label={t(`recurring.intervalLabel.${freq}`)}
-              type="number"
-              min={1}
-              max={366}
-              hint={t(`recurring.intervalHint.${freq}`, { count: Number(interval) || 1 })}
-              value={interval}
-              onChange={(e) => setInterval(e.currentTarget.value)}
-            />
-          </div>
-
-          {needsWeekday && (
-            <Select
-              label={t('recurring.weekday')}
-              value={weekday}
-              onChange={(e) => setWeekday(e.currentTarget.value)}
-            >
-              <option value="">{t('recurring.fromStart')}</option>
-              {WEEKDAYS.map((value) => (
-                <option key={value} value={value}>
-                  {weekdayName(value, locale)}
-                </option>
-              ))}
-            </Select>
-          )}
-
-          {needsDay && (
-            <Field
-              label={t('recurring.dayOfMonth')}
-              type="number"
-              min={1}
-              max={31}
-              hint={t('recurring.fromStart')}
-              value={dayOfMonth}
-              onChange={(e) => setDayOfMonth(e.currentTarget.value)}
-            />
-          )}
+          <Select
+            label={t('recurring.freq')}
+            value={preset ?? 'custom'}
+            onChange={(e) => setPreset(e.currentTarget.value as PresetKey)}
+          >
+            {/* Расписание, заведённое не отсюда, остаётся в списке первой
+                строкой: иначе сохранение формы молча переписало бы его. */}
+            {preset === null && rule && (
+              <option value="custom">{scheduleText(rule, t, locale)}</option>
+            )}
+            {PRESETS.map((item) => (
+              <option key={item.key} value={item.key}>
+                {t(`recurring.repeat.${item.key}`)}
+              </option>
+            ))}
+          </Select>
 
           {needsPolicy && (
             <Select
@@ -293,6 +287,7 @@ export function RecurringFormModal({ rule, onClose }: RecurringFormModalProps) {
             <Field
               label={t('recurring.startOn')}
               type="date"
+              hint={t('recurring.startOnHint')}
               value={startOn}
               disabled={isEdit}
               onChange={(e) => setStartOn(e.currentTarget.value)}
