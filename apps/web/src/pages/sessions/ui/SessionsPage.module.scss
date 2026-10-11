@@ -1,0 +1,45 @@
+.root {
+  display: grid;
+  row-gap: var(--space-m);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  align-items: start;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--step-3);
+  font-weight: var(--weight-medium);
+}
+
+.subtitle {
+  max-width: 60ch;
+  margin-block-start: var(--space-3xs);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.list {
+  display: grid;
+  row-gap: var(--space-2xs);
+}
+
+.skeleton {
+  height: rem(84);
+  background-color: var(--c-surface);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-l);
+  // Пульсация выключается вместе со всеми анимациями через
+  // prefers-reduced-motion в reset — отдельного правила здесь не нужно.
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}

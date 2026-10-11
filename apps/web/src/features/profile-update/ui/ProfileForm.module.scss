@@ -1,0 +1,14 @@
+.grid {
+  display: grid;
+  gap: var(--space-s);
+
+  @include from("sm") {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.note {
+  max-width: 70ch;
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}

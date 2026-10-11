@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 const srcPath = fileURLToPath(new URL('./src', import.meta.url));
-const stylesPath = fileURLToPath(new URL('./src/styles', import.meta.url));
+const stylesPath = fileURLToPath(new URL('./src/shared/styles', import.meta.url));
 
 export default defineConfig({
   plugins: [react()],

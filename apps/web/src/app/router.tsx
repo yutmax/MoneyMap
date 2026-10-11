@@ -1,0 +1,56 @@
+import { BrowserRouter, Route, Routes } from 'react-router';
+import { DashboardPage } from '@/pages/dashboard';
+import { ForgotPasswordPage } from '@/pages/forgot-password';
+import { LoginPage } from '@/pages/login';
+import { NotFoundPage } from '@/pages/not-found';
+import { OnboardingPage } from '@/pages/onboarding';
+import { RegisterPage } from '@/pages/register';
+import { ResetPasswordPage } from '@/pages/reset-password';
+import { SessionsPage } from '@/pages/sessions';
+import { SettingsPage } from '@/pages/settings';
+import { VerifyEmailPage } from '@/pages/verify-email';
+import { ROUTES } from '@/shared/config';
+import { AppHeader } from '@/widgets/app-header';
+import {
+  RedirectIfAuthenticated,
+  RequireAuth,
+  RequireNotOnboarded,
+  RequireOnboarded,
+} from './guards/route-guards.tsx';
+
+export function Router() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Публичные страницы, доступные и вошедшему: подтверждение email
+            приходит по ссылке из письма в любой момент. */}
+        <Route path={ROUTES.verifyEmail} element={<VerifyEmailPage />} />
+        <Route path={ROUTES.resetPassword} element={<ResetPasswordPage />} />
+
+        <Route element={<RedirectIfAuthenticated />}>
+          <Route path={ROUTES.login} element={<LoginPage />} />
+          <Route path={ROUTES.register} element={<RegisterPage />} />
+          <Route path={ROUTES.forgotPassword} element={<ForgotPasswordPage />} />
+        </Route>
+
+        <Route element={<RequireAuth />}>
+          {/* Онбординг — внутри авторизованной зоны, но до шапки: навигация
+              по разделам, которые ещё не настроены, только мешала бы. */}
+          <Route element={<RequireNotOnboarded />}>
+            <Route path={ROUTES.onboarding} element={<OnboardingPage />} />
+          </Route>
+
+          <Route element={<RequireOnboarded />}>
+            <Route element={<AppHeader />}>
+              <Route index element={<DashboardPage />} />
+              <Route path={ROUTES.sessions} element={<SessionsPage />} />
+              <Route path={ROUTES.settings} element={<SettingsPage />} />
+            </Route>
+          </Route>
+        </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

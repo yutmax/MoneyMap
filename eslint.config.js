@@ -43,6 +43,38 @@ export default tseslint.config(
     },
   },
 
+  // Границы слоёв Feature-Sliced Design.
+  //
+  // Слой импортирует только то, что лежит строго ниже него:
+  //   app → pages → widgets → features → entities → shared
+  //
+  // Правило держится на no-restricted-imports, а не на отдельном плагине:
+  // запретов ровно пять строк, а плагин — это зависимость, которую придётся
+  // обновлять ради списка, помещающегося на экран. Проверяется только
+  // направление между слоями; импорт соседнего слайса в обход его index.ts
+  // ловится код-ревью.
+  ...[
+    ['app', []],
+    ['pages', ['app']],
+    ['widgets', ['app', 'pages']],
+    ['features', ['app', 'pages', 'widgets']],
+    ['entities', ['app', 'pages', 'widgets', 'features']],
+    ['shared', ['app', 'pages', 'widgets', 'features', 'entities']],
+  ].map(([layer, forbidden]) => ({
+    files: [`apps/web/src/${layer}/**/*.{ts,tsx}`],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: forbidden.map((upper) => ({
+            group: [`@/${upper}`, `@/${upper}/*`],
+            message: `Слой ${layer} не может зависеть от ${upper}: импорты идут только вниз по слоям FSD.`,
+          })),
+        },
+      ],
+    },
+  })),
+
   // Бэкенд
   {
     files: ['apps/api/**/*.ts'],

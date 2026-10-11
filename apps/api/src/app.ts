@@ -7,6 +7,7 @@ import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import { allowedOrigins, env, isProduction } from './lib/env.ts';
 import { AppError } from './lib/errors.ts';
 import { authRoutes } from './modules/auth/auth.routes.ts';
+import { onboardingRoutes } from './modules/onboarding/onboarding.routes.ts';
 import { referenceRoutes } from './modules/reference/reference.routes.ts';
 import { settingsRoutes } from './modules/settings/settings.routes.ts';
 import { registerCsrf } from './plugins/csrf.ts';
@@ -134,6 +135,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(
     async (api) => {
       await api.register(authRoutes, { prefix: '/auth' });
+      await api.register(onboardingRoutes, { prefix: '/onboarding' });
       await api.register(settingsRoutes, { prefix: '/settings' });
       await api.register(referenceRoutes);
     },

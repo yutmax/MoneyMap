@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { ApiError } from '@/api/client.ts';
+import { ApiError } from '@/shared/api';
 
 function createQueryClient(): QueryClient {
   return new QueryClient({

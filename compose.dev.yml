@@ -14,7 +14,9 @@ services:
       # Коллация и кодировка задаются при initdb и потом не меняются.
       POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=C'
     ports:
-      - '5432:5432'
+      # Порт хоста переопределяется POSTGRES_PORT в .env: 5432 часто занят
+      # локально установленным Postgres.
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -30,7 +32,7 @@ services:
     environment:
       PGWEB_DATABASE_URL: postgres://moneymap:moneymap@postgres:5432/moneymap?sslmode=disable
     ports:
-      - '8081:8081'
+      - '${PGWEB_PORT:-8081}:8081'
     depends_on:
       postgres:
         condition: service_healthy

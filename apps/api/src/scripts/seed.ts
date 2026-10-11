@@ -12,7 +12,16 @@ type Row = typeof currencies.$inferInsert;
 const fiat: Row[] = [
   { code: 'USD', kind: 'fiat', decimals: 2, symbol: '$', name: 'Доллар США', sortOrder: 10 },
   { code: 'EUR', kind: 'fiat', decimals: 2, symbol: '€', name: 'Евро', sortOrder: 20 },
+  {
+    code: 'BYN',
+    kind: 'fiat',
+    decimals: 2,
+    symbol: 'Br',
+    name: 'Белорусский рубль',
+    sortOrder: 25,
+  },
   { code: 'UAH', kind: 'fiat', decimals: 2, symbol: '₴', name: 'Гривна', sortOrder: 30 },
+  { code: 'RUB', kind: 'fiat', decimals: 2, symbol: '₽', name: 'Российский рубль', sortOrder: 35 },
   { code: 'PLN', kind: 'fiat', decimals: 2, symbol: 'zł', name: 'Злотый', sortOrder: 40 },
   { code: 'GBP', kind: 'fiat', decimals: 2, symbol: '£', name: 'Фунт стерлингов', sortOrder: 50 },
   {

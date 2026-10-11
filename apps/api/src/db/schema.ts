@@ -57,12 +57,20 @@ export const users = pgTable(
     email: citext().notNull(),
     name: text().notNull(),
     passwordHash: text().notNull(),
-    /** Валюта сводного баланса (§8.6). */
-    baseCurrency: text()
-      .notNull()
-      .references(() => currencies.code),
+    /**
+     * Валюта сводного баланса (§8.6). Null до онбординга: регистрация её
+     * больше не спрашивает, а подставлять значение, которого человек не
+     * выбирал, — значит хранить догадку, неотличимую от решения.
+     */
+    baseCurrency: text().references(() => currencies.code),
     /** IANA, напр. 'Europe/Kyiv'. Нужна для дат регулярных правил (§8.7). */
-    timezone: text().notNull(),
+    timezone: text(),
+    /**
+     * Первичная настройка пройдена. Отдельная колонка, а не вывод из
+     * заполненности baseCurrency: онбординг будет прирастать шагами (первый
+     * счёт — фаза 1), которым не соответствует ни одно поле users.
+     */
+    onboardedAt: timestamptz(),
     emailVerifiedAt: timestamptz(),
     createdAt: timestamptzNow(),
     updatedAt: timestamptzNow(),

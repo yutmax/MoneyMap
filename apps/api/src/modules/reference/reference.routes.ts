@@ -5,8 +5,8 @@ import { currencies } from '../../db/schema.ts';
 
 export async function referenceRoutes(app: FastifyInstance): Promise<void> {
   /**
-   * Справочник валют. Открыт без аутентификации: он нужен форме регистрации,
-   * общий для всех пользователей и ничего приватного не содержит.
+   * Справочник валют. Открыт без аутентификации: он общий для всех
+   * пользователей и ничего приватного не содержит.
    */
   app.get('/currencies', async (_request, reply) => {
     const rows = await db

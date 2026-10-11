@@ -1,0 +1,14 @@
+.form {
+  display: grid;
+  row-gap: var(--space-m);
+}
+
+.fields {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.note {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}

@@ -8,7 +8,7 @@ import type {
 import { and, eq, isNull } from 'drizzle-orm';
 import type { FastifyBaseLogger } from 'fastify';
 import type { Db } from '../../db/index.ts';
-import { currencies, userTokens, users } from '../../db/schema.ts';
+import { userTokens, users } from '../../db/schema.ts';
 import {
   badRequest,
   conflict,
@@ -26,6 +26,7 @@ import {
 } from '../../lib/password.ts';
 import { Scope } from '../../lib/scoping.ts';
 import { addHours, generateOpaqueToken, hashToken } from '../../lib/tokens.ts';
+import { assertCurrencyExists } from '../reference/currency.service.ts';
 import type { DeviceInfo, IssuedAuth } from './session.service.ts';
 import { createSession, revokeAllSessions } from './session.service.ts';
 
@@ -46,8 +47,9 @@ export function toMeResponse(user: {
   id: string;
   email: string;
   name: string;
-  baseCurrency: string;
-  timezone: string;
+  baseCurrency: string | null;
+  timezone: string | null;
+  onboardedAt: Date | null;
   emailVerifiedAt: Date | null;
   createdAt: Date;
 }): MeResponse {
@@ -58,6 +60,7 @@ export function toMeResponse(user: {
     baseCurrency: user.baseCurrency,
     timezone: user.timezone,
     emailVerified: user.emailVerifiedAt !== null,
+    onboardedAt: user.onboardedAt?.toISOString() ?? null,
     createdAt: user.createdAt.toISOString(),
   };
 }
@@ -84,33 +87,17 @@ export async function register(
 ): Promise<{ user: MeResponse; auth: IssuedAuth }> {
   const { input } = args;
 
-  const [currency] = await db
-    .select({ code: currencies.code })
-    .from(currencies)
-    .where(and(eq(currencies.code, input.baseCurrency), eq(currencies.isActive, true)))
-    .limit(1);
-
-  if (!currency) {
-    throw badRequest('Неизвестная валюта', [
-      { path: 'baseCurrency', message: 'Такой валюты нет в справочнике' },
-    ]);
-  }
-
   if (await isPasswordCompromised(input.password)) throw passwordCompromised();
 
   const passwordHash = await hashPassword(input.password);
 
   let created: { id: string } | undefined;
   try {
+    // Базовая валюта и таймзона остаются пустыми до онбординга: их задаёт
+    // уже вошедший человек, см. modules/onboarding.
     [created] = await db
       .insert(users)
-      .values({
-        email: input.email,
-        name: input.name,
-        passwordHash,
-        baseCurrency: currency.code,
-        timezone: input.timezone,
-      })
+      .values({ email: input.email, name: input.name, passwordHash })
       .returning({ id: users.id });
   } catch (error) {
     // Регистрация сознательно сообщает о занятом email. Требование §6.5 о
@@ -184,18 +171,7 @@ export async function updateSettings(
   db: Db,
   args: { userId: string; input: UpdateSettingsInput },
 ): Promise<MeResponse> {
-  if (args.input.baseCurrency) {
-    const [currency] = await db
-      .select({ code: currencies.code })
-      .from(currencies)
-      .where(and(eq(currencies.code, args.input.baseCurrency), eq(currencies.isActive, true)))
-      .limit(1);
-    if (!currency) {
-      throw badRequest('Неизвестная валюта', [
-        { path: 'baseCurrency', message: 'Такой валюты нет в справочнике' },
-      ]);
-    }
-  }
+  if (args.input.baseCurrency) await assertCurrencyExists(db, args.input.baseCurrency);
 
   const [updated] = await db
     .update(users)
