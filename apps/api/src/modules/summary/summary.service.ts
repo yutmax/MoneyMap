@@ -58,7 +58,15 @@ async function balancesAsOf(db: Db, scope: Scope, asOf: string): Promise<Account
       balance: balance.as('balance'),
     })
     .from(accounts)
-    .where(scope.own(accounts, eq(accounts.isArchived, false)))
+    .where(
+      scope.own(
+        accounts,
+        eq(accounts.isArchived, false),
+        // Счёта, который ещё не открыт, в этот день просто не было:
+        // иначе график рисует деньги до того, как они появились.
+        lte(accounts.openedOn, asOf),
+      ),
+    )
     .orderBy(asc(accounts.sortOrder), asc(accounts.createdAt));
 
   return rows;

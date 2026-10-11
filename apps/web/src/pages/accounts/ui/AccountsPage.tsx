@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { AccountCard, useAccounts } from '@/entities/account';
 import { AccountFormModal, useDeleteAccount, useUpdateAccount } from '@/features/account-form';
 import { useT } from '@/shared/i18n';
-import { Alert, Button, toast } from '@/shared/ui';
+import { ROUTES } from '@/shared/config';
+import { Alert, Button, SectionTabs, toast } from '@/shared/ui';
 import styles from './AccountsPage.module.scss';
 
 /** `null` — форма закрыта, `'new'` — создание, объект — правка. */
@@ -49,6 +50,14 @@ export function AccountsPage() {
           <h1 className={styles.title}>{t('accounts.title')}</h1>
           <p className={styles.subtitle}>{t('accounts.subtitle')}</p>
         </div>
+
+        <SectionTabs
+          tabs={[
+            { to: ROUTES.accounts, label: t('nav.accounts') },
+            { to: ROUTES.reconciliation, label: t('nav.reconciliation') },
+          ]}
+        />
+
         <Button size="small" onClick={() => setForm('new')}>
           {t('accounts.create')}
         </Button>

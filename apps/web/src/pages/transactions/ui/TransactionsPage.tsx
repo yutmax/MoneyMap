@@ -6,7 +6,8 @@ import { TransactionRow, useTransactions, type TransactionFilters } from '@/enti
 import { ImportModal } from '@/features/import-csv';
 import { TransactionFormModal, useDeleteTransaction } from '@/features/transaction-form';
 import { useT } from '@/shared/i18n';
-import { Alert, Button, Field, Select, toast } from '@/shared/ui';
+import { ROUTES } from '@/shared/config';
+import { Alert, Button, Field, SectionTabs, Select, toast } from '@/shared/ui';
 import styles from './TransactionsPage.module.scss';
 
 type FormState = null | 'new' | TransactionResponse;
@@ -44,6 +45,14 @@ export function TransactionsPage() {
           <h1 className={styles.title}>{t('transactions.title')}</h1>
           <p className={styles.subtitle}>{t('transactions.subtitle')}</p>
         </div>
+
+        <SectionTabs
+          tabs={[
+            { to: ROUTES.transactions, label: t('nav.transactions') },
+            { to: ROUTES.recurring, label: t('nav.recurring') },
+          ]}
+        />
+
         <div className={styles.headerActions}>
           <Button variant="secondary" size="small" onClick={() => setImporting(true)}>
             {t('import.open')}

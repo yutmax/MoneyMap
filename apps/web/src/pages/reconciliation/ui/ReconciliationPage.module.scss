@@ -5,8 +5,11 @@
 }
 
 .header {
-  display: grid;
-  row-gap: var(--space-3xs);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  align-items: start;
+  justify-content: space-between;
 }
 
 .title {

@@ -1,0 +1,191 @@
+.root {
+  min-block-size: 100svh;
+
+  // С планшета — две колонки: панель и содержимое. На телефоне колонка одна,
+  // а навигация уезжает вниз.
+  @include from("md") {
+    display: grid;
+    grid-template-columns: rem(220) 1fr;
+  }
+}
+
+/* ───────────────────────────── боковая панель ───────────────────────────── */
+
+.rail {
+  display: none;
+
+  @include from("md") {
+    position: sticky;
+    inset-block-start: 0;
+    display: grid;
+    row-gap: var(--space-m);
+    align-content: start;
+    block-size: 100svh;
+    padding: var(--space-m) var(--space-s);
+    border-inline-end: var(--border-width) solid var(--c-border);
+  }
+}
+
+.brand {
+  padding-inline: var(--space-2xs);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  color: var(--c-accent);
+
+  @include focus-ring($offset: 3px);
+}
+
+.railNav {
+  display: grid;
+  row-gap: rem(2);
+}
+
+.railLink {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  padding: var(--space-2xs) var(--space-xs);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+  border-radius: var(--radius-m);
+
+  @include transition(color, background-color);
+  @include focus-ring($offset: -2px);
+
+  @include hover {
+    color: var(--c-text);
+    background-color: var(--c-surface);
+  }
+}
+
+/* ────────────────────────────── верхняя строка ──────────────────────────── */
+
+.column {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  gap: var(--space-s);
+  align-items: center;
+  justify-content: space-between;
+  min-block-size: rem(56);
+  background-color: color-mix(in oklab, var(--c-bg) 85%, transparent);
+  backdrop-filter: blur(10px);
+
+  @include container;
+
+  // На широком экране название уже есть в панели, и строка нужна только
+  // ради колокольчика.
+  @include from("md") {
+    justify-content: end;
+    min-block-size: rem(64);
+  }
+}
+
+.brandMobile {
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  color: var(--c-accent);
+
+  @include focus-ring($offset: 3px);
+
+  @include from("md") {
+    display: none;
+  }
+}
+
+.bell {
+  position: relative;
+  display: inline-flex;
+  padding: var(--space-2xs);
+  color: var(--c-text-muted);
+  border-radius: var(--radius-m);
+
+  @include transition(color, background-color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+    background-color: var(--c-surface);
+  }
+}
+
+.badge {
+  position: absolute;
+  inset-block-start: rem(-1);
+  inset-inline-end: rem(-1);
+  min-inline-size: rem(16);
+  padding-inline: rem(4);
+  font-size: rem(10);
+  font-weight: var(--weight-medium);
+  line-height: rem(16);
+  color: var(--c-accent-ink);
+  text-align: center;
+  background-color: var(--c-accent);
+  border-radius: var(--radius-pill);
+}
+
+.main {
+  flex: 1;
+  padding-block: var(--space-m) var(--space-2xl);
+
+  @include container;
+
+  // Место под нижнюю панель, чтобы она не накрывала последнюю карточку.
+  @include until("md") {
+    padding-block-end: calc(rem(72) + env(safe-area-inset-bottom));
+  }
+}
+
+/* ───────────────────────────── нижняя панель ────────────────────────────── */
+
+.bar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  padding-block-end: env(safe-area-inset-bottom);
+  background-color: color-mix(in oklab, var(--c-bg) 92%, transparent);
+  border-block-start: var(--border-width) solid var(--c-border);
+  backdrop-filter: blur(10px);
+
+  @include from("md") {
+    display: none;
+  }
+}
+
+.tab {
+  display: grid;
+  row-gap: rem(2);
+  flex: 1;
+  justify-items: center;
+  // Высота считается от пальца, а не от текста: 56 пикселей — та мера,
+  // в которую попадают, не целясь.
+  padding-block: var(--space-2xs);
+  min-block-size: rem(56);
+  font-size: rem(11);
+  color: var(--c-text-faint);
+
+  @include transition(color);
+  @include focus-ring($offset: -3px);
+}
+
+.active {
+  color: var(--c-accent);
+  background-color: color-mix(in oklab, var(--c-accent) 10%, transparent);
+}
+
+.icon {
+  inline-size: rem(20);
+  block-size: rem(20);
+}
+
+.label {
+  @include clamp-lines(1);
+}

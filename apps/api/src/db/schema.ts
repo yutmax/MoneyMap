@@ -1,5 +1,5 @@
 import type { NetWorthBreakdown } from '@moneymap/shared';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
   customType,
@@ -212,6 +212,18 @@ export const accounts = pgTable(
       .references(() => currencies.code),
     /** Остаток на дату открытия счёта. */
     openingBalance: money().notNull().default('0'),
+    /**
+     * С какого дня счёт существует.
+     *
+     * Без неё начальный остаток считался действующим всегда, и график
+     * показывал деньги за годы до того, как счёт появился. Дата открытия
+     * отделена от created_at намеренно: счёт можно завести сегодня, а
+     * открыт он мог быть пять лет назад, и остаток на нём лежал всё это
+     * время.
+     */
+    openedOn: date()
+      .notNull()
+      .default(sql`current_date`),
     /** Имя иконки из подборки на фронтенде, а не из библиотеки напрямую. */
     icon: text(),
     color: text(),

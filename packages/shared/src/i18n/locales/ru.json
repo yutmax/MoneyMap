@@ -121,16 +121,16 @@
   "nav": {
     "aria": "Основная навигация",
     "ariaShort": "Навигация",
-    "overview": "Обзор",
+    "overview": "Главная",
     "devices": "Устройства",
-    "settings": "Настройки",
     "logout": "Выйти",
     "accounts": "Счета",
     "categories": "Категории",
     "transactions": "Операции",
     "recurring": "Регулярные",
     "reconciliation": "Сверка",
-    "reports": "Отчёты"
+    "reports": "Отчёты",
+    "profile": "Профиль"
   },
   "auth": {
     "login": {
@@ -202,8 +202,9 @@
   },
   "dashboard": {
     "title": "Обзор",
-    "subtitle": "Базовая валюта — {{currency}}, таймзона — {{timezone}}.",
-    "emailNotVerified": "Email не подтверждён. Ссылка отправлена на {{email}} — в разработке она печатается в лог API."
+    "emailNotVerified": "Email не подтверждён. Ссылка отправлена на {{email}} — в разработке она печатается в лог API.",
+    "recent": "Последние операции",
+    "showAll": "Показать все"
   },
   "summary": {
     "title": "Общий баланс",
@@ -285,7 +286,9 @@
     "type_card": "Карта",
     "type_savings": "Вклад",
     "type_crypto_wallet": "Криптокошелёк",
-    "edit": "Изменить"
+    "edit": "Изменить",
+    "openedOn": "Счёт открыт",
+    "openedOnHint": "С этой даты считается начальный остаток"
   },
   "categories": {
     "title": "Категории",
@@ -546,6 +549,8 @@
     "balance_check": {
       "title": "Пора сверить остатки",
       "body": "Напоминание от {{when}}: введите фактические остатки по счетам."
-    }
+    },
+    "title": "Уведомления",
+    "empty": "Уведомлений пока нет."
   }
 }

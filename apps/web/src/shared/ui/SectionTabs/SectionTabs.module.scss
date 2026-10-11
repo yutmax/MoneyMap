@@ -1,0 +1,32 @@
+.root {
+  display: inline-flex;
+  gap: rem(2);
+  padding: rem(3);
+  background-color: var(--c-surface-sunken);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-pill);
+}
+
+.tab {
+  padding: var(--space-3xs) var(--space-s);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+
+  @include transition(color, background-color);
+  @include focus-ring($offset: 1px);
+
+  @include hover {
+    color: var(--c-text);
+  }
+}
+
+.active {
+  color: var(--c-accent-ink);
+  background-color: var(--c-accent);
+
+  @include hover {
+    color: var(--c-accent-ink);
+  }
+}

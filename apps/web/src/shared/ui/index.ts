@@ -9,6 +9,7 @@ export { Icon } from './Icon/Icon.tsx';
 export { ICONS, isIconName, type IconName } from './Icon/icons.ts';
 export { Modal } from './Modal/Modal.tsx';
 export { PasswordInput } from './PasswordInput/PasswordInput.tsx';
+export { SectionTabs, type SectionTab } from './SectionTabs/SectionTabs.tsx';
 export { Select } from './Select/Select.tsx';
 export { Spinner } from './Spinner/Spinner.tsx';
 export { TimezoneSelect } from './TimezoneSelect/TimezoneSelect.tsx';

@@ -6,7 +6,8 @@ import { useMe } from '@/entities/user';
 import { useCorrectSnapshot, useCreateSnapshot } from '@/features/reconciliation';
 import { useT } from '@/shared/i18n';
 import { cx, formatDate } from '@/shared/lib';
-import { Alert, Button, Field, toast } from '@/shared/ui';
+import { ROUTES } from '@/shared/config';
+import { Alert, Button, Field, SectionTabs, toast } from '@/shared/ui';
 import styles from './ReconciliationPage.module.scss';
 
 /**
@@ -70,8 +71,17 @@ export function ReconciliationPage() {
   return (
     <div className={styles.root}>
       <header className={styles.header}>
-        <h1 className={styles.title}>{t('reconciliation.title')}</h1>
-        <p className={styles.subtitle}>{t('reconciliation.subtitle')}</p>
+        <div>
+          <h1 className={styles.title}>{t('reconciliation.title')}</h1>
+          <p className={styles.subtitle}>{t('reconciliation.subtitle')}</p>
+        </div>
+
+        <SectionTabs
+          tabs={[
+            { to: ROUTES.accounts, label: t('nav.accounts') },
+            { to: ROUTES.reconciliation, label: t('nav.reconciliation') },
+          ]}
+        />
       </header>
 
       {accounts.isError && <Alert>{t('reconciliation.loadFailed')}</Alert>}

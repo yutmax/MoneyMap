@@ -1,4 +1,17 @@
-import { Eye, EyeOff, Monitor, Moon, Sun, type LucideIcon } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  Bell,
+  ChartPie,
+  Eye,
+  EyeOff,
+  House,
+  Monitor,
+  Moon,
+  Sun,
+  User,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react';
 
 /**
  * Единственное место, где проект знает про lucide.
@@ -21,6 +34,13 @@ export const ICONS = {
   sun: Sun,
   monitor: Monitor,
   moon: Moon,
+  // Разделы приложения: нижняя панель на телефоне, боковая на широком экране.
+  home: House,
+  transactions: ArrowLeftRight,
+  accounts: Wallet,
+  reports: ChartPie,
+  profile: User,
+  bell: Bell,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

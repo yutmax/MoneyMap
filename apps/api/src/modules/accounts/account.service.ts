@@ -48,6 +48,7 @@ interface AccountRow {
   type: AccountResponse['type'];
   currencyCode: string;
   openingBalance: string;
+  openedOn: string;
   balance: string;
   icon: string | null;
   color: string | null;
@@ -64,6 +65,7 @@ function toResponse(row: AccountRow): AccountResponse {
     type: row.type,
     currencyCode: row.currencyCode,
     openingBalance: row.openingBalance,
+    openedOn: row.openedOn,
     // Сложение в SQL, а не в decimal.js: оба слагаемых — NUMERIC(38,18),
     // и Postgres складывает их без потери точности.
     balance: row.balance,
@@ -82,6 +84,7 @@ const selection = {
   type: accounts.type,
   currencyCode: accounts.currencyCode,
   openingBalance: accounts.openingBalance,
+  openedOn: accounts.openedOn,
   balance: sql<string>`(${accounts.openingBalance} + ${movementSql})`.as('balance'),
   icon: accounts.icon,
   color: accounts.color,
@@ -127,6 +130,7 @@ export async function createAccount(
         type: input.type,
         currencyCode: currency,
         openingBalance: input.openingBalance,
+        ...(input.openedOn ? { openedOn: input.openedOn } : {}),
         icon: input.icon ?? null,
         color: input.color ?? null,
       }),

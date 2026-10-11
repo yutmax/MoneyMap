@@ -1,6 +1,6 @@
 import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
-import { NotificationList } from '@/widgets/notifications';
+import { RecentTransactions } from '@/widgets/recent-transactions';
 import { TotalBalance } from '@/widgets/total-balance';
 import styles from './DashboardPage.module.scss';
 
@@ -19,13 +19,6 @@ export function DashboardPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <h1 className={styles.title}>{t('dashboard.title')}</h1>
-        {/* baseCurrency и timezone здесь всегда заполнены: до онбординга
-            страница недостижима (RequireOnboarded). */}
-        <p className={styles.subtitle}>
-          {user?.baseCurrency && user.timezone
-            ? t('dashboard.subtitle', { currency: user.baseCurrency, timezone: user.timezone })
-            : ''}
-        </p>
       </header>
 
       {user && !user.emailVerified && (
@@ -34,9 +27,9 @@ export function DashboardPage() {
         </div>
       )}
 
-      <NotificationList />
-
       <TotalBalance />
+
+      <RecentTransactions />
     </div>
   );
 }

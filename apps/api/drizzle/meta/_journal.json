@@ -64,6 +64,13 @@
       "when": 1791739969677,
       "tag": "0008_minor_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791744691286,
+      "tag": "0009_faulty_quicksilver",
+      "breakpoints": true
     }
   ]
 }

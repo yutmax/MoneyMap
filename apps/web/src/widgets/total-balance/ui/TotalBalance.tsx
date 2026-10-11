@@ -1,4 +1,4 @@
-import { formatMoney, isNegative } from '@moneymap/shared';
+import { formatMoney, isNegative, isZero } from '@moneymap/shared';
 import { lazy, Suspense, useState } from 'react';
 import { useCurrencies } from '@/entities/currency';
 import { useNetWorth, useSummary } from '@/entities/summary';
@@ -52,7 +52,14 @@ export function TotalBalance() {
 
   // Месяц, как просили: длиннее — линия сжимается в кардиограмму, короче —
   // по ней нечего отслеживать.
-  const points = (netWorth.data?.points ?? []).slice(-31);
+  const month = (netWorth.data?.points ?? []).slice(-31);
+
+  // Нули до первого дня, когда деньги появились, отрезаются, но один
+  // оставляется: без него график начинается с обрыва, а с ним видно, откуда
+  // поднялись. Месяц ровной линии по нулю — это не динамика, а сообщение
+  // «счетов ещё не было», и места на экране оно не стоит.
+  const firstMoney = month.findIndex((point) => !isZero(point.total));
+  const points = firstMoney <= 0 ? month : month.slice(firstMoney - 1);
 
   return (
     <section className={styles.root} aria-labelledby="total-balance-title">

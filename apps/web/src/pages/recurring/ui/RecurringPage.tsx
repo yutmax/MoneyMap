@@ -16,7 +16,8 @@ import {
 } from '@/features/recurring-form';
 import { useT } from '@/shared/i18n';
 import { formatDate } from '@/shared/lib';
-import { Alert, Button, toast } from '@/shared/ui';
+import { ROUTES } from '@/shared/config';
+import { Alert, Button, SectionTabs, toast } from '@/shared/ui';
 import styles from './RecurringPage.module.scss';
 
 /** `null` — форма закрыта, `'new'` — создание, объект — правка. */
@@ -55,6 +56,14 @@ export function RecurringPage() {
           <h1 className={styles.title}>{t('recurring.title')}</h1>
           <p className={styles.subtitle}>{t('recurring.subtitle')}</p>
         </div>
+
+        <SectionTabs
+          tabs={[
+            { to: ROUTES.transactions, label: t('nav.transactions') },
+            { to: ROUTES.recurring, label: t('nav.recurring') },
+          ]}
+        />
+
         <Button size="small" onClick={() => setForm('new')}>
           {t('recurring.create')}
         </Button>

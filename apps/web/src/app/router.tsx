@@ -10,12 +10,13 @@ import { LoginPage } from '@/pages/login';
 import { NotFoundPage } from '@/pages/not-found';
 import { RegisterPage } from '@/pages/register';
 import { ResetPasswordPage } from '@/pages/reset-password';
+import { NotificationsPage } from '@/pages/notifications';
+import { ProfilePage } from '@/pages/profile';
 import { SessionsPage } from '@/pages/sessions';
-import { SettingsPage } from '@/pages/settings';
 import { TransactionsPage } from '@/pages/transactions';
 import { VerifyEmailPage } from '@/pages/verify-email';
 import { ROUTES } from '@/shared/config';
-import { AppHeader } from '@/widgets/app-header';
+import { AppShell } from '@/widgets/app-shell';
 import { OnboardingGate } from '@/widgets/onboarding-gate';
 import { RedirectIfAuthenticated, RequireAuth } from './guards/route-guards.tsx';
 
@@ -35,7 +36,7 @@ export function Router() {
         </Route>
 
         <Route element={<RequireAuth />}>
-          <Route element={<AppHeader />}>
+          <Route element={<AppShell />}>
             {/* Первичная настройка — не маршрут, а окно поверх того, куда
                 человек и так попал. Отдельная страница показывала бы форму
                 на пустом экране, не объясняя, ради чего отвечать. */}
@@ -48,7 +49,8 @@ export function Router() {
               <Route path={ROUTES.reconciliation} element={<ReconciliationPage />} />
               <Route path={ROUTES.reports} element={<ReportsPage />} />
               <Route path={ROUTES.sessions} element={<SessionsPage />} />
-              <Route path={ROUTES.settings} element={<SettingsPage />} />
+              <Route path={ROUTES.profile} element={<ProfilePage />} />
+              <Route path={ROUTES.notifications} element={<NotificationsPage />} />
             </Route>
           </Route>
         </Route>

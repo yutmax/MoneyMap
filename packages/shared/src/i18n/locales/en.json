@@ -121,16 +121,16 @@
   "nav": {
     "aria": "Main navigation",
     "ariaShort": "Navigation",
-    "overview": "Overview",
+    "overview": "Home",
     "devices": "Devices",
-    "settings": "Settings",
     "logout": "Sign out",
     "accounts": "Accounts",
     "categories": "Categories",
     "transactions": "Transactions",
     "recurring": "Recurring",
     "reconciliation": "Reconcile",
-    "reports": "Reports"
+    "reports": "Reports",
+    "profile": "Profile"
   },
   "auth": {
     "login": {
@@ -202,8 +202,9 @@
   },
   "dashboard": {
     "title": "Overview",
-    "subtitle": "Base currency — {{currency}}, time zone — {{timezone}}.",
-    "emailNotVerified": "Email is not confirmed. The link was sent to {{email}} — in development it is printed to the API log."
+    "emailNotVerified": "Email is not confirmed. The link was sent to {{email}} — in development it is printed to the API log.",
+    "recent": "Last transactions",
+    "showAll": "See all"
   },
   "summary": {
     "title": "Total balance",
@@ -283,7 +284,9 @@
     "type_card": "Card",
     "type_savings": "Deposit",
     "type_crypto_wallet": "Crypto wallet",
-    "edit": "Edit"
+    "edit": "Edit",
+    "openedOn": "Opened on",
+    "openedOnHint": "The opening balance counts from this date"
   },
   "categories": {
     "title": "Categories",
@@ -538,6 +541,8 @@
     "balance_check": {
       "title": "Time to check your balances",
       "body": "Reminder from {{when}}: enter the actual balances of your accounts."
-    }
+    },
+    "title": "Notifications",
+    "empty": "No notifications yet."
   }
 }

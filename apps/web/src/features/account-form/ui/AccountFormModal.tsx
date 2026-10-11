@@ -2,6 +2,7 @@ import {
   ACCOUNT_TYPES,
   createAccountSchema,
   parseUserAmount,
+  todayIn,
   toMoney,
   type AccountResponse,
   type CreateAccountInput,
@@ -11,6 +12,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { CurrencySelect } from '@/entities/currency';
+import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
 import { applyServerError } from '@/shared/lib';
 import { Alert, Button, Field, Modal, Select, toast } from '@/shared/ui';
@@ -36,6 +38,7 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
   const { t } = useT();
   const create = useCreateAccount();
   const update = useUpdateAccount();
+  const { user } = useMe();
   const [formError, setFormError] = useState<string | null>(null);
   const isEdit = account !== undefined;
 
@@ -55,6 +58,7 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
       // восьмизначная дробь останется целой. Округлять по разрядности
       // валюты здесь нельзя — она может быть ещё не загружена.
       openingBalance: account ? toMoney(account.openingBalance) : '0',
+      openedOn: account?.openedOn ?? todayIn(user?.timezone ?? 'UTC'),
     },
   });
 
@@ -74,7 +78,12 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
         // Валюта в обновление не идёт: она зафиксирована при создании.
         await update.mutateAsync({
           id: account.id,
-          input: { name: values.name, type: values.type, openingBalance },
+          input: {
+            name: values.name,
+            type: values.type,
+            openingBalance,
+            openedOn: values.openedOn,
+          },
         });
         toast.success(t('accounts.updated'));
       } else {
@@ -139,6 +148,17 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
             hint={t('accounts.openingBalanceHint')}
             error={t(errors.openingBalance?.message)}
             {...register('openingBalance')}
+          />
+
+          {/* Дата открытия: от неё считается начальный остаток. Без неё
+              он лежал бы на счёте всегда, и график показывал бы деньги
+              за годы до того, как счёт появился. */}
+          <Field
+            label={t('accounts.openedOn')}
+            type="date"
+            hint={t('accounts.openedOnHint')}
+            error={t(errors.openedOn?.message)}
+            {...register('openedOn')}
           />
         </div>
 

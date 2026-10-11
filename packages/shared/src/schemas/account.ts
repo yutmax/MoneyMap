@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { msg } from '../i18n/index.ts';
-import { currencyCodeSchema, moneySchema, uuidSchema } from './common.ts';
+import { currencyCodeSchema, isoDateSchema, moneySchema, uuidSchema } from './common.ts';
 import { LIMITS } from './limits.ts';
 
 export const ACCOUNT_TYPES = ['cash', 'bank', 'card', 'savings', 'crypto_wallet'] as const;
@@ -28,6 +28,13 @@ export const createAccountSchema = z.object({
   currencyCode: currencyCodeSchema,
   /** Остаток на момент заведения счёта. Может быть отрицательным — кредитка. */
   openingBalance: moneySchema.default('0'),
+  /**
+   * С какого дня счёт существует. По умолчанию сегодня.
+   *
+   * От неё начальный остаток и считается: без даты он оказывался на счёте
+   * всегда, и график сбережений показывал деньги за годы до их появления.
+   */
+  openedOn: isoDateSchema.optional(),
   icon: z.string().trim().max(50).optional(),
   color: colorSchema.optional(),
 });
@@ -42,6 +49,7 @@ export const updateAccountSchema = z
     name: nameSchema.optional(),
     type: accountTypeSchema.optional(),
     openingBalance: moneySchema.optional(),
+    openedOn: isoDateSchema.optional(),
     icon: z.string().trim().max(50).nullable().optional(),
     color: colorSchema.nullable().optional(),
     sortOrder: z.number().int().min(0).max(100_000).optional(),
@@ -61,6 +69,7 @@ export interface AccountResponse {
   type: AccountType;
   currencyCode: string;
   openingBalance: string;
+  openedOn: string;
   /** Начальный остаток плюс все операции по счёту (§7.1). */
   balance: string;
   icon: string | null;
