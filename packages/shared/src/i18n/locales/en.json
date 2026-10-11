@@ -34,7 +34,12 @@
     },
     "id": "Invalid identifier",
     "nothingToChange": "Nothing to change",
-    "checkFields": "Check the fields you filled in"
+    "checkFields": "Check the fields you filled in",
+    "color": "Expected a colour as #RRGGBB",
+    "account": {
+      "name": "Enter an account name",
+      "type": "Choose an account type"
+    }
   },
   "errors": {
     "authRequired": "Sign-in required",
@@ -58,7 +63,10 @@
     "requestFailed": "Request failed",
     "network": "Could not reach the server. Check your connection.",
     "forbidden": "Not enough permissions",
-    "notFound": "Not found"
+    "notFound": "Not found",
+    "accountNotFound": "Account not found",
+    "accountHasTransactions": "The account has transactions. It can be archived, but not deleted.",
+    "accountCurrencyImmutable": "An account's currency cannot be changed"
   },
   "theme": {
     "group": "Colour theme",
@@ -77,7 +85,8 @@
     "overview": "Overview",
     "devices": "Devices",
     "settings": "Settings",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "accounts": "Accounts"
   },
   "auth": {
     "login": {
@@ -216,5 +225,36 @@
     "title": "404",
     "subtitle": "There is no such page.",
     "home": "Back to the app"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "subtitle": "Cash, cards, deposits and crypto wallets. The currency is set at creation and does not change afterwards.",
+    "empty": "No accounts yet. Add the first one — the ledger starts there.",
+    "create": "New account",
+    "createTitle": "New account",
+    "editTitle": "Account",
+    "name": "Name",
+    "type": "Type",
+    "openingBalance": "Opening balance",
+    "openingBalanceHint": "What is on the account right now. May be negative — for a credit card.",
+    "currencyHint": "Cannot be changed after creation",
+    "save": "Save",
+    "archive": "Archive",
+    "unarchive": "Restore from archive",
+    "delete": "Delete",
+    "archived": "Archived",
+    "archivedSection": "Archive",
+    "created": "Account created",
+    "updated": "Account saved",
+    "deleted": "Account deleted",
+    "archivedToast": "Account archived",
+    "unarchivedToast": "Account restored",
+    "loadFailed": "Could not load the accounts",
+    "type_cash": "Cash",
+    "type_bank": "Bank account",
+    "type_card": "Card",
+    "type_savings": "Deposit",
+    "type_crypto_wallet": "Crypto wallet",
+    "edit": "Edit"
   }
 }

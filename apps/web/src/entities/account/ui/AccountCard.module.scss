@@ -1,0 +1,56 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  align-items: center;
+  justify-content: space-between;
+
+  @include surface(var(--space-s) var(--space-m));
+}
+
+.archived {
+  // Архивный счёт виден, но не спорит за внимание с действующими.
+  opacity: 0.6;
+}
+
+.info {
+  display: grid;
+  row-gap: rem(2);
+  min-width: 0;
+}
+
+.name {
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  font-weight: var(--weight-medium);
+}
+
+.dot {
+  width: rem(9);
+  height: rem(9);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.meta {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
+
+.balance {
+  margin-inline-start: auto;
+  font-size: var(--step-1);
+  font-weight: var(--weight-medium);
+
+  @include tabular-numbers;
+}
+
+.negative {
+  color: var(--c-expense);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2xs);
+}

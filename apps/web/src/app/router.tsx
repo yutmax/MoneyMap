@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
+import { AccountsPage } from '@/pages/accounts';
 import { DashboardPage } from '@/pages/dashboard';
 import { ForgotPasswordPage } from '@/pages/forgot-password';
 import { LoginPage } from '@/pages/login';
@@ -35,6 +36,7 @@ export function Router() {
                 на пустом экране, не объясняя, ради чего отвечать. */}
             <Route element={<OnboardingGate />}>
               <Route index element={<DashboardPage />} />
+              <Route path={ROUTES.accounts} element={<AccountsPage />} />
               <Route path={ROUTES.sessions} element={<SessionsPage />} />
               <Route path={ROUTES.settings} element={<SettingsPage />} />
             </Route>

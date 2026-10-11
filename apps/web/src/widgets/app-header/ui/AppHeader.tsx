@@ -10,6 +10,7 @@ import styles from './AppHeader.module.scss';
 
 const NAV = [
   { to: ROUTES.home, key: 'nav.overview' },
+  { to: ROUTES.accounts, key: 'nav.accounts' },
   { to: ROUTES.sessions, key: 'nav.devices' },
   { to: ROUTES.settings, key: 'nav.settings' },
 ];

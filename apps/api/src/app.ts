@@ -6,6 +6,7 @@ import { ERROR_CODES, msg, pickLocale, translate, type ApiErrorBody } from '@mon
 import Fastify, { type FastifyError, type FastifyInstance, type FastifyRequest } from 'fastify';
 import { allowedOrigins, env, isProduction } from './lib/env.ts';
 import { AppError } from './lib/errors.ts';
+import { accountRoutes } from './modules/accounts/account.routes.ts';
 import { authRoutes } from './modules/auth/auth.routes.ts';
 import { onboardingRoutes } from './modules/onboarding/onboarding.routes.ts';
 import { referenceRoutes } from './modules/reference/reference.routes.ts';
@@ -154,6 +155,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(
     async (api) => {
       await api.register(authRoutes, { prefix: '/auth' });
+      await api.register(accountRoutes, { prefix: '/accounts' });
       await api.register(onboardingRoutes, { prefix: '/onboarding' });
       await api.register(settingsRoutes, { prefix: '/settings' });
       await api.register(referenceRoutes);

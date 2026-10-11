@@ -7,6 +7,7 @@
  */
 export const ROUTES = {
   home: '/',
+  accounts: '/accounts',
   login: '/login',
   register: '/register',
   sessions: '/sessions',
