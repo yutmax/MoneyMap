@@ -1,6 +1,7 @@
 import { useState, type ComponentPropsWithRef } from 'react';
 import { useT } from '@/shared/i18n';
 import { Field } from '../Field/Field.tsx';
+import { Icon } from '../Icon/Icon.tsx';
 import styles from './PasswordInput.module.scss';
 
 interface PasswordInputProps extends Omit<
@@ -10,23 +11,6 @@ interface PasswordInputProps extends Omit<
   label?: string;
   error?: string | undefined;
   hint?: string | undefined;
-}
-
-function EyeIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      className={styles.icon}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      aria-hidden="true"
-    >
-      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" strokeLinecap="round" />
-      <circle cx="12" cy="12" r="2.6" />
-      {!open && <path d="M4 20 20 4" strokeLinecap="round" />}
-    </svg>
-  );
 }
 
 /**
@@ -52,7 +36,7 @@ export function PasswordInput({ label, error, hint, ...inputProps }: PasswordInp
           onClick={() => setVisible((v) => !v)}
           aria-pressed={visible}
         >
-          <EyeIcon open={visible} />
+          <Icon name={visible ? 'eye-off' : 'eye'} className={styles.icon} />
           {visible ? t('fields.hidePassword') : t('fields.showPassword')}
         </button>
       }

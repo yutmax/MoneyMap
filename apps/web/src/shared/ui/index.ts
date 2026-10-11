@@ -1,6 +1,8 @@
 export { Alert } from './Alert/Alert.tsx';
 export { Button } from './Button/Button.tsx';
 export { Field } from './Field/Field.tsx';
+export { Icon } from './Icon/Icon.tsx';
+export { ICONS, isIconName, type IconName } from './Icon/icons.ts';
 export { Modal } from './Modal/Modal.tsx';
 export { PasswordInput } from './PasswordInput/PasswordInput.tsx';
 export { Select } from './Select/Select.tsx';
