@@ -11,6 +11,7 @@ const NAV = [
   { to: ROUTES.accounts, key: 'nav.accounts' },
   { to: ROUTES.transactions, key: 'nav.transactions' },
   { to: ROUTES.categories, key: 'nav.categories' },
+  { to: ROUTES.recurring, key: 'nav.recurring' },
   { to: ROUTES.sessions, key: 'nav.devices' },
   { to: ROUTES.settings, key: 'nav.settings' },
 ];

@@ -64,7 +64,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const [error, setError] = useState<string | null>(null);
 
   const open = (accounts.data ?? []).filter((a) => !a.isArchived);
-  const [accountId, setAccountId] = useState(transaction?.accountId ?? open[0]?.id ?? '');
+  const [accountId, setAccountId] = useState(transaction?.accountId ?? '');
   const [toAccountId, setToAccountId] = useState('');
   const [categoryId, setCategoryId] = useState(transaction?.categoryId ?? '');
   const [amount, setAmount] = useState(transaction ? toMoney(transaction.amountOriginal) : '');
@@ -96,7 +96,16 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
    */
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
 
-  const from = open.find((a) => a.id === accountId);
+  /**
+   * Счёт по умолчанию вычисляется, а не кладётся в состояние.
+   *
+   * В первый рендер список счетов ещё не пришёл, и состояние осталось бы
+   * пустым навсегда — при том что <select> уже показывает первый счёт.
+   * Форма выглядела бы заполненной и уезжала на сервер с пустым accountId.
+   */
+  const selectedAccountId = accountId || open[0]?.id || '';
+
+  const from = open.find((a) => a.id === selectedAccountId);
   const to = open.find((a) => a.id === toAccountId);
   const crossCurrency = mode === 'transfer' && from && to && from.currencyCode !== to.currencyCode;
 
@@ -169,7 +178,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
         await transfer.mutateAsync({
           key: idempotencyKey,
           input: {
-            fromAccountId: accountId,
+            fromAccountId: selectedAccountId,
             toAccountId,
             amount: parsed,
             ...(parsedTo ? { toAmount: parsedTo } : {}),
@@ -182,7 +191,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
         await create.mutateAsync({
           key: idempotencyKey,
           input: {
-            accountId,
+            accountId: selectedAccountId,
             categoryId: categoryId === '' ? null : categoryId,
             kind: mode,
             amount: parsed,
@@ -232,7 +241,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
         <div className={styles.fields}>
           <Select
             label={mode === 'transfer' ? t('transactions.accountFrom') : t('transactions.account')}
-            value={accountId}
+            value={selectedAccountId}
             disabled={isEdit}
             onChange={(e) => setAccountId(e.currentTarget.value)}
           >
@@ -251,7 +260,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             >
               <option value="">—</option>
               {open
-                .filter((a) => a.id !== accountId)
+                .filter((a) => a.id !== selectedAccountId)
                 .map((account) => (
                   <option key={account.id} value={account.id}>
                     {account.name} · {account.currencyCode}

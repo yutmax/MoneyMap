@@ -118,7 +118,8 @@
     "logout": "Sign out",
     "accounts": "Accounts",
     "categories": "Categories",
-    "transactions": "Transactions"
+    "transactions": "Transactions",
+    "recurring": "Recurring"
   },
   "auth": {
     "login": {
@@ -387,5 +388,65 @@
     "noCategory": "No category",
     "kindFilter": "Kind",
     "submit": "Add"
+  },
+  "recurring": {
+    "title": "Recurring",
+    "subtitle": "Subscriptions, rent, salary — what repeats on its own.",
+    "create": "New rule",
+    "createTitle": "New rule",
+    "editTitle": "Rule",
+    "rulesTitle": "Rules",
+    "pendingTitle": "Waiting for you",
+    "upcomingTitle": "Next {{days}} days",
+    "empty": "No rules yet. Add the first one and the charge will create itself.",
+    "loadFailed": "Could not load the rules",
+    "name": "Name",
+    "freq": "Repeat",
+    "interval": "Every",
+    "intervalHint": "1 — every period",
+    "weekday": "Day of the week",
+    "dayOfMonth": "Day of the month",
+    "fromStart": "Same as the start date",
+    "monthEnd": "When there is no such day",
+    "monthEndHint": "The 31st does not happen every month",
+    "startOn": "Starts",
+    "endOn": "Ends",
+    "endOnHint": "Empty — no end",
+    "askFirst": "Ask before creating",
+    "askFirstHint": "The charge will wait in a queue for your confirmation.",
+    "submit": "Create rule",
+    "save": "Save",
+    "edit": "Edit",
+    "pause": "Pause",
+    "resume": "Resume",
+    "delete": "Delete",
+    "paused": "paused",
+    "manual": "needs confirmation",
+    "next": "next {{when}}",
+    "noNext": "will not repeat again",
+    "confirm": "Post it",
+    "skip": "Skip",
+    "created": "Rule created",
+    "updated": "Rule changed",
+    "deleted": "Rule deleted",
+    "confirmed": "Transaction created",
+    "skipped": "Charge skipped",
+    "onDay": "on the {{day}}",
+    "every": {
+      "daily": "Every day",
+      "weekly": "Every week",
+      "monthly": "Every month",
+      "yearly": "Every year"
+    },
+    "everyN": {
+      "daily": "Every {{count}} days",
+      "weekly": "Every {{count}} weeks",
+      "monthly": "Every {{count}} months",
+      "yearly": "Every {{count}} years"
+    },
+    "policy": {
+      "clamp": "on the last day of the month",
+      "skip": "skip that month"
+    }
   }
 }

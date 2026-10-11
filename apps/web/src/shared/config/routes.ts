@@ -10,6 +10,7 @@ export const ROUTES = {
   accounts: '/accounts',
   transactions: '/transactions',
   categories: '/categories',
+  recurring: '/recurring',
   login: '/login',
   register: '/register',
   sessions: '/sessions',

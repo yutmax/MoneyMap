@@ -1,0 +1,63 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  align-items: center;
+  justify-content: space-between;
+
+  @include surface(var(--space-s) var(--space-m));
+}
+
+.paused {
+  // Правило на паузе видно, но не спорит за внимание с работающими.
+  opacity: 0.6;
+}
+
+.info {
+  display: grid;
+  row-gap: rem(2);
+  min-width: 0;
+  flex: 1 1 rem(200);
+}
+
+.name {
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  flex-wrap: wrap;
+  font-weight: var(--weight-medium);
+}
+
+.badge {
+  padding: rem(1) var(--space-2xs);
+  font-size: var(--step--2);
+  font-weight: var(--weight-regular);
+  color: var(--c-text-faint);
+  background-color: var(--c-surface-sunken);
+  border-radius: var(--radius-pill);
+}
+
+.meta {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
+
+.amount {
+  font-weight: var(--weight-medium);
+
+  @include tabular-numbers;
+}
+
+.income {
+  color: var(--c-income);
+}
+
+.expense {
+  color: var(--c-text);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2xs);
+  flex-wrap: wrap;
+}

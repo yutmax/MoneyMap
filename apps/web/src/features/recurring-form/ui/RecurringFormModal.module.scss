@@ -1,0 +1,68 @@
+.form {
+  display: grid;
+  row-gap: var(--space-m);
+}
+
+.fields {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.modes {
+  display: flex;
+  gap: rem(2);
+  padding: rem(3);
+  background-color: var(--c-surface-sunken);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-pill);
+}
+
+.mode {
+  flex: 1;
+  padding-block: var(--space-2xs);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+  border-radius: var(--radius-pill);
+
+  @include transition(color, background-color);
+  @include focus-ring($offset: 1px);
+
+  @include hover {
+    color: var(--c-text);
+  }
+}
+
+.modeActive {
+  composes: mode;
+  color: var(--c-accent-ink);
+  background-color: var(--c-accent);
+}
+
+.row {
+  display: grid;
+  gap: var(--space-s);
+  grid-template-columns: 1fr 1fr;
+  // Иначе свободное место растягивает внутренние строки полей и подписи
+  // в соседних колонках разъезжаются.
+  align-content: start;
+  align-items: start;
+}
+
+.checkbox {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: start;
+  font-size: var(--step--1);
+  cursor: pointer;
+
+  input {
+    margin-block-start: rem(3);
+    accent-color: var(--c-accent);
+  }
+}
+
+.hint {
+  display: block;
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
