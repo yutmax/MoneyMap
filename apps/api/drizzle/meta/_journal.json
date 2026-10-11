@@ -15,6 +15,13 @@
       "when": 1791715352065,
       "tag": "0001_exotic_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791720604314,
+      "tag": "0002_harsh_kylun",
+      "breakpoints": true
     }
   ]
 }
