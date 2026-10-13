@@ -138,47 +138,88 @@
   @include container;
 
   // Место под нижнюю панель, чтобы она не накрывала последнюю карточку.
+  // Панель теперь висит над краем, поэтому к её высоте добавлен и зазор
+  // под ней.
   @include until("md") {
-    padding-block-end: calc(rem(72) + env(safe-area-inset-bottom));
+    padding-block-end: calc(rem(92) + env(safe-area-inset-bottom));
   }
 }
 
 /* ───────────────────────────── нижняя панель ────────────────────────────── */
 
+/**
+ * Панель висит над нижним краем, а не лежит на нём.
+ *
+ * Прижатая к самому низу, она упиралась в зону системного жеста: на телефонах
+ * без аппаратных кнопок нижние пиксели принадлежат полосе «домой», и попасть
+ * в крайнюю вкладку, не задев её, не получалось. Отступ снизу складывается из
+ * безопасной зоны и обычного поля — панель оказывается там же, где её ждёт
+ * большой палец.
+ *
+ * Отсюда и форма: оторванный от краёв блок обязан выглядеть блоком, поэтому
+ * скругление, граница и тень, а не одна линия сверху.
+ */
 .bar {
   position: fixed;
-  inset: auto 0 0 0;
+  inset: auto var(--space-s) calc(env(safe-area-inset-bottom) + var(--space-s)) var(--space-s);
   z-index: var(--z-sticky);
   display: flex;
-  padding-block-end: env(safe-area-inset-bottom);
-  background-color: color-mix(in oklab, var(--c-bg) 92%, transparent);
-  border-block-start: var(--border-width) solid var(--c-border);
-  backdrop-filter: blur(10px);
+  gap: rem(2);
+  padding: rem(6);
+  background-color: color-mix(in oklab, var(--c-surface-raised) 88%, transparent);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
 
   @include from("md") {
     display: none;
   }
 }
 
+/**
+ * В нижней панели только значки: пять подписей по одиннадцать пикселей на
+ * узком экране читает не глаз, а догадка, и места они съедают больше, чем
+ * сообщают. Названия остаются в разметке скрытыми — для скринридера.
+ *
+ * Высота считается от пальца, а не от содержимого: сорок восемь пикселей —
+ * нижняя граница, в которую попадают, не целясь.
+ */
 .tab {
   display: grid;
-  row-gap: rem(2);
+  place-items: center;
   flex: 1;
-  justify-items: center;
-  // Высота считается от пальца, а не от текста: 56 пикселей — та мера,
-  // в которую попадают, не целясь.
   padding-block: var(--space-2xs);
-  min-block-size: rem(56);
-  font-size: rem(11);
+  min-block-size: rem(48);
+  // Скругление под стать панели: подсветка активной вкладки должна читаться
+  // как таблетка внутри таблетки, а не как прямоугольная заплата.
+  border-radius: var(--radius-pill);
   color: var(--c-text-faint);
 
-  @include transition(color);
+  @include transition(color, background-color);
   @include focus-ring($offset: -3px);
+}
+
+// Значок крупнее, чем в боковой панели: там рядом с ним есть подпись,
+// а здесь он отвечает за раздел один.
+.tab .icon {
+  inline-size: rem(24);
+  block-size: rem(24);
 }
 
 .active {
   color: var(--c-accent);
   background-color: color-mix(in oklab, var(--c-accent) 10%, transparent);
+}
+
+/*
+ * Подсветка в нижней панели чуть плотнее, чем в боковой: там она лежит на
+ * фоне страницы, здесь — на уже подсвеченной поверхности самой панели, и
+ * десяти процентов на ней не видно. Правило отдельное, чтобы боковая панель
+ * от этого не изменилась.
+ */
+.tab.active {
+  background-color: color-mix(in oklab, var(--c-accent) 16%, transparent);
 }
 
 .icon {

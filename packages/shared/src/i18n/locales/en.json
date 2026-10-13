@@ -466,6 +466,7 @@
     "export": "Export CSV",
     "loadFailed": "Could not build the report",
     "noData": "No data for this period",
+    "other": "Other",
     "income": "Income",
     "expense": "Expenses",
     "net": "Difference",

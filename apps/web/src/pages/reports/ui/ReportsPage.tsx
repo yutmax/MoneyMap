@@ -1,4 +1,4 @@
-import { formatMoney, isNegative, toDecimal, todayIn } from '@moneymap/shared';
+import { formatMoney, isNegative, sum as sumMoney, toDecimal, todayIn } from '@moneymap/shared';
 import { useMemo, useState } from 'react';
 import { categoryNameOrNull } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
@@ -7,12 +7,70 @@ import { useMe } from '@/entities/user';
 import { BudgetBlock } from '@/features/budgets';
 import { useT } from '@/shared/i18n';
 import { cx, formatDate } from '@/shared/lib';
-import { Alert, BarList, ColumnChart, Select, seriesColor, Spinner, StackedBar } from '@/shared/ui';
+import {
+  Alert,
+  ColumnChart,
+  DonutChart,
+  Select,
+  seriesColor,
+  Spinner,
+  type DonutSegment,
+} from '@/shared/ui';
 import styles from './ReportsPage.module.scss';
 
 /** Готовые периоды: своя пара дат нужна редко, а выбирать её долго. */
 const RANGES = ['month', 'quarter', 'year'] as const;
 type Range = (typeof RANGES)[number];
+
+/**
+ * Предел секторов в кольце. Шесть — это и длина палитры, и граница, за
+ * которой соседние цвета перестают различаться.
+ */
+const DONUT_LIMIT = 6;
+
+interface DonutSource {
+  key: string;
+  label: string;
+  share: number;
+  amount: string;
+}
+
+/**
+ * Доли в сектора, хвост — в «прочее».
+ *
+ * Складывается именно хвост, а не каждая мелкая доля по отдельности: иначе
+ * из списка пропало бы то, что в нём шестое по величине, а не то, что
+ * незначительно. Ровно шесть строк остаются как есть — сворачивать нечего.
+ */
+function foldToDonut(
+  items: DonutSource[],
+  otherLabel: string,
+  money: (amount: string) => string,
+): DonutSegment[] {
+  const fits = items.length <= DONUT_LIMIT;
+  const head = fits ? items : items.slice(0, DONUT_LIMIT - 1);
+  const tail = fits ? [] : items.slice(DONUT_LIMIT - 1);
+
+  const segments: DonutSegment[] = head.map((item, index) => ({
+    key: item.key,
+    label: item.label,
+    share: item.share,
+    value: money(item.amount),
+    color: seriesColor(index),
+  }));
+
+  if (tail.length > 0) {
+    segments.push({
+      key: 'other',
+      label: otherLabel,
+      share: tail.reduce((total, item) => total + item.share, 0),
+      value: money(sumMoney(tail.map((item) => item.amount))),
+      color: seriesColor(DONUT_LIMIT - 1),
+    });
+  }
+
+  return segments;
+}
 
 function periodOf(range: Range, today: string): { from: string; to: string } {
   const [year, month] = today.split('-').map(Number) as [number, number, number];
@@ -53,7 +111,6 @@ export function ReportsPage() {
     new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(value);
 
   const categories = expenses.data?.categories ?? [];
-  const maxCategory = categories.length > 0 ? toDecimal(categories[0]!.amount).toNumber() : 0;
 
   const months = (cashflow.data?.points ?? []).map((point) => ({
     key: point.month,
@@ -161,14 +218,20 @@ export function ReportsPage() {
               {categories.length === 0 ? (
                 <p className={styles.empty}>{t('reports.noData')}</p>
               ) : (
-                <BarList
-                  items={categories.map((row) => ({
-                    key: row.categoryId ?? 'none',
-                    label: categoryNameOrNull(t, row.categoryKey) ?? t('transactions.categoryNone'),
-                    value: money(row.amount),
-                    hint: `${Math.round(row.share * 100)}%`,
-                    ratio: maxCategory === 0 ? 0 : toDecimal(row.amount).toNumber() / maxCategory,
-                  }))}
+                <DonutChart
+                  segments={foldToDonut(
+                    categories.map((row) => ({
+                      key: row.categoryId ?? 'none',
+                      label:
+                        categoryNameOrNull(t, row.categoryKey) ?? t('transactions.categoryNone'),
+                      share: row.share,
+                      amount: row.amount,
+                    })),
+                    t('reports.other'),
+                    money,
+                  )}
+                  total={money(summary.data?.expense ?? '0')}
+                  caption={t('reports.expense')}
                 />
               )}
             </section>
@@ -178,14 +241,19 @@ export function ReportsPage() {
               {(summary.data?.byCurrency.length ?? 0) === 0 ? (
                 <p className={styles.empty}>{t('reports.noData')}</p>
               ) : (
-                <StackedBar
-                  segments={(summary.data?.byCurrency ?? []).map((row, index) => ({
-                    key: row.currencyCode,
-                    label: row.currencyCode,
-                    share: row.share,
-                    value: money(row.amount),
-                    color: seriesColor(index),
-                  }))}
+                <DonutChart
+                  segments={foldToDonut(
+                    (summary.data?.byCurrency ?? []).map((row) => ({
+                      key: row.currencyCode,
+                      label: row.currencyCode,
+                      share: row.share,
+                      amount: row.amount,
+                    })),
+                    t('reports.other'),
+                    money,
+                  )}
+                  total={money(summary.data?.expense ?? '0')}
+                  caption={t('reports.expense')}
                 />
               )}
             </section>

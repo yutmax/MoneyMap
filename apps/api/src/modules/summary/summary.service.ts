@@ -268,7 +268,28 @@ export async function getNetWorth(
     )
     .orderBy(asc(netWorthSnapshots.date));
 
-  return { baseCurrency: base.code, points: rows };
+  /*
+   * Сегодняшняя точка считается заново, а не берётся из снимка.
+   *
+   * Снимок за сегодня пишет ночная задача (§8.6), и до следующего её прогона
+   * он остаётся таким, каким был записан. Из-за этого последняя точка графика
+   * не двигалась в течение дня и расходилась с крупным числом над ним — оно-то
+   * всегда считается по текущим остаткам. Две цифры об одном и том же,
+   * отличающиеся друг от друга, — это не задержка данных, а ошибка.
+   *
+   * Снимок при этом не переписывается: чтение не должно писать. Ночная задача
+   * запишет итог дня сама, а до тех пор точка живёт только в ответе.
+   */
+  const today = todayUtc();
+  const withinRange = (!query.from || query.from <= today) && (!query.to || today <= query.to);
+
+  if (!withinRange) return { baseCurrency: base.code, points: rows };
+
+  const { summary } = await getSummary(db, scope, base.code, today);
+  const points = rows.filter((row) => row.date !== today);
+  points.push({ date: today, total: summary.total });
+
+  return { baseCurrency: base.code, points };
 }
 
 /**

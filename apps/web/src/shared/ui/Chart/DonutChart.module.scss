@@ -1,0 +1,114 @@
+.root {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.figure {
+  position: relative;
+  // Кольцо не растягивается на всю колонку: за пределами этой меры оно
+  // перестаёт читаться как знак и начинает спорить с таблицей рядом.
+  inline-size: min(100%, rem(190));
+  margin-inline: auto;
+}
+
+.svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  // Ноль — наверху, а не справа: круг читают с двенадцати часов.
+  transform: rotate(-90deg);
+}
+
+.track {
+  fill: none;
+  stroke: var(--c-surface-sunken);
+  stroke-width: 12;
+}
+
+.arc {
+  fill: none;
+  stroke-width: 12;
+  // Торцы срезаны, а не скруглены: скругление добавляет к каждой дуге
+  // полтолщины с обеих сторон, и доли перестают соответствовать числам.
+  stroke-linecap: butt;
+  cursor: default;
+
+  @include transition(opacity);
+}
+
+.dimmed {
+  opacity: 0.35;
+}
+
+.center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  row-gap: rem(2);
+  justify-items: center;
+  // Текст не должен перехватывать наведение у секторов под ним.
+  pointer-events: none;
+  text-align: center;
+  // Диаметр отверстия: подпись длиннее просто не поместится.
+  padding-inline: 22%;
+}
+
+.total {
+  font-size: var(--step-1);
+  font-weight: var(--weight-medium);
+
+  @include tabular-numbers;
+}
+
+.caption {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+
+  @include clamp-lines(2);
+}
+
+.legend {
+  display: grid;
+  row-gap: rem(2);
+}
+
+.item {
+  display: grid;
+  // Фиксированные колонки: суммы и проценты встают в столбец и не ездят
+  // от строки к строке, как ездили бы при auto-ширине.
+  grid-template-columns: auto 1fr auto auto;
+  column-gap: var(--space-2xs);
+  align-items: baseline;
+  font-size: var(--step--1);
+
+  @include transition(opacity);
+}
+
+.dot {
+  inline-size: rem(9);
+  block-size: rem(9);
+  border-radius: 50%;
+  align-self: center;
+}
+
+.label {
+  min-width: 0;
+
+  @include clamp-lines(1);
+}
+
+.share {
+  color: var(--c-text-faint);
+  text-align: end;
+  min-inline-size: rem(34);
+
+  @include tabular-numbers;
+}
+
+.value {
+  color: var(--c-text-muted);
+  text-align: end;
+
+  @include tabular-numbers;
+}

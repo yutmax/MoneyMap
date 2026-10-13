@@ -38,7 +38,10 @@ function Tabs({ variant }: { variant: 'bar' | 'rail' }) {
       }
     >
       <Icon name={tab.icon} className={styles.icon} />
-      <span className={styles.label}>{t(tab.key)}</span>
+      {/* В нижней панели подпись скрыта, но не удалена: ссылка без текста
+          безымянна для скринридера, а значок именем не является. В боковой
+          панели места хватает, и там подпись видимая. */}
+      <span className={variant === 'bar' ? 'visually-hidden' : styles.label}>{t(tab.key)}</span>
     </NavLink>
   ));
 }
