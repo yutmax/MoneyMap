@@ -2,6 +2,7 @@ import type { NetWorthBreakdown } from '@moneymap/shared';
 import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
   customType,
   date,
   index,
@@ -623,11 +624,11 @@ export const balanceSnapshots = pgTable(
 /* ─────────────────────────────── budgets ───────────────────────────────── */
 
 /**
- * Лимит расходов по категории на календарный месяц (§8.10).
+ * Лимит расходов на календарный месяц (§8.10).
  *
  * Лимит постоянный, а не заведённый на каждый месяц отдельно: «на продукты
  * шестьсот» — это решение, а не ежемесячная работа. Месяц входит в расчёт,
- * а не в хранение, поэтому и строка одна на категорию.
+ * а не в хранение, поэтому строка и одна на цель.
  */
 export const budgets = pgTable(
   'budgets',
@@ -636,16 +637,29 @@ export const budgets = pgTable(
     userId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    categoryId: uuid()
-      .notNull()
-      .references(() => categories.id, { onDelete: 'cascade' }),
+    /**
+     * Цель лимита — категория или счёт целиком, ровно одно из двух.
+     *
+     * Две колонки, а не одна с видом цели: внешний ключ на каждую сторону
+     * удаляет бюджет вместе с тем, к чему он привязан, и сделать это
+     * обобщённой ссылкой нельзя. «Ровно одно» держит `budgets_target_one_of`.
+     */
+    categoryId: uuid().references(() => categories.id, { onDelete: 'cascade' }),
+    accountId: uuid().references(() => accounts.id, { onDelete: 'cascade' }),
     amount: money().notNull(),
     /** Переносить неизрасходованный остаток на следующий месяц (§8.10). */
     rollover: boolean().notNull().default(false),
     createdAt: timestamptzNow(),
     updatedAt: timestamptzNow(),
   },
-  (t) => [uniqueIndex('budgets_user_id_category_id_key').on(t.userId, t.categoryId)],
+  (t) => [
+    // NULL сам с собой не конфликтует, поэтому бюджеты по счетам не мешают
+    // уникальности по категориям и наоборот — отдельные частичные индексы
+    // здесь не нужны.
+    uniqueIndex('budgets_user_id_category_id_key').on(t.userId, t.categoryId),
+    uniqueIndex('budgets_user_id_account_id_key').on(t.userId, t.accountId),
+    check('budgets_target_one_of', sql`num_nonnulls(${t.categoryId}, ${t.accountId}) = 1`),
+  ],
 );
 
 /* ─────────────────────────────── relations ──────────────────────────────── */

@@ -58,6 +58,9 @@
     },
     "reminder": {
       "time": "Time as HH:MM"
+    },
+    "budget": {
+      "target": "Choose either a category or an account"
     }
   },
   "errors": {
@@ -101,7 +104,10 @@
     "accountArchived": "The account is archived. Restore it to add transactions.",
     "currencyMismatch": "The transaction's currency must match the account's",
     "transferLegEdit": "A transfer leg cannot be edited on its own — change the transfer itself",
-    "categoryKindForTransaction": "The category does not match the kind of transaction"
+    "categoryKindForTransaction": "The category does not match the kind of transaction",
+    "budgetNotFound": "Budget not found",
+    "budgetExists": "A limit for this is already set",
+    "budgetAmountZero": "The limit must be greater than zero"
   },
   "theme": {
     "group": "Colour theme",
@@ -472,19 +478,31 @@
   "budgets": {
     "title": "Budgets",
     "empty": "No limits yet. Set them and you will see how much of the month is left in each category.",
-    "editEmpty": "Choose a category below to set a limit.",
-    "limit": "Limit",
+    "inCurrency": "Limits and spending are in {{currency}}",
     "progress": "{{spent}} of {{limit}}",
+    "percent": "{{percent}}% spent",
+    "perDay": "{{amount}} per day",
     "left": "{{amount}} left",
     "over": "{{amount}} over",
     "carried": "carried from last month: {{amount}}",
-    "add": "Add a category",
-    "choose": "Choose a category",
-    "create": "Set limits",
-    "edit": "Change limits",
+    "accountBadge": "account",
+    "add": "Add a budget",
+    "addTitle": "New budget",
+    "targetKind": "Applies to",
+    "byCategory": "Category",
+    "byAccount": "Account",
+    "chooseCategory": "Choose a category",
+    "chooseAccount": "Choose an account",
+    "noCategoriesLeft": "Every expense category already has a limit.",
+    "noAccountsLeft": "Every account already has a limit.",
+    "limitIn": "Limit, {{currency}}",
+    "edit": "Edit",
+    "delete": "Delete",
     "save": "Save",
     "cancel": "Cancel",
-    "saved": "Limits saved"
+    "created": "Budget added",
+    "saved": "Budget saved",
+    "deleted": "Budget deleted"
   },
   "import": {
     "open": "Import CSV",

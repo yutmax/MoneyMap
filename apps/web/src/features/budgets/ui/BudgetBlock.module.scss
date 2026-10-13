@@ -3,43 +3,96 @@
   row-gap: var(--space-s);
 }
 
-.list {
-  display: grid;
-  row-gap: var(--space-s);
+.note {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
 }
 
-.row {
+.list {
   display: grid;
-  column-gap: var(--space-s);
-  grid-template-areas:
-    "name numbers status"
-    "track track track"
-    "carried carried carried";
-  grid-template-columns: 1fr auto auto;
-  row-gap: rem(4);
-  align-items: baseline;
+  row-gap: var(--space-2xs);
+}
+
+/**
+ * Каждый лимит — своя утопленная плашка.
+ *
+ * Раньше строки шли одна под другой на общем фоне и сливались: где кончается
+ * один бюджет и начинается следующий, приходилось угадывать по полосе
+ * прогресса. Фон и отступ разделяют их без единой линии.
+ */
+.card {
+  display: grid;
+  row-gap: rem(6);
+  padding: var(--space-s);
+  background-color: var(--c-surface-sunken);
+  border-radius: var(--radius-m);
   font-size: var(--step--1);
 }
 
-.name {
-  grid-area: name;
-  font-weight: var(--weight-medium);
-
-  @include clamp-lines(1);
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  align-items: center;
 }
 
-.numbers {
-  grid-area: numbers;
+.name {
+  font-weight: var(--weight-medium);
+  // Длинное название переносится внутри себя, а не толкает кнопки на
+  // следующую строку и не вылезает за плашку.
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  padding: rem(1) var(--space-2xs);
+  font-size: var(--step--2);
   color: var(--c-text-muted);
+  background-color: var(--c-surface-raised);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.cardActions {
+  display: flex;
+  gap: var(--space-2xs);
+  // Кнопки прижаты вправо и не сжимаются: их ширина не должна зависеть
+  // от длины названия слева.
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+
+/**
+ * Числовые строки — flex с распором по краям, а не сетка с `auto`-колонками.
+ * Ширина колонки `auto` зависит от содержимого, поэтому у соседних бюджетов
+ * числа вставали в разных местах, и столбец «ехал» от строки к строке.
+ */
+.numbers,
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: rem(2) var(--space-s);
+  align-items: baseline;
+  justify-content: space-between;
 
   @include tabular-numbers;
+}
+
+.progress {
+  color: var(--c-text-muted);
+}
+
+.percent {
+  white-space: nowrap;
 }
 
 .status {
-  grid-area: status;
   white-space: nowrap;
+}
 
-  @include tabular-numbers;
+.perDay {
+  color: var(--c-text-faint);
+  white-space: nowrap;
 }
 
 .ok {
@@ -55,15 +108,13 @@
 }
 
 .carried {
-  grid-area: carried;
   font-size: var(--step--2);
   color: var(--c-text-faint);
 }
 
 .track {
-  grid-area: track;
   block-size: rem(6);
-  background-color: var(--c-surface-sunken);
+  background-color: var(--c-surface-raised);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
@@ -74,15 +125,21 @@
   border-radius: var(--radius-pill);
 }
 
-.fill_ok {
+/*
+ * Имена без подчёркивания: в vite.config.ts стоит localsConvention
+ * camelCaseOnly, и .fill_ok доезжает до JS только как styles.fillOk.
+ * Из-за этого полоса прогресса раньше оставалась без заливки: класс
+ * искали по styles[`fill_${status}`], а такого ключа не существует.
+ */
+.fillOk {
   background-color: var(--c-accent);
 }
 
-.fill_warning {
+.fillWarning {
   background-color: var(--c-warning);
 }
 
-.fill_over {
+.fillOver {
   background-color: var(--c-expense);
 }
 
@@ -91,7 +148,9 @@
   color: var(--c-text-muted);
 }
 
-.actions {
+.actions,
+.formActions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2xs);
 }

@@ -1,18 +1,20 @@
 import {
+  budgetIdParamSchema,
   budgetsQuerySchema,
+  createBudgetSchema,
   importPreviewSchema,
   importRunSchema,
   categoryReportQuerySchema,
   pickLocale,
   reportPeriodSchema,
-  setBudgetsSchema,
+  updateBudgetSchema,
 } from '@moneymap/shared';
 import type { FastifyInstance } from 'fastify';
 import { db } from '../../db/index.ts';
 import { scopeOf } from '../../lib/scoping.ts';
 import { parse } from '../../lib/validate.ts';
 import { getAuth, requireAuth } from '../../plugins/require-auth.ts';
-import { listBudgets, setBudgets } from './budget.service.ts';
+import { createBudget, deleteBudget, listBudgets, updateBudget } from './budget.service.ts';
 import { importCsv, previewCsv } from './import.service.ts';
 import { cashflowReport, categoryReport, exportCsv, summaryReport } from './report.service.ts';
 
@@ -72,14 +74,35 @@ export async function budgetRoutes(app: FastifyInstance): Promise<void> {
   });
 
   /**
-   * Замена набора целиком, как и описано в §9: отдельных POST и DELETE нет,
-   * потому что лимиты правят списком — поставил напротив трёх категорий
-   * новые суммы и сохранил.
+   * Каждый бюджет правится отдельно.
+   *
+   * Раньше здесь был один PUT, заменявший набор целиком: правка открывалась
+   * сразу для всех лимитов, а удаление изображалось нулевой суммой. Для
+   * списка из трёх строк это читалось, для полутора десятков — нет.
+   *
+   * Все три ответа возвращают пересчитанный список: он всё равно меняется
+   * целиком (доли, остатки, «в день»), и повторный GET следом был бы вторым
+   * запросом за тем же самым.
    */
-  app.put('/', async (request, reply) => {
+  app.post('/', async (request, reply) => {
     const scope = scopeOf(getAuth(request).userId);
-    const input = parse(setBudgetsSchema, request.body);
-    await setBudgets(db, scope, input);
+    const input = parse(createBudgetSchema, request.body);
+    await createBudget(db, scope, input);
+    return reply.code(201).send(await listBudgets(db, scope));
+  });
+
+  app.patch('/:id', async (request, reply) => {
+    const scope = scopeOf(getAuth(request).userId);
+    const { id } = parse(budgetIdParamSchema, request.params);
+    const input = parse(updateBudgetSchema, request.body);
+    await updateBudget(db, scope, id, input);
+    return reply.send(await listBudgets(db, scope));
+  });
+
+  app.delete('/:id', async (request, reply) => {
+    const scope = scopeOf(getAuth(request).userId);
+    const { id } = parse(budgetIdParamSchema, request.params);
+    await deleteBudget(db, scope, id);
     return reply.send(await listBudgets(db, scope));
   });
 }

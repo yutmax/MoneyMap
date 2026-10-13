@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { msg } from '../i18n/index.ts';
 import { currencyCodeSchema, isoDateSchema, moneySchema, uuidSchema } from './common.ts';
 
 /**
@@ -100,24 +101,53 @@ export const budgetsQuerySchema = z.object({
     .optional(),
 });
 
-export const setBudgetsSchema = z.object({
-  budgets: z
-    .array(
-      z.object({
-        categoryId: uuidSchema,
-        /** Ноль означает «лимита нет» и убирает бюджет. */
-        amount: moneySchema,
-        rollover: z.boolean().optional(),
-      }),
-    )
-    .max(200),
-});
+/**
+ * Создание бюджета: цель — либо категория, либо счёт, ровно одна.
+ *
+ * Бюджет на счёт считает по нему все расходы, независимо от категории: так
+ * ограничивают не статью трат, а конкретную карту или кошелёк.
+ */
+export const createBudgetSchema = z
+  .object({
+    categoryId: uuidSchema.optional(),
+    accountId: uuidSchema.optional(),
+    amount: moneySchema,
+    rollover: z.boolean().optional(),
+  })
+  .refine((v) => (v.categoryId === undefined) !== (v.accountId === undefined), {
+    message: msg('validation.budget.target'),
+  });
 
-export type SetBudgetsInput = z.infer<typeof setBudgetsSchema>;
+/**
+ * Правка одного бюджета. Цель не меняется: бюджет на «Продукты», ставший
+ * бюджетом на карту, — это другой бюджет, и заводят его заново.
+ */
+export const updateBudgetSchema = z
+  .object({
+    amount: moneySchema.optional(),
+    rollover: z.boolean().optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: msg('validation.nothingToChange') });
+
+export const budgetIdParamSchema = z.object({ id: uuidSchema });
+
+export type CreateBudgetInput = z.infer<typeof createBudgetSchema>;
+export type UpdateBudgetInput = z.infer<typeof updateBudgetSchema>;
+
+/**
+ * На что заведён лимит.
+ *
+ * Размеченное объединение, а не четыре колонки, из которых две всегда пусты:
+ * «категория или счёт» — это одно решение, и в типе оно должно читаться
+ * одним полем, а не договорённостью о том, какие поля заполнены вместе.
+ */
+export type BudgetTarget =
+  | { kind: 'category'; categoryId: string; categoryKey: string }
+  | { kind: 'account'; accountId: string; accountName: string };
 
 export interface BudgetRow {
-  categoryId: string;
-  categoryKey: string;
+  id: string;
+  target: BudgetTarget;
   /** Лимит, как его задал человек. */
   amount: string;
   /** Перенесённый остаток прошлого месяца. '0', если перенос выключен. */
@@ -126,6 +156,12 @@ export interface BudgetRow {
   limit: string;
   spent: string;
   remaining: string;
+  /**
+   * Лимит, поделённый на число дней месяца: 300 за 30 дней — это 10 в день.
+   * Считается от месяца целиком, а не от оставшихся дней: это ориентир
+   * «сколько в день можно», а не план догона.
+   */
+  perDay: string;
   rollover: boolean;
   /** Потрачено от лимита, 0..n. Больше единицы — перерасход. */
   share: number;
