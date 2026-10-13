@@ -42,7 +42,6 @@ export function TransactionsPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>{t('transactions.title')}</h1>
           <p className={styles.subtitle}>{t('transactions.subtitle')}</p>
         </div>
 

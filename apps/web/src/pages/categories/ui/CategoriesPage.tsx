@@ -21,7 +21,6 @@ export function CategoriesPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>{t('categories.title')}</h1>
           <p className={styles.subtitle}>{t('categories.subtitle')}</p>
         </div>
       </header>

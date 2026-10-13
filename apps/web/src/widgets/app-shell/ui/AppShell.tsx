@@ -1,5 +1,8 @@
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useNotifications } from '@/entities/reconciliation';
+import { useMe } from '@/entities/user';
+import { LogoutIconButton } from '@/features/auth-logout';
+import { ThemeToggle } from '@/features/theme-switch';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
@@ -25,6 +28,32 @@ const TABS: { to: string; key: string; icon: IconName; end?: boolean }[] = [
   { to: ROUTES.profile, key: 'nav.profile', icon: 'profile' },
 ];
 
+/**
+ * Заголовок страницы для верхней строки.
+ *
+ * Таблицей по адресу, а не через контекст, который страница заполняет при
+ * монтировании: заголовок нужен в той же отрисовке, что и сам переход, а
+ * выставленный эффектом он успевал бы мигнуть пустотой. `useMatches` взять
+ * нельзя — он работает только с data-роутером, а здесь обычный `<Routes>`.
+ *
+ * Цена — добавить сюда строку при добавлении страницы. Это та же дисциплина,
+ * что и строка в роутере, и забытый заголовок виден сразу.
+ */
+const TITLES: Record<string, string> = {
+  [ROUTES.home]: 'dashboard.title',
+  [ROUTES.transactions]: 'transactions.title',
+  [ROUTES.recurring]: 'recurring.title',
+  [ROUTES.accounts]: 'accounts.title',
+  [ROUTES.reconciliation]: 'reconciliation.title',
+  [ROUTES.categories]: 'categories.title',
+  [ROUTES.reports]: 'reports.title',
+  [ROUTES.sessions]: 'sessions.title',
+  // У профиля своего заголовка нет: на странице стоит имя человека, а это
+  // не название раздела.
+  [ROUTES.profile]: 'nav.profile',
+  [ROUTES.notifications]: 'notifications.title',
+};
+
 function Tabs({ variant }: { variant: 'bar' | 'rail' }) {
   const { t } = useT();
 
@@ -48,8 +77,20 @@ function Tabs({ variant }: { variant: 'bar' | 'rail' }) {
 
 export function AppShell() {
   const { t } = useT();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { user } = useMe();
   const notifications = useNotifications();
-  const unread = (notifications.data ?? []).filter((item) => item.readAt === null).length;
+
+  const titleKey = TITLES[pathname];
+
+  // Неподтверждённый email теперь живёт в уведомлениях, а не баннером на
+  // главной, поэтому и в счётчик он входит наравне с остальными.
+  // `user` здесь ещё и undefined (грузится) и null (не вошёл) — отсюда `?.`.
+  const emailPending = user?.emailVerified === false;
+  const unread =
+    (notifications.data ?? []).filter((item) => item.readAt === null).length +
+    (emailPending ? 1 : 0);
 
   return (
     <div className={styles.root}>
@@ -61,24 +102,40 @@ export function AppShell() {
         <nav className={styles.railNav} aria-label={t('nav.aria')}>
           <Tabs variant="rail" />
         </nav>
+
+        {/* Переключатель темы внизу панели: он нужен раз в полгода и не
+            должен стоять в одном ряду с разделами, которыми пользуются
+            каждый день. На телефоне он остаётся в профиле — места в нижней
+            панели нет. */}
+        <div className={styles.railFooter}>
+          <ThemeToggle />
+        </div>
       </aside>
 
       <div className={styles.column}>
         <header className={styles.header}>
-          <NavLink to={ROUTES.home} className={styles.brandMobile}>
-            {t('common.appName')}
-          </NavLink>
+          {/*
+            Заголовок страницы стоит здесь, а не на самой странице: он один
+            на раздел и не меняется от того, что на странице происходит.
+            На телефоне он занимает место марки — название раздела в этой
+            строке полезнее логотипа, а на главную уводит нижняя панель.
+          */}
+          {titleKey !== undefined && <h1 className={styles.pageTitle}>{t(titleKey)}</h1>}
 
-          <NavLink
-            to={ROUTES.notifications}
-            className={styles.bell}
-            aria-label={t('notifications.title')}
-          >
-            <Icon name="bell" className={styles.icon} />
-            {/* Счётчик, а не точка: «три непрочитанных» и «одно» — разные
-                новости, и узнать это до открытия полезно. */}
-            {unread > 0 && <span className={styles.badge}>{unread > 9 ? '9+' : unread}</span>}
-          </NavLink>
+          <div className={styles.headerActions}>
+            <NavLink
+              to={ROUTES.notifications}
+              className={styles.bell}
+              aria-label={t('notifications.title')}
+            >
+              <Icon name="bell" className={styles.icon} />
+              {/* Счётчик, а не точка: «три непрочитанных» и «одно» — разные
+                  новости, и узнать это до открытия полезно. */}
+              {unread > 0 && <span className={styles.badge}>{unread > 9 ? '9+' : unread}</span>}
+            </NavLink>
+
+            <LogoutIconButton onDone={() => void navigate(ROUTES.login, { replace: true })} />
+          </div>
         </header>
 
         <main className={styles.main}>

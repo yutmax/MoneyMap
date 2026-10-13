@@ -1,3 +1,12 @@
+/**
+ * С планшета боковая панель и верхняя строка лежат на одной поверхности, а
+ * содержимое — в окне, вставленном в неё.
+ *
+ * Раньше их разделяла линия, и экран читался как три приклеенных друг к другу
+ * прямоугольника. Общий фон делает панель и шапку одной рамой приложения, а
+ * скруглённое окно внутри отделяет то, что меняется от раздела к разделу, от
+ * того, что остаётся на месте.
+ */
 .root {
   min-block-size: 100svh;
 
@@ -6,6 +15,7 @@
   @include from("md") {
     display: grid;
     grid-template-columns: rem(220) 1fr;
+    background-color: var(--c-surface);
   }
 }
 
@@ -18,12 +28,19 @@
     position: sticky;
     inset-block-start: 0;
     display: grid;
+    // Строки: марка, разделы, затем распор и подвал — он уезжает вниз.
+    grid-template-rows: auto auto 1fr auto;
     row-gap: var(--space-m);
-    align-content: start;
     block-size: 100svh;
     padding: var(--space-m) var(--space-s);
-    border-inline-end: var(--border-width) solid var(--c-border);
+    // Границы нет намеренно: панель и шапка — одна поверхность, и линия
+    // между ними снова разрезала бы её надвое.
   }
+}
+
+.railFooter {
+  grid-row: 4;
+  padding-inline: var(--space-2xs);
 }
 
 .brand {
@@ -80,23 +97,45 @@
 
   @include container;
 
-  // На широком экране название уже есть в панели, и строка нужна только
-  // ради колокольчика.
   @include from("md") {
-    justify-content: end;
     min-block-size: rem(64);
+    // Непрозрачная поверхность вместо полупрозрачной с размытием: шапка
+    // здесь не накладывается на содержимое, а продолжает панель слева.
+    background-color: var(--c-surface);
+    backdrop-filter: none;
+    /*
+     * Поле собрано из того же, что отделяет содержимое окна от края колонки:
+     * отступ окна от панели, его рамка и внутреннее поле. Иначе заголовок
+     * стоит левее карточек — на целое поле, если забыть про него, и на
+     * пиксель, если забыть про рамку.
+     */
+    max-width: none;
+    padding-inline: calc(var(--space-m) * 2 + var(--border-width));
   }
 }
 
-.brandMobile {
-  font-size: var(--step-1);
-  font-weight: var(--weight-semibold);
-  color: var(--c-accent);
+.headerActions {
+  display: flex;
+  gap: var(--space-3xs);
+  align-items: center;
+}
 
-  @include focus-ring($offset: 3px);
+/**
+ * Заголовок страницы в верхней строке.
+ *
+ * Занимает то место, где на телефоне была марка приложения: название
+ * раздела в этой строке полезнее логотипа, а на главную уводит нижняя
+ * панель. На широком экране марка осталась в боковой панели.
+ */
+.pageTitle {
+  font-size: var(--step-1);
+  font-weight: var(--weight-medium);
+  min-width: 0;
+
+  @include clamp-lines(1);
 
   @include from("md") {
-    display: none;
+    font-size: var(--step-2);
   }
 }
 
@@ -136,6 +175,31 @@
   padding-block: var(--space-m) var(--space-2xl);
 
   @include container;
+
+  /*
+   * Окно, вставленное в поверхность приложения.
+   *
+   * Фон здесь на ступень глубже, чем у панели и шапки, поэтому карточки
+   * внутри остаются светлыми и читаются как карточки, а не сливаются с
+   * подложкой. Поля — снаружи окна: отступ от содержимого даёт само окно.
+   *
+   * Ограничение ширины снято: контейнер центрировал содержимое внутри
+   * колонки, и справа оставалась пустая полоса поверхности, из-за которой
+   * окно переставало выглядеть вставленным.
+   */
+  @include from("md") {
+    // width вместе с max-width: контейнер задаёт `width: 100%`, и окно с
+    // полями оказывалось шире колонки ровно на эти поля — страница ехала
+    // вбок. С auto ширину определяют сами поля.
+    width: auto;
+    max-width: none;
+    margin-inline: var(--space-m);
+    margin-block-end: var(--space-m);
+    padding-inline: var(--space-m);
+    background-color: var(--c-bg);
+    border: var(--border-width) solid var(--c-border);
+    border-radius: var(--radius-l);
+  }
 
   // Место под нижнюю панель, чтобы она не накрывала последнюю карточку.
   // Панель теперь висит над краем, поэтому к её высоте добавлен и зазор

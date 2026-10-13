@@ -8,6 +8,7 @@ import { ReminderSettings } from '@/features/reconciliation';
 import { ThemeToggle } from '@/features/theme-switch';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
+import { cx } from '@/shared/lib';
 import styles from './ProfilePage.module.scss';
 
 /**
@@ -30,8 +31,10 @@ export function ProfilePage() {
 
   return (
     <div className={styles.root}>
+      {/* Имя и почта, а не заголовок страницы: раздел называется «Профиль»,
+          и это написано в верхней строке. Здесь — кто именно вошёл. */}
       <header className={styles.header}>
-        <h1 className={styles.title}>{user?.name ?? t('nav.profile')}</h1>
+        <p className={styles.name}>{user?.name ?? t('nav.profile')}</p>
         {user && <p className={styles.email}>{user.email}</p>}
       </header>
 
@@ -62,8 +65,11 @@ export function ProfilePage() {
             <LocaleSwitch />
           </dd>
 
-          <dt className={styles.optionLabel}>{t('settings.theme')}</dt>
-          <dd className={styles.optionControl}>
+          {/* На широком экране переключатель темы стоит внизу боковой панели,
+              и здесь он был бы вторым таким же на одном экране. На телефоне
+              панели нет, и это единственное его место. */}
+          <dt className={cx(styles.optionLabel, styles.narrowOnly)}>{t('settings.theme')}</dt>
+          <dd className={cx(styles.optionControl, styles.narrowOnly)}>
             <ThemeToggle />
           </dd>
         </dl>

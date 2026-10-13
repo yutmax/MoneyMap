@@ -112,7 +112,6 @@
   "theme": {
     "group": "Colour theme",
     "light": "Light theme",
-    "system": "Match system",
     "dark": "Dark theme"
   },
   "locale": {
@@ -204,7 +203,6 @@
   },
   "dashboard": {
     "title": "Overview",
-    "emailNotVerified": "Email is not confirmed. The link was sent to {{email}} — in development it is printed to the API log.",
     "recent": "Last transactions",
     "showAll": "See all"
   },
@@ -545,6 +543,10 @@
     "balance_check": {
       "title": "Time to check your balances",
       "body": "Reminder from {{when}}: enter the actual balances of your accounts."
+    },
+    "email_unverified": {
+      "title": "Email is not confirmed",
+      "body": "The link was sent to {{email}} — in development it is printed to the API log."
     },
     "title": "Notifications",
     "empty": "No notifications yet."

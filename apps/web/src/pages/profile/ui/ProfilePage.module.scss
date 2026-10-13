@@ -5,8 +5,8 @@
   max-width: rem(760);
 }
 
-.title {
-  font-size: var(--step-3);
+.name {
+  font-size: var(--step-1);
   font-weight: var(--weight-medium);
 }
 
@@ -40,6 +40,13 @@
 .optionControl {
   margin: 0;
   justify-self: start;
+}
+
+// Прячется с планшета: то же действие есть в боковой панели.
+.narrowOnly {
+  @include from("md") {
+    display: none;
+  }
 }
 
 .header {

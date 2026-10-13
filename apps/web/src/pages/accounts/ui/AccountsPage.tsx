@@ -47,7 +47,6 @@ export function AccountsPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>{t('accounts.title')}</h1>
           <p className={styles.subtitle}>{t('accounts.subtitle')}</p>
         </div>
 

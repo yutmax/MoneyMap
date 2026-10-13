@@ -1,0 +1,25 @@
+// Та же мера, что у колокольчика рядом: два значка в строке должны быть
+// одного роста, иначе строка выглядит собранной из разных мест.
+.root {
+  display: inline-flex;
+  padding: var(--space-2xs);
+  color: var(--c-text-muted);
+  border-radius: var(--radius-m);
+
+  @include transition(color, background-color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+    background-color: var(--c-surface-sunken);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.icon {
+  inline-size: rem(20);
+  block-size: rem(20);
+}

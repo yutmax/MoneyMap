@@ -54,7 +54,6 @@ export function RecurringPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>{t('recurring.title')}</h1>
           <p className={styles.subtitle}>{t('recurring.subtitle')}</p>
         </div>
 

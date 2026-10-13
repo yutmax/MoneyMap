@@ -1,4 +1,5 @@
 import { useNotifications } from '@/entities/reconciliation';
+import { useMe } from '@/entities/user';
 import { useMarkNotificationRead } from '@/features/reconciliation';
 import { useT } from '@/shared/i18n';
 import { cx, formatDateTime } from '@/shared/lib';
@@ -11,22 +12,42 @@ import styles from './NotificationsPage.module.scss';
  * Отдельная страница за колокольчиком, а не блок на главной: главная —
  * про деньги, а сообщение о том, что пора свериться, приходит раз в месяц
  * и не должно каждый день занимать первый экран.
+ *
+ * Неподтверждённый email стоит здесь первым и в общий список не попадает:
+ * это не событие, а состояние учётной записи. Записывать его строкой в
+ * таблицу значило бы заводить запись, которую потом надо не забыть удалить
+ * при подтверждении. Поэтому он собирается из `user` и исчезает сам.
+ * «Понятно» у него нет по той же причине: скрыть его можно, только
+ * подтвердив почту.
  */
 export function NotificationsPage() {
   const { t, locale } = useT();
+  const { user } = useMe();
   const notifications = useNotifications();
   const markRead = useMarkNotificationRead();
 
   const list = notifications.data ?? [];
+  const emailPending = user?.emailVerified === false;
 
   return (
     <div className={styles.root}>
-      <h1 className={styles.title}>{t('notifications.title')}</h1>
+      {emailPending && user && (
+        <ul className={styles.list}>
+          <li className={cx(styles.item, styles.unread)}>
+            <div className={styles.text}>
+              <p className={styles.name}>{t('notifications.email_unverified.title')}</p>
+              <p className={styles.body}>
+                {t('notifications.email_unverified.body', { email: user.email })}
+              </p>
+            </div>
+          </li>
+        </ul>
+      )}
 
       {notifications.isPending ? (
         <Spinner />
       ) : list.length === 0 ? (
-        <p className={styles.empty}>{t('notifications.empty')}</p>
+        !emailPending && <p className={styles.empty}>{t('notifications.empty')}</p>
       ) : (
         <ul className={styles.list}>
           {list.map((item) => (

@@ -16,14 +16,21 @@
     -->
     <script>
       (function () {
+        var saved = null;
         try {
-          var saved = localStorage.getItem('moneymap.theme');
-          if (saved === 'light' || saved === 'dark') {
-            document.documentElement.dataset.theme = saved;
-          }
+          saved = localStorage.getItem('moneymap.theme');
         } catch (_) {
-          /* приватный режим — остаётся системная тема */
+          /* приватный режим — выбора нет, решает система */
         }
+
+        var theme =
+          saved === 'light' || saved === 'dark'
+            ? saved
+            : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+
+        document.documentElement.dataset.theme = theme;
       })();
     </script>
 

@@ -44,7 +44,6 @@ export function SessionsPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>{t('sessions.title')}</h1>
           <p className={styles.subtitle}>{t('sessions.subtitle')}</p>
         </div>
 

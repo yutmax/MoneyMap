@@ -129,7 +129,6 @@ export function ReportsPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>{t('reports.title')}</h1>
           <p className={styles.subtitle}>
             {t('reports.period', {
               from: formatDate(period.from, locale),

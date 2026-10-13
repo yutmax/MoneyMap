@@ -3,28 +3,9 @@
   row-gap: var(--space-l);
 }
 
-.header {
-  display: grid;
-  row-gap: var(--space-3xs);
-}
-
-.title {
-  font-size: var(--step-3);
-  font-weight: var(--weight-medium);
-}
-
 .subtitle {
   font-size: var(--step--1);
   color: var(--c-text-muted);
-}
-
-.notice {
-  padding: var(--space-xs) var(--space-s);
-  font-size: var(--step--1);
-  color: var(--c-warning);
-  background-color: color-mix(in oklab, var(--c-warning) 12%, transparent);
-  border: var(--border-width) solid color-mix(in oklab, var(--c-warning) 30%, transparent);
-  border-radius: var(--radius-m);
 }
 
 .cards {

@@ -16,7 +16,7 @@ import {
   HeartPulse,
   House,
   Landmark,
-  Monitor,
+  LogOut,
   Moon,
   PartyPopper,
   PawPrint,
@@ -55,7 +55,6 @@ export const ICONS = {
   eye: Eye,
   'eye-off': EyeOff,
   sun: Sun,
-  monitor: Monitor,
   moon: Moon,
   // Разделы приложения: нижняя панель на телефоне, боковая на широком экране.
   home: House,
@@ -64,6 +63,7 @@ export const ICONS = {
   reports: ChartPie,
   profile: User,
   bell: Bell,
+  'log-out': LogOut,
 
   /*
    * Категории (§8.4). Имена здесь описывают категорию, а не рисунок: в базе
