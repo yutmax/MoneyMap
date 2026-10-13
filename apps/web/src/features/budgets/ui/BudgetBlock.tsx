@@ -23,8 +23,16 @@ export function BudgetBlock() {
   const currencies = useCurrencies();
   const save = useSetBudgets();
 
+  /**
+   * Черновик — массив, а не словарь по categoryId.
+   *
+   * Порядок строк здесь виден человеку: добавленная категория обязана встать
+   * в конец списка, а не всплыть посреди него. Со словарём порядок держался
+   * бы на том, как движок перечисляет ключи, — правиле, которое легко
+   * нарушить и нечем проверить.
+   */
   const [editing, setEditing] = useState(false);
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [drafts, setDrafts] = useState<{ categoryId: string; amount: string }[]>([]);
   const [pick, setPick] = useState('');
 
   const base = budgets.data?.baseCurrency ?? '';
@@ -38,17 +46,30 @@ export function BudgetBlock() {
     });
 
   const rows = budgets.data?.budgets ?? [];
-  const spent = new Set(rows.map((row) => row.categoryId));
-  const available = (categories.data ?? []).filter((c) => c.kind === 'expense' && !spent.has(c.id));
+
+  /**
+   * Категории, которые ещё можно добавить: без лимита на сервере и не взятые
+   * в текущий черновик. Без второго условия одна и та же категория выбиралась
+   * бы повторно и давала две строки с одним `categoryId`.
+   */
+  const taken = new Set([...rows.map((row) => row.categoryId), ...drafts.map((d) => d.categoryId)]);
+  const available = (categories.data ?? []).filter((c) => c.kind === 'expense' && !taken.has(c.id));
+
+  /** Название строки черновика: с сервера, а у только что добавленной — из справочника. */
+  const nameOf = (categoryId: string) =>
+    rows.find((row) => row.categoryId === categoryId)?.categoryName ??
+    categories.data?.find((c) => c.id === categoryId)?.name ??
+    '';
 
   const startEditing = () => {
-    setDrafts(Object.fromEntries(rows.map((row) => [row.categoryId, row.amount])));
+    setDrafts(rows.map((row) => ({ categoryId: row.categoryId, amount: row.amount })));
+    setPick('');
     setEditing(true);
   };
 
   const submit = () => {
     const payload: { categoryId: string; amount: string; rollover?: boolean }[] = [];
-    for (const [categoryId, raw] of Object.entries(drafts)) {
+    for (const { categoryId, amount: raw } of drafts) {
       let amount: string;
       try {
         // Пустое поле — это «лимита нет», а не ошибка ввода.
@@ -77,7 +98,38 @@ export function BudgetBlock() {
 
   return (
     <div className={styles.root}>
-      {rows.length === 0 && !editing ? (
+      {/* В режиме правки список строится по черновику, а не по ответу сервера.
+          Раньше он всегда шёл по `rows`, и выбранная в селекте категория
+          попадала в состояние, но на экране не появлялась: у неё ещё нет
+          строки на сервере. Снаружи это выглядело так, будто выбор категории
+          не делает ничего. */}
+      {editing ? (
+        drafts.length === 0 ? (
+          <p className={styles.empty}>{t('budgets.editEmpty')}</p>
+        ) : (
+          <ul className={styles.list}>
+            {drafts.map((draft) => (
+              <li key={draft.categoryId} className={styles.row}>
+                <span className={styles.name}>{nameOf(draft.categoryId)}</span>
+
+                <Field
+                  label={t('budgets.limit')}
+                  inputMode="decimal"
+                  value={draft.amount}
+                  onChange={(e) => {
+                    const value = e.currentTarget.value;
+                    setDrafts((prev) =>
+                      prev.map((item) =>
+                        item.categoryId === draft.categoryId ? { ...item, amount: value } : item,
+                      ),
+                    );
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
+        )
+      ) : rows.length === 0 ? (
         <p className={styles.empty}>{t('budgets.empty')}</p>
       ) : (
         <ul className={styles.list}>
@@ -85,41 +137,27 @@ export function BudgetBlock() {
             <li key={row.categoryId} className={styles.row}>
               <span className={styles.name}>{row.categoryName}</span>
 
-              {editing ? (
-                <Field
-                  label={t('budgets.limit')}
-                  inputMode="decimal"
-                  value={drafts[row.categoryId] ?? ''}
-                  onChange={(e) => {
-                    const value = e.currentTarget.value;
-                    setDrafts((prev) => ({ ...prev, [row.categoryId]: value }));
-                  }}
-                />
-              ) : (
-                <>
-                  <span className={styles.numbers}>
-                    {t('budgets.progress', {
-                      spent: money(row.spent),
-                      limit: money(row.limit),
-                    })}
-                  </span>
+              <span className={styles.numbers}>
+                {t('budgets.progress', {
+                  spent: money(row.spent),
+                  limit: money(row.limit),
+                })}
+              </span>
 
-                  {/* Состояние подписано словом, а не только цветом: по цвету
-                      одному «на исходе» и «перерасход» различит не каждый. */}
-                  <span className={cx(styles.status, styles[row.status])}>
-                    {row.status === 'over'
-                      ? t('budgets.over', { amount: money(abs(row.remaining)) })
-                      : t('budgets.left', { amount: money(row.remaining) })}
-                  </span>
+              {/* Состояние подписано словом, а не только цветом: по цвету
+                  одному «на исходе» и «перерасход» различит не каждый. */}
+              <span className={cx(styles.status, styles[row.status])}>
+                {row.status === 'over'
+                  ? t('budgets.over', { amount: money(abs(row.remaining)) })
+                  : t('budgets.left', { amount: money(row.remaining) })}
+              </span>
 
-                  <Meter share={row.share} status={row.status} />
+              <Meter share={row.share} status={row.status} />
 
-                  {row.carried !== '0' && (
-                    <span className={styles.carried}>
-                      {t('budgets.carried', { amount: money(row.carried) })}
-                    </span>
-                  )}
-                </>
+              {row.carried !== '0' && (
+                <span className={styles.carried}>
+                  {t('budgets.carried', { amount: money(row.carried) })}
+                </span>
               )}
             </li>
           ))}
@@ -133,7 +171,9 @@ export function BudgetBlock() {
           onChange={(e) => {
             const id = e.currentTarget.value;
             if (!id) return;
-            setDrafts((prev) => ({ ...prev, [id]: '' }));
+            setDrafts((prev) => [...prev, { categoryId: id, amount: '' }]);
+            // Селект возвращается к «Выберите категорию»: добавленная строка
+            // уже видна ниже, и держать её же выбранной тут незачем.
             setPick('');
           }}
         >

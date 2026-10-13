@@ -25,9 +25,15 @@ export function CategoriesPage() {
       >
         {t('categories.edit')}
       </Button>
-      <Button variant="danger" size="small" onClick={() => setDeleting(category)}>
-        {t('categories.delete')}
-      </Button>
+
+      {/* Категории из набора по умолчанию не удаляются (§8.4). Кнопка не
+          показывается, а не блокируется: отключённая кнопка «Удалить» рядом
+          с каждой строкой обещает действие, которого не будет. */}
+      {!category.isDefault && (
+        <Button variant="danger" size="small" onClick={() => setDeleting(category)}>
+          {t('categories.delete')}
+        </Button>
+      )}
     </>
   );
 
@@ -57,9 +63,9 @@ export function CategoriesPage() {
               <section key={kind} className={styles.tree}>
                 <header className={styles.treeHeader}>
                   <h2 className={styles.treeTitle}>{t(`categories.${kind}`)}</h2>
-                  <Button size="small" onClick={() => setForm({ kind })}>
-                    {t('categories.create')}
-                  </Button>
+                  {/* Кнопка «Новая категория» временно убрана: набор задаётся
+                      приложением. Форма создания и POST /categories живы —
+                      вернуть кнопку значит снять это условие. */}
                 </header>
 
                 {tree.length === 0 ? (

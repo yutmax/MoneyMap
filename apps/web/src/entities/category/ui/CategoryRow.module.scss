@@ -26,6 +26,15 @@
   min-width: 0;
 }
 
+.icon {
+  // Размер от текста, а не в пикселях: иконка стоит вплотную к названию
+  // и должна расти вместе с ним.
+  inline-size: 1.15em;
+  block-size: 1.15em;
+  flex-shrink: 0;
+  color: var(--c-text-faint);
+}
+
 .dot {
   width: rem(9);
   height: rem(9);

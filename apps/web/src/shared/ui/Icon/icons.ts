@@ -1,15 +1,38 @@
 import {
   ArrowLeftRight,
+  Banknote,
   Bell,
+  Briefcase,
+  Bus,
+  Car,
   ChartPie,
+  CircleEllipsis,
+  Clapperboard,
+  Dumbbell,
   Eye,
   EyeOff,
+  Gift,
+  GraduationCap,
+  HeartPulse,
   House,
+  Landmark,
   Monitor,
   Moon,
+  PartyPopper,
+  PawPrint,
+  Plane,
+  Plug,
+  Repeat,
+  RotateCcw,
+  Shirt,
+  ShoppingCart,
+  Sparkles,
   Sun,
+  TrendingUp,
   User,
+  Utensils,
   Wallet,
+  Wifi,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -41,6 +64,38 @@ export const ICONS = {
   reports: ChartPie,
   profile: User,
   bell: Bell,
+
+  /*
+   * Категории (§8.4). Имена здесь описывают категорию, а не рисунок: в базе
+   * лежит `housing`, а не `house`, и подобрать жилью другую картинку значит
+   * поправить одну строку ниже, а не переписывать строки у всех пользователей.
+   * Поэтому `housing` и `home` — два имени на один компонент, и это намеренно.
+   */
+  banknote: Banknote,
+  briefcase: Briefcase,
+  'trending-up': TrendingUp,
+  'rotate-ccw': RotateCcw,
+  gift: Gift,
+  'circle-ellipsis': CircleEllipsis,
+
+  'shopping-cart': ShoppingCart,
+  utensils: Utensils,
+  bus: Bus,
+  car: Car,
+  housing: House,
+  plug: Plug,
+  wifi: Wifi,
+  'heart-pulse': HeartPulse,
+  sparkles: Sparkles,
+  shirt: Shirt,
+  clapperboard: Clapperboard,
+  dumbbell: Dumbbell,
+  'graduation-cap': GraduationCap,
+  plane: Plane,
+  'paw-print': PawPrint,
+  repeat: Repeat,
+  'party-popper': PartyPopper,
+  landmark: Landmark,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

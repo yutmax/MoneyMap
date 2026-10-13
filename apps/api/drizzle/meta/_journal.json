@@ -71,6 +71,13 @@
       "when": 1791744691286,
       "tag": "0009_faulty_quicksilver",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791880603882,
+      "tag": "0010_sparkling_joystick",
+      "breakpoints": true
     }
   ]
 }

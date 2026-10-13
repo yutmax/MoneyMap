@@ -30,6 +30,7 @@ const selection = {
   icon: categories.icon,
   color: categories.color,
   sortOrder: categories.sortOrder,
+  defaultKey: categories.defaultKey,
   transactionCount: transactionCountSql.as('transaction_count'),
   createdAt: categories.createdAt,
 };
@@ -42,6 +43,7 @@ interface CategoryRow {
   icon: string | null;
   color: string | null;
   sortOrder: number;
+  defaultKey: string | null;
   transactionCount: number | string;
   createdAt: Date;
 }
@@ -55,6 +57,10 @@ function toResponse(row: CategoryRow): CategoryResponse {
     icon: row.icon,
     color: row.color,
     sortOrder: row.sortOrder,
+    // Наружу уходит флаг, а не сам ключ: клиенту нужно только решить, можно
+    // ли предлагать удаление. Ключ — внутреннее имя набора, и завязывать на
+    // него интерфейс значит однажды переименовывать его вместе с вёрсткой.
+    isDefault: row.defaultKey !== null,
     // count(*) приходит из Postgres как bigint, а драйвер отдаёт его строкой.
     transactionCount: Number(row.transactionCount),
     createdAt: row.createdAt.toISOString(),
@@ -173,6 +179,10 @@ export async function updateCategory(
  * удаляются вместе с родителем — у них своя история, и уносить её за
  * компанию с группой нельзя. Сколько всего переехало, возвращается наружу:
  * действие, молча перестроившее дерево, выглядит потерей данных.
+ *
+ * Категории из набора по умолчанию не удаляются. Проверка стоит здесь, а не
+ * только в интерфейсе: кнопку мы прячем, но эндпоинт остаётся открытым, и
+ * правило «набор всегда полный» должно держаться там, где оно нарушается.
  */
 export async function deleteCategory(
   db: Db,
@@ -182,6 +192,7 @@ export async function deleteCategory(
 ): Promise<DeleteCategoryResult> {
   const current = await getRow(db, scope, id);
   if (!current) throw notFound('errors.categoryNotFound');
+  if (current.defaultKey !== null) throw badRequest('errors.categoryDefaultDelete');
 
   if (moveTo) {
     if (moveTo === id) throw badRequest('errors.categoryOwnParent');
@@ -227,54 +238,85 @@ export async function deleteCategory(
 
 /* ──────────────────────── набор по умолчанию (§8.1) ──────────────────────── */
 
-const DEFAULT_CATEGORIES: ReadonlyArray<{ key: string; kind: 'income' | 'expense' }> = [
-  { key: 'salary', kind: 'income' },
-  { key: 'sideIncome', kind: 'income' },
-  { key: 'giftsIn', kind: 'income' },
-  { key: 'interest', kind: 'income' },
-  { key: 'otherIncome', kind: 'income' },
-  { key: 'groceries', kind: 'expense' },
-  { key: 'eatingOut', kind: 'expense' },
-  { key: 'transport', kind: 'expense' },
-  { key: 'housing', kind: 'expense' },
-  { key: 'utilities', kind: 'expense' },
-  { key: 'health', kind: 'expense' },
-  { key: 'clothes', kind: 'expense' },
-  { key: 'entertainment', kind: 'expense' },
-  { key: 'giftsOut', kind: 'expense' },
-  { key: 'otherExpense', kind: 'expense' },
+/**
+ * Набор перечислен целиком и плоским списком: вложенность здесь только
+ * удлинила бы выпадающие списки в операциях и бюджетах, ничего не добавив —
+ * двухуровневость остаётся доступной, просто не используется по умолчанию.
+ *
+ * Набор заметно шире прежнего намеренно. Добавление своих категорий сейчас
+ * скрыто, поэтому то, чего нет в этом списке, человеку взять негде: лучше
+ * лишняя строка, чем расход, которому некуда встать.
+ *
+ * Имя иконки — наше, из карты ICONS на фронтенде, а не имя компонента lucide.
+ */
+const DEFAULT_CATEGORIES: ReadonlyArray<{
+  key: string;
+  kind: 'income' | 'expense';
+  icon: string;
+}> = [
+  { key: 'salary', kind: 'income', icon: 'banknote' },
+  { key: 'sideIncome', kind: 'income', icon: 'briefcase' },
+  { key: 'interest', kind: 'income', icon: 'trending-up' },
+  { key: 'refunds', kind: 'income', icon: 'rotate-ccw' },
+  { key: 'giftsIn', kind: 'income', icon: 'gift' },
+  { key: 'otherIncome', kind: 'income', icon: 'circle-ellipsis' },
+
+  { key: 'groceries', kind: 'expense', icon: 'shopping-cart' },
+  { key: 'eatingOut', kind: 'expense', icon: 'utensils' },
+  { key: 'transport', kind: 'expense', icon: 'bus' },
+  { key: 'car', kind: 'expense', icon: 'car' },
+  { key: 'housing', kind: 'expense', icon: 'housing' },
+  { key: 'utilities', kind: 'expense', icon: 'plug' },
+  { key: 'connectivity', kind: 'expense', icon: 'wifi' },
+  { key: 'health', kind: 'expense', icon: 'heart-pulse' },
+  { key: 'beauty', kind: 'expense', icon: 'sparkles' },
+  { key: 'clothes', kind: 'expense', icon: 'shirt' },
+  { key: 'entertainment', kind: 'expense', icon: 'clapperboard' },
+  { key: 'sport', kind: 'expense', icon: 'dumbbell' },
+  { key: 'education', kind: 'expense', icon: 'graduation-cap' },
+  { key: 'travel', kind: 'expense', icon: 'plane' },
+  { key: 'pets', kind: 'expense', icon: 'paw-print' },
+  { key: 'subscriptions', kind: 'expense', icon: 'repeat' },
+  { key: 'giftsOut', kind: 'expense', icon: 'party-popper' },
+  { key: 'taxes', kind: 'expense', icon: 'landmark' },
+  { key: 'otherExpense', kind: 'expense', icon: 'circle-ellipsis' },
 ];
 
 /**
  * Стартовый набор категорий.
  *
  * Названия переводятся на язык запроса и дальше живут как обычные
- * пользовательские данные: человек их переименовывает и удаляет. Смена языка
- * интерфейса их не трогает — это уже его записи, а не наши подписи.
+ * пользовательские данные: человек их переименовывает. Смена языка интерфейса
+ * их не трогает — это уже его записи, а не наши подписи. Удалить их нельзя:
+ * набор обязан оставаться полным, пока нет способа завести категорию взамен.
  *
- * Вызывается один раз, при первичной настройке. Повторный вызов ничего не
- * делает: у кого уже есть категории, тому набор не нужен.
+ * Дополняется по ключу, а не «создать всё, если категорий нет вовсе».
+ * Прежняя проверка пропускала набор у любого, у кого была хоть одна своя
+ * категория, и навсегда оставляла его без остальных; к тому же новые
+ * категории, добавленные в список позже, не доезжали бы ни до кого.
+ * `onConflictDoNothing` по (user_id, default_key) делает повторный вызов
+ * безопасным, а гонку двух запросов — безвредной.
  */
 export async function createDefaultCategories(
   db: Db,
   scope: Scope,
   translate: (key: string) => string,
 ): Promise<number> {
-  const [existing] = await db
-    .select({ id: categories.id })
-    .from(categories)
-    .where(scope.own(categories))
-    .limit(1);
-  if (existing) return 0;
-
   const values = DEFAULT_CATEGORIES.map((item, index) =>
     scope.stamp({
       name: translate(`defaults.categories.${item.key}`),
       kind: item.kind,
+      icon: item.icon,
+      defaultKey: item.key,
       sortOrder: (index + 1) * 10,
     }),
   );
 
-  const created = await db.insert(categories).values(values).returning({ id: categories.id });
+  const created = await db
+    .insert(categories)
+    .values(values)
+    .onConflictDoNothing({ target: [categories.userId, categories.defaultKey] })
+    .returning({ id: categories.id });
+
   return created.length;
 }

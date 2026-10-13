@@ -255,12 +255,26 @@ export const categories = pgTable(
     kind: categoryKind().notNull(),
     icon: text(),
     color: text(),
+    /**
+     * Ключ категории из набора по умолчанию (§8.4). У заведённых человеком — null.
+     *
+     * Нужен по двум причинам. Такие категории не удаляются: набор обязан
+     * оставаться полным, потому что завести новую взамен сейчас негде.
+     * И набор дополняется по ключу, а не по названию: название человек
+     * переименовывает, ключ остаётся, и повторный прогон не плодит дублей.
+     */
+    defaultKey: text(),
     sortOrder: integer().notNull().default(1000),
     createdAt: timestamptzNow(),
     updatedAt: timestamptzNow(),
     deletedAt: timestamptz(),
   },
-  (t) => [index('categories_user_id_kind_idx').on(t.userId, t.kind)],
+  (t) => [
+    index('categories_user_id_kind_idx').on(t.userId, t.kind),
+    // NULL в Postgres не конфликтует сам с собой, поэтому ограничение
+    // касается только категорий из набора и не мешает пользовательским.
+    uniqueIndex('categories_user_id_default_key_key').on(t.userId, t.defaultKey),
+  ],
 );
 
 /* ────────────────────────────── transactions ────────────────────────────── */

@@ -65,6 +65,11 @@ export interface CategoryResponse {
   icon: string | null;
   color: string | null;
   sortOrder: number;
+  /**
+   * Категория из набора по умолчанию (§8.4). Такую нельзя удалить —
+   * переименовать можно.
+   */
+  isDefault: boolean;
   /** Сколько операций ссылается на категорию. */
   transactionCount: number;
   createdAt: string;
