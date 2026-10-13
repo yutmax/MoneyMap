@@ -1,7 +1,7 @@
 import { TRANSACTION_KINDS, type TransactionResponse } from '@moneymap/shared';
 import { useState } from 'react';
 import { useAccounts } from '@/entities/account';
-import { useCategories } from '@/entities/category';
+import { categoryName, useCategories } from '@/entities/category';
 import { TransactionRow, useTransactions, type TransactionFilters } from '@/entities/transaction';
 import { ImportModal } from '@/features/import-csv';
 import { TransactionFormModal, useDeleteTransaction } from '@/features/transaction-form';
@@ -85,7 +85,7 @@ export function TransactionsPage() {
           <option value="">{t('transactions.filterAll')}</option>
           {(categories.data ?? []).map((category) => (
             <option key={category.id} value={category.id}>
-              {category.name}
+              {categoryName(t, category.key)}
             </option>
           ))}
         </Select>

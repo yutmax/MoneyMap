@@ -102,7 +102,7 @@ export interface TransactionResponse {
   accountName: string;
   accountCurrency: string;
   categoryId: string | null;
-  categoryName: string | null;
+  categoryKey: string | null;
   kind: TransactionKind;
   /** Что ввёл человек. */
   amountOriginal: string;

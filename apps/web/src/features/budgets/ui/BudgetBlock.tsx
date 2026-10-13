@@ -1,6 +1,6 @@
 import { formatMoney, isNegative, parseUserAmount, type BudgetRow } from '@moneymap/shared';
 import { useState } from 'react';
-import { useCategories } from '@/entities/category';
+import { categoryName, useCategories } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import { useT } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
@@ -55,11 +55,13 @@ export function BudgetBlock() {
   const taken = new Set([...rows.map((row) => row.categoryId), ...drafts.map((d) => d.categoryId)]);
   const available = (categories.data ?? []).filter((c) => c.kind === 'expense' && !taken.has(c.id));
 
-  /** Название строки черновика: с сервера, а у только что добавленной — из справочника. */
-  const nameOf = (categoryId: string) =>
-    rows.find((row) => row.categoryId === categoryId)?.categoryName ??
-    categories.data?.find((c) => c.id === categoryId)?.name ??
-    '';
+  /** Подпись строки черновика: ключ с сервера, а у только что добавленной — из справочника. */
+  const nameOf = (categoryId: string) => {
+    const key =
+      rows.find((row) => row.categoryId === categoryId)?.categoryKey ??
+      categories.data?.find((c) => c.id === categoryId)?.key;
+    return key === undefined ? '' : categoryName(t, key);
+  };
 
   const startEditing = () => {
     setDrafts(rows.map((row) => ({ categoryId: row.categoryId, amount: row.amount })));
@@ -135,7 +137,7 @@ export function BudgetBlock() {
         <ul className={styles.list}>
           {rows.map((row) => (
             <li key={row.categoryId} className={styles.row}>
-              <span className={styles.name}>{row.categoryName}</span>
+              <span className={styles.name}>{categoryName(t, row.categoryKey)}</span>
 
               <span className={styles.numbers}>
                 {t('budgets.progress', {
@@ -180,7 +182,7 @@ export function BudgetBlock() {
           <option value="">{t('budgets.choose')}</option>
           {available.map((category) => (
             <option key={category.id} value={category.id}>
-              {category.name}
+              {categoryName(t, category.key)}
             </option>
           ))}
         </Select>

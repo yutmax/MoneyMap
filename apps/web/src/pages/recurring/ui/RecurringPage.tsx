@@ -1,5 +1,6 @@
 import { formatMoney, type RecurringRuleResponse } from '@moneymap/shared';
 import { useState } from 'react';
+import { categoryNameOrNull } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import {
   RecurringRuleCard,
@@ -83,7 +84,7 @@ export function RecurringPage() {
                   <p className={styles.name}>{item.ruleName}</p>
                   <p className={styles.meta}>
                     {formatDate(item.dueOn, locale)} · {item.accountName}
-                    {item.categoryName && ` · ${item.categoryName}`}
+                    {item.categoryKey && ` · ${categoryNameOrNull(t, item.categoryKey)}`}
                   </p>
                 </div>
                 <p className={styles.amount}>

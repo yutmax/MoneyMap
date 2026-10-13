@@ -48,9 +48,3 @@
 
   @include tabular-numbers;
 }
-
-.actions {
-  display: flex;
-  gap: var(--space-2xs);
-  margin-inline-start: auto;
-}

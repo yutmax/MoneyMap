@@ -34,7 +34,7 @@ const selection = {
   accountName: accounts.name,
   accountCurrency: accounts.currencyCode,
   categoryId: recurringRules.categoryId,
-  categoryName: categories.name,
+  categoryKey: categories.defaultKey,
   kind: recurringRules.kind,
   amount: recurringRules.amount,
   currencyCode: recurringRules.currencyCode,
@@ -61,7 +61,7 @@ function toResponse(row: RuleRow): RecurringRuleResponse {
     accountName: row.accountName as string,
     accountCurrency: row.accountCurrency as string,
     categoryId: (row.categoryId as string | null) ?? null,
-    categoryName: (row.categoryName as string | null) ?? null,
+    categoryKey: (row.categoryKey as string | null) ?? null,
     kind: row.kind as RecurringRuleResponse['kind'],
     amount: row.amount as string,
     currencyCode: row.currencyCode as string,
@@ -632,7 +632,7 @@ export async function listPending(db: Db, scope: Scope): Promise<PendingOccurren
       accountId: recurringRules.accountId,
       accountName: accounts.name,
       categoryId: recurringRules.categoryId,
-      categoryName: categories.name,
+      categoryKey: categories.defaultKey,
       kind: recurringRules.kind,
       amount: recurringRules.amount,
       currencyCode: recurringRules.currencyCode,
@@ -653,7 +653,7 @@ export async function listPending(db: Db, scope: Scope): Promise<PendingOccurren
   return rows.map((row) => ({
     ...row,
     categoryId: row.categoryId,
-    categoryName: row.categoryName,
+    categoryKey: row.categoryKey,
   }));
 }
 

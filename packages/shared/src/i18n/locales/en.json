@@ -41,7 +41,6 @@
       "type": "Choose an account type"
     },
     "category": {
-      "name": "Enter a category name",
       "kind": "Choose a category kind"
     },
     "transaction": {
@@ -89,10 +88,6 @@
     "accountHasTransactions": "The account has transactions. It can be archived, but not deleted.",
     "accountCurrencyImmutable": "An account's currency cannot be changed",
     "categoryNotFound": "Category not found",
-    "categoryDepth": "Categories nest two levels deep only",
-    "categoryKindMismatch": "A subcategory must be of the same kind as its parent",
-    "categoryOwnParent": "A category cannot be nested inside itself",
-    "categoryDefaultDelete": "A default category cannot be deleted",
     "transactionNotFound": "Transaction not found",
     "recurringRuleNotFound": "Rule not found",
     "occurrenceNotFound": "Charge not found",
@@ -291,35 +286,13 @@
   },
   "categories": {
     "title": "Categories",
-    "subtitle": "The set is provided by the app: a category can be renamed, but not deleted. Income and expenses are listed separately.",
+    "subtitle": "The set is provided by the app and does not change. Income and expenses are listed separately.",
     "income": "Income",
     "expense": "Expenses",
     "empty": "No categories of this kind yet.",
-    "create": "New category",
-    "createTitle": "New category",
-    "editTitle": "Category",
-    "name": "Name",
-    "kind": "Kind",
-    "parent": "Parent category",
-    "parentNone": "No parent — this is a group",
-    "parentHint": "Can only be nested inside a top-level category",
-    "save": "Save",
-    "edit": "Edit",
-    "delete": "Delete",
-    "created": "Category created",
-    "updated": "Category saved",
-    "deleted": "Category deleted",
     "loadFailed": "Could not load the categories",
     "transactions_one": "{{count}} transaction",
-    "transactions_other": "{{count}} transactions",
-    "promoted_one": "A nested category was moved to the top level",
-    "promoted_other": "{{count}} nested categories were moved to the top level",
-    "deleteTitle": "Delete “{{name}}”?",
-    "deleteWithTransactions_one": "The category has {{count}} transaction. Choose where to move it.",
-    "deleteWithTransactions_other": "The category has {{count}} transactions. Choose where to move them.",
-    "moveTo": "Move transactions",
-    "moveToNone": "Leave without a category",
-    "cancel": "Cancel"
+    "transactions_other": "{{count}} transactions"
   },
   "defaults": {
     "categories": {

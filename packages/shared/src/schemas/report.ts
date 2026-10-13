@@ -21,7 +21,7 @@ export type ReportPeriod = z.infer<typeof reportPeriodSchema>;
 
 export interface CategoryTotal {
   categoryId: string | null;
-  categoryName: string | null;
+  categoryKey: string | null;
   amount: string;
   /** Доля от суммы всех категорий, 0..1. */
   share: number;
@@ -38,7 +38,7 @@ export interface LargestTransaction {
   id: string;
   occurredOn: string;
   accountName: string;
-  categoryName: string | null;
+  categoryKey: string | null;
   note: string | null;
   /** В валюте отчёта, по модулю. */
   amount: string;
@@ -117,7 +117,7 @@ export type SetBudgetsInput = z.infer<typeof setBudgetsSchema>;
 
 export interface BudgetRow {
   categoryId: string;
-  categoryName: string;
+  categoryKey: string;
   /** Лимит, как его задал человек. */
   amount: string;
   /** Перенесённый остаток прошлого месяца. '0', если перенос выключен. */

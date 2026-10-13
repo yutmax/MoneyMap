@@ -1,5 +1,6 @@
 import { formatMoney, type RecurringRuleResponse } from '@moneymap/shared';
 import type { ReactNode } from 'react';
+import { categoryNameOrNull } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import { useT } from '@/shared/i18n';
 import { cx, formatDate } from '@/shared/lib';
@@ -36,7 +37,7 @@ export function RecurringRuleCard({ rule, actions }: RecurringRuleCardProps) {
         </p>
         <p className={styles.meta}>
           {scheduleText(rule, t, locale)} · {rule.accountName}
-          {rule.categoryName && ` · ${rule.categoryName}`}
+          {rule.categoryKey && ` · ${categoryNameOrNull(t, rule.categoryKey)}`}
         </p>
         <p className={styles.meta}>
           {rule.nextOccurrenceOn && !rule.isPaused

@@ -1,4 +1,4 @@
-import { onboardingSchema, pickLocale } from '@moneymap/shared';
+import { onboardingSchema } from '@moneymap/shared';
 import type { FastifyInstance } from 'fastify';
 import { db } from '../../db/index.ts';
 import { parse } from '../../lib/validate.ts';
@@ -11,7 +11,6 @@ export async function onboardingRoutes(app: FastifyInstance): Promise<void> {
   app.post('/', async (request, reply) => {
     const { userId } = getAuth(request);
     const input = parse(onboardingSchema, request.body);
-    const locale = pickLocale(request.headers['accept-language']);
-    return reply.send({ user: await completeOnboarding(db, { userId, input, locale }) });
+    return reply.send({ user: await completeOnboarding(db, { userId, input }) });
   });
 }

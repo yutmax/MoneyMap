@@ -1,5 +1,4 @@
-import type { Locale, MeResponse, OnboardingInput } from '@moneymap/shared';
-import { translate } from '@moneymap/shared';
+import type { MeResponse, OnboardingInput } from '@moneymap/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 import type { Db } from '../../db/index.ts';
 import { users } from '../../db/schema.ts';
@@ -20,7 +19,7 @@ import { scopeOf } from '../../lib/scoping.ts';
  */
 export async function completeOnboarding(
   db: Db,
-  args: { userId: string; input: OnboardingInput; locale: Locale },
+  args: { userId: string; input: OnboardingInput },
 ): Promise<MeResponse> {
   const code = await assertCurrencyExists(db, args.input.baseCurrency);
 
@@ -39,10 +38,10 @@ export async function completeOnboarding(
     .returning();
 
   if (updated) {
-    // Стартовые категории — часть первичной настройки, а не регистрации:
-    // здесь уже известен язык запроса, и набор заводится на нём. Дальше это
-    // обычные пользовательские записи, и смена языка интерфейса их не трогает.
-    await createDefaultCategories(db, scopeOf(args.userId), (key) => translate(args.locale, key));
+    // Набор категорий — часть первичной настройки, а не регистрации: до неё
+    // человеку ещё нечего учитывать. Язык здесь не нужен — в базу едут ключи,
+    // а подпись появляется при чтении, на языке того запроса.
+    await createDefaultCategories(db, scopeOf(args.userId));
     return toMeResponse(updated);
   }
 

@@ -8,6 +8,7 @@ import {
   type CashflowReport,
   type CategoryReport,
   type CategoryReportQuery,
+  type Locale,
   type ReportPeriod,
   type ReportSummary,
 } from '@moneymap/shared';
@@ -16,6 +17,7 @@ import type { Db } from '../../db/index.ts';
 import { accounts, categories, transactions, users } from '../../db/schema.ts';
 import { notFound } from '../../lib/errors.ts';
 import type { Scope } from '../../lib/scoping.ts';
+import { categoryNameOrNull } from '../categories/category.catalog.ts';
 
 /**
  * Отчёты (§8.9).
@@ -102,14 +104,14 @@ export async function categoryReport(
   const rows = await db
     .select({
       categoryId: transactions.categoryId,
-      categoryName: categories.name,
+      categoryKey: categories.defaultKey,
       amount: sql<string>`round(sum(${amount}), 18)`,
     })
     .from(transactions)
     .innerJoin(accounts, eq(accounts.id, transactions.accountId))
     .leftJoin(categories, eq(categories.id, transactions.categoryId))
     .where(and(periodFilter(scope, query), eq(transactions.kind, query.kind)))
-    .groupBy(transactions.categoryId, categories.name)
+    .groupBy(transactions.categoryId, categories.defaultKey)
     .orderBy(sql`abs(sum(${amount})) desc`);
 
   // Знак уводится здесь: расходы хранятся отрицательными, но отчёт о
@@ -123,7 +125,7 @@ export async function categoryReport(
     total,
     categories: totals.map((row) => ({
       categoryId: row.categoryId,
-      categoryName: row.categoryName,
+      categoryKey: row.categoryKey,
       amount: row.amount,
       share: shareOf(row.amount, total),
     })),
@@ -195,7 +197,7 @@ export async function summaryReport(
       id: transactions.id,
       occurredOn: transactions.occurredOn,
       accountName: accounts.name,
-      categoryName: categories.name,
+      categoryKey: categories.defaultKey,
       note: transactions.note,
       kind: transactions.kind,
       amount: sql<string>`round(abs(${amount}), 18)`,
@@ -235,7 +237,7 @@ export async function summaryReport(
       id: row.id,
       occurredOn: row.occurredOn,
       accountName: row.accountName,
-      categoryName: row.categoryName,
+      categoryKey: row.categoryKey,
       note: row.note,
       amount: row.amount,
       kind: row.kind as 'income' | 'expense',
@@ -284,15 +286,26 @@ const CSV_HEADER = [
   'note',
 ];
 
-/** Выгрузка операций за период (§8.9). */
-export async function exportCsv(db: Db, scope: Scope, period: ReportPeriod): Promise<string> {
+/**
+ * Выгрузка операций за период (§8.9).
+ *
+ * Единственное место, где подпись категории собирается на сервере: файл
+ * уезжает человеку готовым, и перевести ключ в нём уже некому. Остальные
+ * ответы отдают ключ и переводятся на клиенте.
+ */
+export async function exportCsv(
+  db: Db,
+  scope: Scope,
+  period: ReportPeriod,
+  locale: Locale,
+): Promise<string> {
   const rows = await db
     .select({
       occurredOn: transactions.occurredOn,
       kind: transactions.kind,
       accountName: accounts.name,
       accountCurrency: accounts.currencyCode,
-      categoryName: categories.name,
+      categoryKey: categories.defaultKey,
       amountAccount: transactions.amountAccount,
       amountOriginal: transactions.amountOriginal,
       currencyOriginal: transactions.currencyOriginal,
@@ -313,7 +326,7 @@ export async function exportCsv(db: Db, scope: Scope, period: ReportPeriod): Pro
         row.kind,
         row.accountName,
         row.accountCurrency,
-        row.categoryName,
+        categoryNameOrNull(locale, row.categoryKey),
         row.amountAccount,
         row.amountOriginal,
         row.currencyOriginal,

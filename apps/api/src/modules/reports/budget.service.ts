@@ -129,7 +129,7 @@ export async function listBudgets(
   const rows = await db
     .select({
       categoryId: budgets.categoryId,
-      categoryName: categories.name,
+      categoryKey: categories.defaultKey,
       amount: budgets.amount,
       rollover: budgets.rollover,
       createdAt: budgets.createdAt,
@@ -137,7 +137,7 @@ export async function listBudgets(
     .from(budgets)
     .innerJoin(categories, eq(categories.id, budgets.categoryId))
     .where(eq(budgets.userId, scope.ownerId))
-    .orderBy(categories.sortOrder, categories.name);
+    .orderBy(categories.sortOrder);
 
   const spent = await spentByCategory(db, scope, base, period);
   // Перенос считается на один месяц назад, а не накапливается с начала
@@ -167,7 +167,7 @@ export async function listBudgets(
 
       return {
         categoryId: row.categoryId,
-        categoryName: row.categoryName,
+        categoryKey: row.categoryKey,
         amount: row.amount,
         carried,
         limit,

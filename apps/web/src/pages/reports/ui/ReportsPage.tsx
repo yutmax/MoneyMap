@@ -1,5 +1,6 @@
 import { formatMoney, isNegative, toDecimal, todayIn } from '@moneymap/shared';
 import { useMemo, useState } from 'react';
+import { categoryNameOrNull } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import { csvUrl, useCashflowReport, useCategoryReport, useReportSummary } from '@/entities/report';
 import { useMe } from '@/entities/user';
@@ -163,7 +164,7 @@ export function ReportsPage() {
                 <BarList
                   items={categories.map((row) => ({
                     key: row.categoryId ?? 'none',
-                    label: row.categoryName ?? t('transactions.categoryNone'),
+                    label: categoryNameOrNull(t, row.categoryKey) ?? t('transactions.categoryNone'),
                     value: money(row.amount),
                     hint: `${Math.round(row.share * 100)}%`,
                     ratio: maxCategory === 0 ? 0 : toDecimal(row.amount).toNumber() / maxCategory,
@@ -200,7 +201,7 @@ export function ReportsPage() {
                       {formatDate(row.occurredOn, locale)}
                     </time>
                     <span className={styles.largestName}>
-                      {row.categoryName ?? t('transactions.categoryNone')}
+                      {categoryNameOrNull(t, row.categoryKey) ?? t('transactions.categoryNone')}
                       <span className={styles.account}>{row.accountName}</span>
                     </span>
                     <span

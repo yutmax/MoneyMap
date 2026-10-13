@@ -3,6 +3,7 @@ import {
   importPreviewSchema,
   importRunSchema,
   categoryReportQuerySchema,
+  pickLocale,
   reportPeriodSchema,
   setBudgetsSchema,
 } from '@moneymap/shared';
@@ -46,7 +47,9 @@ export async function reportRoutes(app: FastifyInstance): Promise<void> {
   app.get('/export.csv', async (request, reply) => {
     const scope = scopeOf(getAuth(request).userId);
     const period = parse(reportPeriodSchema, request.query);
-    const csv = await exportCsv(db, scope, period);
+    // Подписи категорий попадают в файл готовым текстом, поэтому язык берётся
+    // здесь: в самой выгрузке переводить уже негде.
+    const csv = await exportCsv(db, scope, period, pickLocale(request.headers['accept-language']));
 
     return reply
       .header('content-type', 'text/csv; charset=utf-8')

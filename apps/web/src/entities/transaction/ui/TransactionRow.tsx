@@ -1,5 +1,6 @@
 import { formatMoney, isNegative, type TransactionResponse } from '@moneymap/shared';
 import type { ReactNode } from 'react';
+import { categoryNameOrNull } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import { useT } from '@/shared/i18n';
 import { cx, formatDate } from '@/shared/lib';
@@ -27,7 +28,7 @@ export function TransactionRow({ transaction, actions }: TransactionRowProps) {
         <p className={styles.title}>
           {transaction.kind === 'transfer'
             ? t('transactions.transfer')
-            : (transaction.categoryName ?? t('transactions.noCategory'))}
+            : (categoryNameOrNull(t, transaction.categoryKey) ?? t('transactions.noCategory'))}
         </p>
         <p className={styles.meta}>
           {transaction.accountName}

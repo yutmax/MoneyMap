@@ -1,4 +1,5 @@
 import {
+  LOCALES,
   parseUserAmount,
   type ImportMapping,
   type ImportPreview,
@@ -10,6 +11,7 @@ import type { Db } from '../../db/index.ts';
 import { accounts, categories, transactions } from '../../db/schema.ts';
 import { badRequest, notFound } from '../../lib/errors.ts';
 import type { Scope } from '../../lib/scoping.ts';
+import { categoryName } from '../categories/category.catalog.ts';
 
 /**
  * Импорт выписки из CSV (§8.11).
@@ -170,14 +172,24 @@ export async function importCsv(
   const body = rows.slice(1);
   if (body.length > MAX_ROWS) throw badRequest('errors.importTooLarge');
 
-  const known = new Map(
-    (
-      await db
-        .select({ id: categories.id, name: categories.name })
-        .from(categories)
-        .where(scope.own(categories))
-    ).map((row) => [row.name.trim().toLowerCase(), row.id]),
-  );
+  const owned = await db
+    .select({ id: categories.id, defaultKey: categories.defaultKey })
+    .from(categories)
+    .where(scope.own(categories));
+
+  /**
+   * Имя из файла сверяется с подписями на всех языках сразу, а не только на
+   * языке запроса: выгрузка, сделанная в английском интерфейсе, должна
+   * заходить обратно и в русском. Сам ключ тоже принимается — на случай
+   * файла, собранного не нами.
+   */
+  const known = new Map<string, string>();
+  for (const row of owned) {
+    known.set(row.defaultKey.toLowerCase(), row.id);
+    for (const locale of LOCALES) {
+      known.set(categoryName(locale, row.defaultKey).trim().toLowerCase(), row.id);
+    }
+  }
 
   const values: (typeof transactions.$inferInsert)[] = [];
   const failed: number[] = [];

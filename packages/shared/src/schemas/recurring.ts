@@ -95,7 +95,7 @@ export interface RecurringRuleResponse {
   accountName: string;
   accountCurrency: string;
   categoryId: string | null;
-  categoryName: string | null;
+  categoryKey: string | null;
   kind: 'income' | 'expense';
   amount: string;
   currencyCode: string;
@@ -134,7 +134,7 @@ export interface PendingOccurrence {
   accountId: string;
   accountName: string;
   categoryId: string | null;
-  categoryName: string | null;
+  categoryKey: string | null;
   kind: 'income' | 'expense';
   amount: string;
   currencyCode: string;

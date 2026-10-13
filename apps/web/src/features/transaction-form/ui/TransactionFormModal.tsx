@@ -8,7 +8,7 @@ import {
 } from '@moneymap/shared';
 import { useMemo, useState } from 'react';
 import { useAccounts } from '@/entities/account';
-import { useCategories } from '@/entities/category';
+import { categoryName, useCategories } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import { useConvert } from '@/entities/rate';
 import { useMe } from '@/entities/user';
@@ -276,7 +276,9 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
               <option value="">{t('transactions.categoryNone')}</option>
               {categoryOptions.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.parentId ? `— ${category.name}` : category.name}
+                  {category.parentId
+                    ? `— ${categoryName(t, category.key)}`
+                    : categoryName(t, category.key)}
                 </option>
               ))}
             </Select>
