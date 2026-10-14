@@ -1,10 +1,48 @@
 /* Классы попадают к элементам sonner через toastOptions.classNames.
    Оформление целиком наше: тост помечен unstyled, поэтому перебивать
-   библиотечные правила не нужно — их просто нет. */
+   библиотечные правила не нужно — их почти нет. Исключение одно, и оно
+   закрыто переменными на .toaster ниже. */
 
+/**
+ * Контейнер. Здесь переопределяются собственные переменные sonner.
+ *
+ * Нужно это ровно для крестика: его красит правило
+ * `[data-sonner-theme="dark"] … [data-close-button] { background: var(--normal-bg) }`,
+ * которое не требует `data-styled` и потому переживает `unstyled`. Его
+ * `--normal-bg` в тёмной теме равен #000, и кнопка выходила чёрным кружком.
+ * Перебить правило одним классом нельзя — у него специфичность выше, —
+ * а подменить значение переменной можно.
+ */
+/* Атрибуты в селекторе — не для выбора элемента, а ради веса: свои значения
+   переменным sonner задаёт правилом `[data-sonner-toaster][data-sonner-theme]`,
+   и одного класса (0,1,0) против его (0,2,0) не хватает. Здесь (0,3,0). */
+.toaster[data-sonner-toaster][data-sonner-theme] {
+  --normal-bg: var(--c-surface-raised);
+  --normal-border: var(--c-border);
+  --normal-text: var(--c-text);
+  --normal-bg-hover: var(--c-surface-sunken);
+  --normal-border-hover: var(--c-border-strong);
+}
+
+/**
+ * Тост — обычная карточка, а не цветная плашка.
+ *
+ * Раньше он целиком заливался зелёным или красным, включая текст. Среди
+ * сдержанных поверхностей приложения, где цвет достаётся суммам и акценту,
+ * всплывающий красный прямоугольник выглядел чужим — тем более что чаще
+ * всего он сообщает рутинное «сохранено».
+ *
+ * Поэтому поверхность нейтральная, как у карточки, а состояние несёт
+ * значок: разной формы и разного цвета. Форма важнее цвета — галочка и
+ * восклицательный знак различимы и без него.
+ *
+ * С Alert это расходится намеренно. Alert лежит в форме, где заливка
+ * размечает область сообщения; тост висит поверх произвольного содержимого,
+ * и такая же заливка там читается как тревога, а не как подпись.
+ */
 .toast {
   display: flex;
-  gap: var(--space-2xs);
+  gap: var(--space-xs);
   align-items: start;
   width: 100%;
   padding: var(--space-xs) var(--space-s);
@@ -41,30 +79,28 @@
   // Выравниваем по первой строке заголовка, а не по центру тоста: описание
   // может быть длинным, и значок уезжал бы вниз.
   height: calc(var(--step--1) * 1.35);
-
-  svg {
-    width: 1.05em;
-    height: 1.05em;
-  }
 }
 
-/* Тона повторяют Alert: одно и то же сообщение не должно выглядеть
-   по-разному в зависимости от того, попало оно в форму или во всплывающее
-   уведомление. */
-.success {
+.glyph {
+  inline-size: rem(18);
+  block-size: rem(18);
+}
+
+/* Цвет остаётся только на значке: он и отличает удачу от ошибки. */
+.success .icon {
   color: var(--c-income);
-  background-color: color-mix(in oklab, var(--c-income) 12%, var(--c-surface-raised));
-  border-color: color-mix(in oklab, var(--c-income) 35%, transparent);
 }
 
-.error {
+.error .icon {
   color: var(--c-danger);
-  background-color: color-mix(in oklab, var(--c-danger) 12%, var(--c-surface-raised));
-  border-color: color-mix(in oklab, var(--c-danger) 35%, transparent);
 }
 
-.info {
-  color: var(--c-text-muted);
+.warning .icon {
+  color: var(--c-warning);
+}
+
+.info .icon {
+  color: var(--c-text-faint);
 }
 
 .close {
@@ -76,11 +112,13 @@
   flex-shrink: 0;
   margin-inline-start: auto;
   place-items: center;
+  // Выравнивание по той же первой строке, что и значок слева.
+  margin-block-start: calc((var(--step--1) * 1.35 - rem(20)) / 2);
   width: rem(20);
   height: rem(20);
   color: var(--c-text-faint);
-  background-color: var(--c-surface-raised);
-  border: var(--border-width) solid var(--c-border);
+  background-color: transparent;
+  border: 0;
   border-radius: var(--radius-pill);
 
   @include transition(color, background-color);
@@ -88,10 +126,11 @@
 
   @include hover {
     color: var(--c-text);
+    background-color: var(--c-surface-sunken);
   }
+}
 
-  svg {
-    width: rem(11);
-    height: rem(11);
-  }
+.closeGlyph {
+  inline-size: rem(13);
+  block-size: rem(13);
 }

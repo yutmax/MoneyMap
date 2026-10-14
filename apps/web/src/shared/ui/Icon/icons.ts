@@ -6,6 +6,8 @@ import {
   Bus,
   Car,
   ChartPie,
+  CircleAlert,
+  CircleCheck,
   CircleEllipsis,
   Clapperboard,
   Dumbbell,
@@ -15,6 +17,7 @@ import {
   GraduationCap,
   HeartPulse,
   House,
+  Info,
   Landmark,
   LogOut,
   Moon,
@@ -33,6 +36,7 @@ import {
   Utensils,
   Wallet,
   Wifi,
+  X,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -64,6 +68,14 @@ export const ICONS = {
   profile: User,
   bell: Bell,
   'log-out': LogOut,
+
+  // Всплывающие уведомления: свои значки вместо залитых глифов sonner —
+  // у них другая толщина и заливка, и на фоне обведённых lucide они
+  // читались как чужие.
+  'circle-check': CircleCheck,
+  'circle-alert': CircleAlert,
+  info: Info,
+  x: X,
 
   /*
    * Категории (§8.4). Имена здесь описывают категорию, а не рисунок: в базе

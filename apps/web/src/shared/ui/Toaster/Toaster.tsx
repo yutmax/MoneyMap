@@ -1,4 +1,5 @@
 import { Toaster as Sonner } from 'sonner';
+import { Icon } from '../Icon/Icon.tsx';
 import styles from './Toaster.module.scss';
 
 /**
@@ -21,12 +22,24 @@ export function Toaster({ theme }: { theme: 'light' | 'dark' | 'system' }) {
       position="bottom-right"
       closeButton
       gap={8}
+      // Класс на контейнере переопределяет собственные переменные sonner.
+      // Этого требует крестик: его красит правило вида
+      // [data-sonner-theme="dark"] … [data-close-button], которое `unstyled`
+      // не снимает, а перебить одним классом нельзя — специфичность выше.
+      // Подменить значение переменной проще, чем воевать за вес селектора.
+      className={styles.toaster}
+      icons={{
+        // Свои значки вместо залитых глифов sonner: у тех другая толщина
+        // и заливка, и рядом с обведёнными lucide они выглядели чужими.
+        success: <Icon name="circle-check" className={styles.glyph} />,
+        error: <Icon name="circle-alert" className={styles.glyph} />,
+        warning: <Icon name="circle-alert" className={styles.glyph} />,
+        info: <Icon name="info" className={styles.glyph} />,
+        close: <Icon name="x" className={styles.closeGlyph} />,
+      }}
       toastOptions={{
         // unstyled снимает с тоста оформление самого sonner, оставляя
-        // позиционирование, стопку и анимацию. Без него пришлось бы
-        // перебивать его правила специфичностью: селекторы у нас и у него
-        // одного веса, а его стили подключаются позже наших и выигрывают
-        // по порядку.
+        // позиционирование, стопку и анимацию.
         unstyled: true,
         classNames: {
           toast: styles.toast,
@@ -37,6 +50,7 @@ export function Toaster({ theme }: { theme: 'light' | 'dark' | 'system' }) {
           closeButton: styles.close,
           success: styles.success,
           error: styles.error,
+          warning: styles.warning,
           info: styles.info,
         },
       }}
