@@ -14,13 +14,16 @@ interface PasswordInputProps extends Omit<
 }
 
 /**
- * Перенесён из прототипа. Содержательное отличие — кнопка переключения
- * описана для скринридера и не является частью таб-порядка формы по
- * случайности: aria-pressed сообщает текущее состояние, а не только действие.
+ * Поле пароля с глазом внутри, у правого края — как в любом привычном
+ * поле такого рода.
+ *
+ * Кнопка без текста, поэтому название у неё в aria-label, а состояние —
+ * в aria-pressed: скринридер слышит и действие, и то, включено ли оно.
  */
 export function PasswordInput({ label, error, hint, ...inputProps }: PasswordInputProps) {
   const { t } = useT();
   const [visible, setVisible] = useState(false);
+  const toggleLabel = visible ? t('fields.hidePassword') : t('fields.showPassword');
 
   return (
     <Field
@@ -29,15 +32,16 @@ export function PasswordInput({ label, error, hint, ...inputProps }: PasswordInp
       label={label ?? t('fields.password')}
       error={error}
       hint={hint}
-      labelAside={
+      trailing={
         <button
           type="button"
           className={styles.toggle}
           onClick={() => setVisible((v) => !v)}
           aria-pressed={visible}
+          aria-label={toggleLabel}
+          title={toggleLabel}
         >
           <Icon name={visible ? 'eye-off' : 'eye'} className={styles.icon} />
-          {visible ? t('fields.hidePassword') : t('fields.showPassword')}
         </button>
       }
     />

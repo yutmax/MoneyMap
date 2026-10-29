@@ -11,6 +11,7 @@ import {
   Alert,
   ColumnChart,
   DonutChart,
+  restColor,
   Select,
   seriesColor,
   Spinner,
@@ -23,10 +24,10 @@ const RANGES = ['month', 'quarter', 'year'] as const;
 type Range = (typeof RANGES)[number];
 
 /**
- * Предел секторов в кольце. Шесть — это и длина палитры, и граница, за
- * которой соседние цвета перестают различаться.
+ * Предел различимых цветов в кольце — длина палитры. Дальше соседние
+ * цвета перестают различаться.
  */
-const DONUT_LIMIT = 6;
+const DONUT_LIMIT = 8;
 
 interface DonutSource {
   key: string;
@@ -36,11 +37,30 @@ interface DonutSource {
 }
 
 /**
+ * Каждая строка — свой сектор, ни одна не прячется в «прочее».
+ *
+ * Для категорий: человеку важно видеть, куда ушли деньги, а не то, что
+ * седьмая по величине трата слилась с десятью другими. Первые восемь
+ * получают цвета палитры, остальные — нейтральный: девятый оттенок был бы
+ * неотличим от соседа. Отличает их легенда и наведение, которое называет
+ * сектор в центре кольца.
+ */
+function spreadToDonut(items: DonutSource[], money: (amount: string) => string): DonutSegment[] {
+  return items.map((item, index) => ({
+    key: item.key,
+    label: item.label,
+    share: item.share,
+    value: money(item.amount),
+    color: index < DONUT_LIMIT ? seriesColor(index) : restColor,
+  }));
+}
+
+/**
  * Доли в сектора, хвост — в «прочее».
  *
  * Складывается именно хвост, а не каждая мелкая доля по отдельности: иначе
  * из списка пропало бы то, что в нём шестое по величине, а не то, что
- * незначительно. Ровно шесть строк остаются как есть — сворачивать нечего.
+ * незначительно. Ровно восемь строк остаются как есть — сворачивать нечего.
  */
 function foldToDonut(
   items: DonutSource[],
@@ -218,7 +238,7 @@ export function ReportsPage() {
                 <p className={styles.empty}>{t('reports.noData')}</p>
               ) : (
                 <DonutChart
-                  segments={foldToDonut(
+                  segments={spreadToDonut(
                     categories.map((row) => ({
                       key: row.categoryId ?? 'none',
                       label:
@@ -226,7 +246,6 @@ export function ReportsPage() {
                       share: row.share,
                       amount: row.amount,
                     })),
-                    t('reports.other'),
                     money,
                   )}
                   total={money(summary.data?.expense ?? '0')}

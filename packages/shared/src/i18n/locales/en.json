@@ -88,7 +88,6 @@
     "forbidden": "Not enough permissions",
     "notFound": "Not found",
     "accountNotFound": "Account not found",
-    "accountHasTransactions": "The account has transactions. It can be archived, but not deleted.",
     "accountCurrencyImmutable": "An account's currency cannot be changed",
     "categoryNotFound": "Category not found",
     "transactionNotFound": "Transaction not found",
@@ -183,8 +182,8 @@
     "email": "Email",
     "password": "Password",
     "currentPassword": "Current password",
-    "showPassword": "Show",
-    "hidePassword": "Hide",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "baseCurrency": "Base currency",
     "timezone": "Time zone"
   },
@@ -286,7 +285,13 @@
     "type_crypto_wallet": "Crypto wallet",
     "edit": "Edit",
     "openedOn": "Opened on",
-    "openedOnHint": "The opening balance counts from this date"
+    "openedOnHint": "The opening balance counts from this date",
+    "deleteTitle": "Delete “{{name}}”?",
+    "deleteEmpty": "The account has no transactions — only the account itself will be removed.",
+    "deleteWithHistory": "All its transactions, transfers with other accounts, recurring payments and its budget will be deleted too. Other balances will be recalculated. To keep the history, archive the account instead.",
+    "deleteConfirm": "Delete",
+    "deleteCancel": "Cancel",
+    "deleteFailed": "Could not delete the account"
   },
   "categories": {
     "title": "Categories",

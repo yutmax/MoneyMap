@@ -4,7 +4,7 @@ import { AccountCard, useAccounts } from '@/entities/account';
 import { AccountFormModal, useDeleteAccount, useUpdateAccount } from '@/features/account-form';
 import { useT } from '@/shared/i18n';
 import { ROUTES } from '@/shared/config';
-import { Alert, Button, SectionTabs, toast } from '@/shared/ui';
+import { Alert, Button, Modal, SectionTabs, toast } from '@/shared/ui';
 import styles from './AccountsPage.module.scss';
 
 /** `null` — форма закрыта, `'new'` — создание, объект — правка. */
@@ -16,6 +16,8 @@ export function AccountsPage() {
   const update = useUpdateAccount();
   const remove = useDeleteAccount();
   const [form, setForm] = useState<FormState>(null);
+  /** Счёт, удаление которого ждёт подтверждения. */
+  const [pendingDelete, setPendingDelete] = useState<AccountResponse | null>(null);
 
   const toggleArchive = (account: AccountResponse) => {
     update.mutate(
@@ -30,14 +32,22 @@ export function AccountsPage() {
     );
   };
 
-  const handleDelete = (account: AccountResponse) => {
-    remove.mutate(account.id, {
-      onSuccess: () => toast.success(t('accounts.deleted')),
-      // Счёт с операциями удалить нельзя — сервер отвечает 409 с объяснением,
-      // и показать его точнее, чем общее «не получилось».
-      onError: (error) => toast.error(t(error.message)),
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    remove.mutate(pendingDelete.id, {
+      onSuccess: () => {
+        toast.success(t('accounts.deleted'));
+        setPendingDelete(null);
+      },
+      onError: () => toast.error(t('accounts.deleteFailed')),
     });
   };
+
+  const deleteButton = (account: AccountResponse) => (
+    <Button variant="danger" size="small" onClick={() => setPendingDelete(account)}>
+      {t('accounts.delete')}
+    </Button>
+  );
 
   const list = accounts.data ?? [];
   const active = list.filter((a) => !a.isArchived);
@@ -94,14 +104,7 @@ export function AccountsPage() {
                       >
                         {t('accounts.archive')}
                       </Button>
-                      {/* Удаление предлагается только там, где оно возможно:
-                          кнопка, которая всегда отвечает отказом, — это
-                          не защита, а ловушка. */}
-                      {!account.hasTransactions && (
-                        <Button variant="danger" size="small" onClick={() => handleDelete(account)}>
-                          {t('accounts.delete')}
-                        </Button>
-                      )}
+                      {deleteButton(account)}
                     </>
                   }
                 />
@@ -118,13 +121,16 @@ export function AccountsPage() {
                     key={account.id}
                     account={account}
                     actions={
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        onClick={() => toggleArchive(account)}
-                      >
-                        {t('accounts.unarchive')}
-                      </Button>
+                      <>
+                        <Button
+                          variant="secondary"
+                          size="small"
+                          onClick={() => toggleArchive(account)}
+                        >
+                          {t('accounts.unarchive')}
+                        </Button>
+                        {deleteButton(account)}
+                      </>
                     }
                   />
                 ))}
@@ -133,6 +139,36 @@ export function AccountsPage() {
           )}
         </>
       )}
+
+      {/* Удалить можно любой счёт, но счёт с историей уносит её с собой —
+          поэтому сначала вопрос, и в нём сказано, что именно пропадёт. */}
+      <Modal
+        open={pendingDelete !== null}
+        title={t('accounts.deleteTitle', { name: pendingDelete?.name ?? '' })}
+        onClose={() => {
+          if (!remove.isPending) setPendingDelete(null);
+        }}
+      >
+        <div className={styles.confirm}>
+          <p className={styles.confirmText}>
+            {pendingDelete?.hasTransactions
+              ? t('accounts.deleteWithHistory')
+              : t('accounts.deleteEmpty')}
+          </p>
+          <div className={styles.confirmActions}>
+            <Button
+              variant="secondary"
+              onClick={() => setPendingDelete(null)}
+              disabled={remove.isPending}
+            >
+              {t('accounts.deleteCancel')}
+            </Button>
+            <Button variant="danger" onClick={confirmDelete} loading={remove.isPending}>
+              {t('accounts.deleteConfirm')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {form !== null && (
         <AccountFormModal

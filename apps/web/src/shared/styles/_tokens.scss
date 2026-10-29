@@ -41,7 +41,12 @@
   --chart-series-3: #1baf7a;
   --chart-series-4: #eda100;
   --chart-series-5: #e87ba4;
-  --chart-series-6: #4a3aa7;
+  --chart-series-6: #008300;
+  --chart-series-7: #4a3aa7;
+  --chart-series-8: #e34948;
+  /// Секторы сверх палитры: каждый остаётся отдельной дугой и строкой
+  /// легенды, но без собственного оттенка — девятый цвет неотличим от соседа.
+  --chart-rest: #b9b8b0;
   --chart-grid: #e1e0d9;
   --chart-axis: #c3c2b7;
 
@@ -83,7 +88,10 @@
     --chart-series-3: #199e70;
     --chart-series-4: #c98500;
     --chart-series-5: #d55181;
-    --chart-series-6: #9085e9;
+    --chart-series-6: #008300;
+    --chart-series-7: #9085e9;
+    --chart-series-8: #e66767;
+    --chart-rest: #5c5c58;
     --chart-grid: #2c2c2a;
     --chart-axis: #383835;
 

@@ -88,7 +88,6 @@
     "forbidden": "Недостаточно прав",
     "notFound": "Не найдено",
     "accountNotFound": "Счёт не найден",
-    "accountHasTransactions": "По счёту есть операции. Его можно архивировать, но не удалить.",
     "accountCurrencyImmutable": "Валюту счёта изменить нельзя",
     "categoryNotFound": "Категория не найдена",
     "transactionNotFound": "Операция не найдена",
@@ -183,8 +182,8 @@
     "email": "Email",
     "password": "Пароль",
     "currentPassword": "Текущий пароль",
-    "showPassword": "Показать",
-    "hidePassword": "Скрыть",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
     "baseCurrency": "Базовая валюта",
     "timezone": "Таймзона"
   },
@@ -288,7 +287,13 @@
     "type_crypto_wallet": "Криптокошелёк",
     "edit": "Изменить",
     "openedOn": "Счёт открыт",
-    "openedOnHint": "С этой даты считается начальный остаток"
+    "openedOnHint": "С этой даты считается начальный остаток",
+    "deleteTitle": "Удалить счёт «{{name}}»?",
+    "deleteEmpty": "Операций по счёту нет — удалится только он сам.",
+    "deleteWithHistory": "Вместе со счётом удалятся все его операции, переводы с другими счетами, регулярные платежи и лимит. Балансы других счетов пересчитаются. Если историю нужно сохранить, счёт лучше отправить в архив.",
+    "deleteConfirm": "Удалить",
+    "deleteCancel": "Отмена",
+    "deleteFailed": "Не удалось удалить счёт"
   },
   "categories": {
     "title": "Категории",

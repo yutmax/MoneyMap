@@ -1,8 +1,14 @@
 import type { AccountResponse, CreateAccountInput, UpdateAccountInput } from '@moneymap/shared';
-import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import type { Db } from '../../db/index.ts';
-import { accounts, transactions } from '../../db/schema.ts';
-import { conflict, notFound } from '../../lib/errors.ts';
+import {
+  accounts,
+  budgets,
+  recurringOccurrences,
+  recurringRules,
+  transactions,
+} from '../../db/schema.ts';
+import { notFound } from '../../lib/errors.ts';
 import type { Scope } from '../../lib/scoping.ts';
 import { assertCurrencyExists } from '../reference/currency.service.ts';
 
@@ -158,24 +164,86 @@ export async function updateAccount(
 }
 
 /**
- * Удаление возможно только у счёта без операций (§8.2).
+ * Счёт удаляется вместе со своей историей (§8.2).
  *
- * Счёт с историей не удаляется даже мягко: он назван в каждой своей операции,
- * и список, где вместо счёта пустота, — это сломанная история, а не чистая.
- * Для таких счетов есть архив, и клиенту возвращается именно это указание.
+ * Раньше счёт с операциями удалить было нельзя, только архивировать. На деле
+ * это значило, что заведённый по ошибке или тестовый счёт оставался навсегда.
+ * Теперь удаление доступно всегда, а клиент перед ним предупреждает, что
+ * операции уйдут тоже.
+ *
+ * Всё мягко и в одной транзакции:
+ *  - операции счёта — вместе со второй ногой каждого перевода. Половина
+ *    перевода на другом счёте была бы движением денег ниоткуда — то же
+ *    правило, что при удалении одной операции;
+ *  - регулярные правила счёта — им больше некуда списывать, а ожидающие
+ *    подтверждения срабатывания снимаются;
+ *  - лимит по счёту — бюджет на несуществующий счёт показывать негде.
  */
 export async function deleteAccount(db: Db, scope: Scope, id: string): Promise<void> {
   const [row] = await db
-    .select({ id: accounts.id, hasTransactions: hasTransactionsSql })
+    .select({ id: accounts.id })
     .from(accounts)
     .where(scope.own(accounts, eq(accounts.id, id)))
     .limit(1);
 
   if (!row) throw notFound('errors.accountNotFound');
-  if (row.hasTransactions) throw conflict('errors.accountHasTransactions');
 
-  await db
-    .update(accounts)
-    .set({ deletedAt: new Date(), updatedAt: new Date() })
-    .where(and(scope.own(accounts, eq(accounts.id, id)), isNull(accounts.deletedAt)));
+  const now = new Date();
+
+  await db.transaction(async (tx) => {
+    // Группы переводов собираются до удаления: потом ноги этого счёта уже
+    // не найти обычным запросом.
+    const groups = await tx
+      .selectDistinct({ groupId: transactions.transferGroupId })
+      .from(transactions)
+      .where(
+        scope.own(
+          transactions,
+          eq(transactions.accountId, id),
+          isNotNull(transactions.transferGroupId),
+        ),
+      );
+    const groupIds = groups.map((g) => g.groupId).filter((g): g is string => g !== null);
+
+    await tx
+      .update(transactions)
+      .set({ deletedAt: now, updatedAt: now })
+      .where(
+        scope.own(
+          transactions,
+          groupIds.length > 0
+            ? or(eq(transactions.accountId, id), inArray(transactions.transferGroupId, groupIds))
+            : eq(transactions.accountId, id),
+        ),
+      );
+
+    const rules = await tx
+      .update(recurringRules)
+      .set({ deletedAt: now, updatedAt: now, nextOccurrenceOn: null })
+      .where(scope.own(recurringRules, eq(recurringRules.accountId, id)))
+      .returning({ id: recurringRules.id });
+
+    if (rules.length > 0) {
+      await tx
+        .update(recurringOccurrences)
+        .set({ status: 'skipped', resolvedAt: now })
+        .where(
+          and(
+            eq(recurringOccurrences.userId, scope.ownerId),
+            eq(recurringOccurrences.status, 'pending'),
+            inArray(
+              recurringOccurrences.ruleId,
+              rules.map((r) => r.id),
+            ),
+          ),
+        );
+    }
+
+    await tx.delete(budgets).where(scope.own(budgets, eq(budgets.accountId, id)));
+
+    await tx
+      .update(accounts)
+      .set({ deletedAt: now, updatedAt: now })
+      .where(and(scope.own(accounts, eq(accounts.id, id)), isNull(accounts.deletedAt)));
+  });
 }

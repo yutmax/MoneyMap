@@ -10,7 +10,7 @@ import {
   type ReconciliationRow,
   type SnapshotResponse,
 } from '@moneymap/shared';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { Db } from '../../db/index.ts';
 import { accounts, balanceSnapshots, transactions, users } from '../../db/schema.ts';
 import { conflict, notFound } from '../../lib/errors.ts';
@@ -142,6 +142,8 @@ export async function listSnapshots(
     .where(
       and(
         eq(balanceSnapshots.userId, scope.ownerId),
+        // Сверки удалённого счёта в истории не показываются: счёта больше нет.
+        isNull(accounts.deletedAt),
         query.accountId ? eq(balanceSnapshots.accountId, query.accountId) : undefined,
       ),
     )

@@ -50,6 +50,23 @@
   }
 }
 
+.controlWrap {
+  position: relative;
+}
+
+.withTrailing {
+  // Место под кнопку у правого края: длинный пароль не уходит под иконку.
+  padding-inline-end: var(--control-height);
+}
+
+.trailing {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: flex;
+  align-items: center;
+}
+
 .invalid {
   border-bottom-color: var(--c-danger);
 }

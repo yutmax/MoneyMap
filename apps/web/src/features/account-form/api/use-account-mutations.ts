@@ -29,6 +29,8 @@ export function useDeleteAccount() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.delete<{ ok: true }>(`/accounts/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: accountKeys.list }),
+    // Вместе со счётом уходят его операции, переводы, правила и лимит —
+    // устаревает почти всё, что закешировано, поэтому сбрасывается весь кеш.
+    onSuccess: () => queryClient.invalidateQueries(),
   });
 }

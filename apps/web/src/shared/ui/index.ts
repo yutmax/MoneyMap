@@ -1,7 +1,7 @@
 export { Alert } from './Alert/Alert.tsx';
 export { ColumnChart, type ColumnPoint, type ColumnSeries } from './Chart/ColumnChart.tsx';
 export { DonutChart, type DonutSegment } from './Chart/DonutChart.tsx';
-export { seriesColor } from './Chart/chart-colors.ts';
+export { restColor, seriesColor } from './Chart/chart-colors.ts';
 export { StackedBar, type StackedSegment } from './Chart/StackedBar.tsx';
 export { Button } from './Button/Button.tsx';
 export { Field } from './Field/Field.tsx';

@@ -45,6 +45,23 @@
   letter-spacing: 0.06em;
 }
 
+.confirm {
+  display: grid;
+  row-gap: var(--space-m);
+}
+
+.confirmText {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  justify-content: end;
+}
+
 .skeleton {
   height: rem(68);
   background-color: var(--c-surface);
