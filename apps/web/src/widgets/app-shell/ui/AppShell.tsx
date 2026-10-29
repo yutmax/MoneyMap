@@ -47,6 +47,7 @@ const TITLES: Record<string, string> = {
   [ROUTES.reconciliation]: 'reconciliation.title',
   [ROUTES.categories]: 'categories.title',
   [ROUTES.reports]: 'reports.title',
+  [ROUTES.converter]: 'converter.title',
   [ROUTES.sessions]: 'sessions.title',
   // У профиля своего заголовка нет: на странице стоит имя человека, а это
   // не название раздела.
@@ -123,6 +124,18 @@ export function AppShell() {
           {titleKey !== undefined && <h1 className={styles.pageTitle}>{t(titleKey)}</h1>}
 
           <div className={styles.headerActions}>
+            {/* Конвертер — в шапке, а не шестой вкладкой: в нижней панели
+                места на шестую нет, а здесь он в одном нажатии с любого
+                экрана — как и нужно инструменту «прикинуть, сколько это». */}
+            <NavLink
+              to={ROUTES.converter}
+              className={({ isActive }) => cx(styles.bell, isActive && styles.headerActive)}
+              aria-label={t('converter.title')}
+              title={t('converter.title')}
+            >
+              <Icon name="converter" className={styles.icon} />
+            </NavLink>
+
             <NavLink
               to={ROUTES.notifications}
               className={styles.bell}

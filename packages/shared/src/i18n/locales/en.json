@@ -187,6 +187,18 @@
     "baseCurrency": "Base currency",
     "timezone": "Time zone"
   },
+  "converter": {
+    "title": "Currency converter",
+    "subtitle": "Currencies and crypto at today's reference rate. Converts as you type — in either field.",
+    "from": "From",
+    "to": "To",
+    "amountIn": "Amount in {{code}}",
+    "swap": "Swap currencies",
+    "rateOn": "Rate as of {{date}}",
+    "staleOn": "Rate as of {{date}} — today's is not loaded yet",
+    "invalid": "Enter a number, e.g. 1250.50",
+    "rateFailed": "Could not get the rate. Try again later."
+  },
   "currency": {
     "fiat": "Fiat",
     "crypto": "Cryptocurrencies"

@@ -165,6 +165,11 @@
   }
 }
 
+.headerActive {
+  color: var(--c-text);
+  background-color: var(--c-surface);
+}
+
 .badge {
   position: absolute;
   inset-block-start: rem(-1);

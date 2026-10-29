@@ -1,1 +1,1 @@
-export { rateKeys, useConvert } from './api/rate-queries.ts';
+export { rateKeys, useConvert, useRate } from './api/rate-queries.ts';

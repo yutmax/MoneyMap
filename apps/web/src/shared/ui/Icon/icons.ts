@@ -1,5 +1,6 @@
 import {
   ArrowLeftRight,
+  ArrowUpDown,
   Banknote,
   Bell,
   Briefcase,
@@ -10,6 +11,7 @@ import {
   CircleCheck,
   CircleEllipsis,
   Clapperboard,
+  Coins,
   Dumbbell,
   Eye,
   EyeOff,
@@ -68,6 +70,9 @@ export const ICONS = {
   profile: User,
   bell: Bell,
   'log-out': LogOut,
+  // Конвертер валют в шапке и кнопка «поменять местами» в нём.
+  converter: Coins,
+  swap: ArrowUpDown,
 
   // Всплывающие уведомления: свои значки вместо залитых глифов sonner —
   // у них другая толщина и заливка, и на фоне обведённых lucide они

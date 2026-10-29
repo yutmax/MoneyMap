@@ -1,0 +1,131 @@
+.root {
+  display: grid;
+  row-gap: var(--space-s);
+  // Конвертер — инструмент на одну мысль; растянутый на всю ширину
+  // монитора, он разносит сумму и валюту по разным краям экрана.
+  max-inline-size: rem(560);
+}
+
+.card {
+  display: grid;
+
+  @include surface(var(--space-m));
+}
+
+.row {
+  display: grid;
+  // Сумма шире выбора валюты: читают в первую очередь число. На телефоне
+  // у выбора остаётся ширина под код валюты — название обрежется, код нет.
+  grid-template-columns: minmax(0, 1fr) rem(112);
+  column-gap: var(--space-s);
+  align-items: end;
+
+  @include from("sm") {
+    grid-template-columns: minmax(0, 1fr) minmax(rem(140), rem(240));
+  }
+}
+
+.amountBox {
+  min-inline-size: 0;
+}
+
+.amount {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: var(--space-2xs) 0;
+  font-size: var(--step-3);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  color: var(--c-text);
+  background-color: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--c-border);
+  border-radius: 0;
+
+  @include tabular-numbers;
+  @include transition(border-color, color);
+
+  &::placeholder {
+    color: var(--c-text-faint);
+  }
+
+  &:focus {
+    border-bottom-color: var(--c-accent);
+    outline: none;
+  }
+}
+
+// Вычисленное поле приглушено, пока его не трогают: видно, какое число
+// задал человек, а какое получилось. Начал править — оно становится главным.
+.computed:not(:focus) {
+  color: var(--c-text-muted);
+}
+
+.invalid,
+.invalid:focus {
+  border-bottom-color: var(--c-danger);
+}
+
+.swapLine {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--space-2xs);
+}
+
+.swap {
+  display: inline-grid;
+  place-items: center;
+  inline-size: rem(40);
+  block-size: rem(40);
+  color: var(--c-text-muted);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 50%;
+
+  @include transition(color, background-color, border-color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+    background-color: var(--c-surface-hover);
+  }
+}
+
+.swapIcon {
+  width: rem(18);
+  height: rem(18);
+  transition: transform 0.25s ease;
+
+  @include reduced-motion {
+    transition: none;
+  }
+}
+
+.info {
+  display: grid;
+  row-gap: var(--space-3xs);
+  padding-inline: var(--space-m);
+}
+
+.rate {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-s);
+  font-size: var(--step--1);
+
+  @include tabular-numbers;
+}
+
+.inverse {
+  color: var(--c-text-muted);
+}
+
+.meta {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
+
+.error {
+  font-size: var(--step--1);
+  color: var(--c-danger);
+}

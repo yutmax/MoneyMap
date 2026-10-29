@@ -13,6 +13,7 @@ export const ROUTES = {
   recurring: '/recurring',
   reconciliation: '/reconciliation',
   reports: '/reports',
+  converter: '/converter',
   login: '/login',
   register: '/register',
   sessions: '/sessions',
