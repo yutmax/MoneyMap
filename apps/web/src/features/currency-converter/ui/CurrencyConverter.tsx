@@ -1,4 +1,11 @@
-import { convert, divide, quantize, type MoneyString } from '@moneymap/shared';
+import {
+  convert,
+  divide,
+  formatAmountInput,
+  parseAmountInput,
+  quantize,
+  type MoneyString,
+} from '@moneymap/shared';
 import { useEffect, useId, useState } from 'react';
 import { CurrencySelect, useCurrencies } from '@/entities/currency';
 import { useRate } from '@/entities/rate';
@@ -6,7 +13,6 @@ import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
 import { cx, formatDate } from '@/shared/lib';
 import { Icon } from '@/shared/ui';
-import { formatAmountInput, parseAmountInput } from '../lib/amount-input.ts';
 import styles from './CurrencyConverter.module.scss';
 
 type Side = 'from' | 'to';
