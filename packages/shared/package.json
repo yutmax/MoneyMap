@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "sideEffects": [
+    "./src/lib/money.ts"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./money": "./src/lib/money.ts",

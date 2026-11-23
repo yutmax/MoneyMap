@@ -70,9 +70,39 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router'],
-          query: ['@tanstack/react-query'],
+        /*
+         * Библиотеки — отдельными файлами от нашего кода.
+         *
+         * Хеш в имени файла меняется, только когда меняется содержимое, а
+         * кешируются такие файлы на год (Caddyfile). Наш код меняется каждый
+         * деплой, библиотеки — раз в несколько месяцев: лежи они вместе,
+         * каждый деплой заставлял бы заново качать и React. Отдельно они
+         * остаются в кеше браузера, и после выката приезжает только своё.
+         *
+         * Функция, а не список имён: список ловил `react-dom`, но не
+         * `react-dom/client`, и React DOM — треть всего веса — оставался в
+         * основном файле.
+         *
+         * В общий файл библиотек — только явный список того, без чего не
+         * отрисовать первый экран: переводы, деньги, значки, уведомления.
+         * Сначала туда шло «всё остальное из node_modules», и вместе с ним —
+         * зависимости графиков (redux, immer, es-toolkit…), которые нужны
+         * только главной и отчётам, а грузились каждому на каждом экране.
+         * Всё, что не в списке, Rollup раскладывает сам — туда, где оно
+         * используется.
+         */
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (/[/\\](react|react-dom|react-router|scheduler)[/\\]/.test(id)) return 'react';
+          if (/[/\\]@tanstack[/\\]/.test(id)) return 'query';
+          if (
+            /[/\\](i18next|react-i18next|i18next-browser-languagedetector|sonner|decimal\.js|lucide-react)[/\\]/.test(
+              id,
+            )
+          ) {
+            return 'vendor';
+          }
+          return undefined;
         },
       },
     },

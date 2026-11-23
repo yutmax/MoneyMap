@@ -1,6 +1,17 @@
+import { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router';
 import { isOnboarded, useMe } from '@/entities/user';
-import { OnboardingModal } from '@/features/onboarding';
+
+/**
+ * Окно настройки грузится отдельным файлом и только тому, кому оно нужно.
+ *
+ * Его видит новый человек один раз в жизни, а форма в нём тянет за собой
+ * react-hook-form и схемы zod — вместе больше сотни килобайт. Встроенное в
+ * каркас, оно ехало бы при каждом открытии приложения всем остальным.
+ */
+const OnboardingModal = lazy(async () => ({
+  default: (await import('@/features/onboarding')).OnboardingModal,
+}));
 
 /**
  * Пускает в приложение и, если первичная настройка не пройдена, показывает
@@ -18,7 +29,13 @@ export function OnboardingGate() {
   return (
     <>
       <Outlet />
-      {user && !isOnboarded(user) && <OnboardingModal name={user.name} />}
+      {user && !isOnboarded(user) && (
+        // Своя граница с пустой заглушкой: пока файл окна едет, страница
+        // под ним остаётся на месте, а не сменяется спиннером.
+        <Suspense fallback={null}>
+          <OnboardingModal name={user.name} />
+        </Suspense>
+      )}
     </>
   );
 }

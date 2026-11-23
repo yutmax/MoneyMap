@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useNotifications } from '@/entities/reconciliation';
 import { useMe } from '@/entities/user';
@@ -6,7 +7,7 @@ import { ThemeToggle } from '@/features/theme-switch';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
-import { Icon, Logo, type IconName } from '@/shared/ui';
+import { Icon, Logo, PageFallback, type IconName } from '@/shared/ui';
 import styles from './AppShell.module.scss';
 
 /**
@@ -152,7 +153,12 @@ export function AppShell() {
         </header>
 
         <main className={styles.main}>
-          <Outlet />
+          {/* Граница загрузки — вокруг страницы, а не всего каркаса: пока
+              раздел подгружается, панель и шапка остаются на месте, и
+              переход не выглядит перезагрузкой. */}
+          <Suspense fallback={<PageFallback />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
 

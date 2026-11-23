@@ -9,6 +9,7 @@ export { Icon } from './Icon/Icon.tsx';
 export { Logo } from './Logo/Logo.tsx';
 export { ICONS, isIconName, type IconName } from './Icon/icons.ts';
 export { Modal } from './Modal/Modal.tsx';
+export { PageFallback } from './PageFallback/PageFallback.tsx';
 export { PasswordInput } from './PasswordInput/PasswordInput.tsx';
 export { SectionTabs, type SectionTab } from './SectionTabs/SectionTabs.tsx';
 export { Select } from './Select/Select.tsx';
