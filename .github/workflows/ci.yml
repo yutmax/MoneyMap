@@ -130,6 +130,7 @@ jobs:
           ssh -i ~/.ssh/id_deploy "$USER@$HOST" 'mkdir -p /opt/moneymap/apps/web'
           scp -i ~/.ssh/id_deploy compose.prod.yml Caddyfile "$USER@$HOST:/opt/moneymap/"
           scp -i ~/.ssh/id_deploy scripts/deploy.sh "$USER@$HOST:/opt/moneymap/deploy.sh"
+          scp -i ~/.ssh/id_deploy scripts/backup.sh "$USER@$HOST:/opt/moneymap/backup.sh"
           # Статика заменяется целиком: старые ассеты с прошлыми хешами
           # в имени иначе накапливались бы без предела.
           rsync -az --delete -e "ssh -i ~/.ssh/id_deploy" \

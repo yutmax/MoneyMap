@@ -69,6 +69,35 @@ services:
       postgres:
         condition: service_healthy
 
+  # Ежедневный бэкап базы (§10.2): дамп раз в сутки в ./backups/daily на
+  # хосте, хранятся 14 последних. Тот же образ, что у postgres, — pg_dump
+  # обязан быть той же версии, что сервер. Сценарий — scripts/backup.sh,
+  # на сервер его кладёт деплой рядом с этим файлом.
+  #
+  # Это защита от ошибки и порчи данных, но не от потери самого сервера:
+  # дампы лежат на том же диске. Копия наружу — следующий шаг, когда будет
+  # выбрано хранилище (§13).
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    entrypoint: ['sh', '/backup.sh']
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-moneymap}
+      BACKUP_DIR: /backups/daily
+      # Час по UTC, после которого снимается дамп дня: 3 UTC — 6 утра по
+      # Москве, когда приложением почти никто не пользуется.
+      BACKUP_HOUR: ${BACKUP_HOUR:-3}
+      BACKUP_KEEP: ${BACKUP_KEEP:-14}
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ./backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped

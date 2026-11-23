@@ -1,45 +1,45 @@
 # MoneyMap
 
-Личный финансовый учёт с поддержкой нескольких счетов в разных фиатных и криптовалютах.
-Техническое задание — [docs/SPEC.md](docs/SPEC.md), система стилей — [docs/styles.md](docs/styles.md).
+Personal finance tracking across several accounts in different fiat and crypto currencies.
+Specification — [docs/SPEC.md](docs/SPEC.md), styling system — [docs/styles.md](docs/styles.md).
 
-Текущее состояние: **Фаза 0** — каркас монорепо и аутентификация с сессиями.
+Current state: **phases 0–5 are done** and running in production. Phase 6 (polish) is in progress — see [What's missing](#whats-missing).
 
-## Стек
+## Stack
 
-| Слой                | Выбор                                                                |
-| ------------------- | -------------------------------------------------------------------- |
-| Монорепо            | pnpm workspaces                                                      |
-| API                 | Fastify 5 + Drizzle ORM + PostgreSQL 17                              |
-| Фронтенд            | Vite 6 + React 19 + TypeScript + SCSS Modules                        |
-| Серверное состояние | TanStack Query                                                       |
-| Формы               | React Hook Form + zod                                                |
-| Общий код           | `packages/shared` — zod-схемы и денежная арифметика для обеих сторон |
+| Layer        | Choice                                                                  |
+| ------------ | ----------------------------------------------------------------------- |
+| Monorepo     | pnpm workspaces                                                         |
+| API          | Fastify 5 + Drizzle ORM + PostgreSQL 17                                 |
+| Frontend     | Vite 6 + React 19 + TypeScript + SCSS Modules                           |
+| Server state | TanStack Query                                                          |
+| Forms        | React Hook Form + zod                                                   |
+| Shared code  | `packages/shared` — zod schemas and money arithmetic used by both sides |
 
-## Запуск
+## Running locally
 
-Нужен Node 24 и pnpm:
+You need Node 24 and pnpm:
 
 ```bash
 corepack enable pnpm
 ```
 
-На Windows эта команда пишет в `C:\Program Files\nodejs` и требует запуска от администратора. Либо выполните её один раз в консоли с правами админа, либо поставьте pnpm напрямую: `npm i -g pnpm`.
+On Windows this command writes to `C:\Program Files\nodejs` and needs an elevated console. Either run it once as administrator, install pnpm directly with `npm i -g pnpm`, or call it as `corepack pnpm …` without enabling.
 
-Дальше:
+Then:
 
 ```bash
 pnpm install
 cp .env.example .env
 ```
 
-В `.env` нужно подставить `JWT_SECRET` — сгенерировать можно так:
+Put a `JWT_SECRET` into `.env`; one way to generate it:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 ```
 
-Поднять базу, применить миграции и залить справочник валют:
+Start the database, apply migrations and load the currency catalog:
 
 ```bash
 pnpm db:up
@@ -47,277 +47,331 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-Запустить API и фронтенд:
+Run the API and the frontend:
 
 ```bash
 pnpm dev
 ```
 
-- фронтенд — http://localhost:5173
-- API — http://localhost:5000 (проксируется через `/api`)
+- frontend — http://localhost:5173
+- API — http://localhost:5000 (proxied under `/api`)
 - pgweb — http://localhost:8081
 
-В разработке в контейнерах живёт только Postgres: API и Vite запускаются нативно, иначе на Windows деградируют HMR и отладчик.
+In development only Postgres runs in a container: the API and Vite run natively, because on Windows HMR and the debugger degrade inside containers.
 
-Письма (подтверждение email, сброс пароля) провайдеру не отправляются до фазы 6 — они печатаются в лог API вместе с рабочей ссылкой.
+Emails (email verification, password reset) are not sent through a provider yet — they are printed to the API log together with a working link.
 
-## Команды
+## Commands
 
 ```bash
-pnpm dev            # API + фронтенд
-pnpm build          # прод-сборка обоих приложений
-pnpm typecheck      # tsc по всем пакетам
+pnpm dev            # API + frontend
+pnpm build          # production build of both apps
+pnpm typecheck      # tsc across all packages
 pnpm lint           # eslint
 pnpm format         # prettier --write
 pnpm test           # vitest
 
-pnpm db:up          # поднять Postgres + pgweb
-pnpm db:down        # остановить
-pnpm db:generate    # сгенерировать миграцию из схемы Drizzle
-pnpm db:migrate     # применить миграции
-pnpm db:seed        # справочник валют
+pnpm db:up          # start Postgres + pgweb
+pnpm db:down        # stop them
+pnpm db:generate    # generate a migration from the Drizzle schema
+pnpm db:migrate     # apply migrations
+pnpm db:seed        # currency catalog
 ```
 
-## Раскладка
+## Layout
 
 ```
 apps/
   api/                  Fastify + Drizzle
-    src/db/             схема и миграции
-    src/modules/        по доменам: auth, onboarding, settings, reference
+    src/db/             schema and migrations
+    src/modules/        by domain: auth, accounts, transactions, reports, …
     src/lib/            env, errors, money, scoping, tokens, password
     src/plugins/        requireAuth, csrf
   web/                  Vite + React, Feature-Sliced Design
-    src/app/            провайдеры, роутер, гарды, глобальные стили
-    src/pages/          экраны маршрутов, только композиция
-    src/widgets/        составные блоки: шапка приложения, карточка авторизации
-    src/features/       действия: вход, регистрация, онбординг, смена пароля
-    src/entities/       сущности: user, session, currency
-    src/shared/         ui-кит, http-клиент, утилиты, токены стилей
+    src/app/            providers, router, guards, global styles
+    src/pages/          route screens, composition only
+    src/widgets/        composite blocks: app shell, auth card, home widgets
+    src/features/       actions: sign-in, sign-up, onboarding, forms
+    src/entities/       entities: user, session, account, transaction, …
+    src/shared/         UI kit, HTTP client, utilities, style tokens
 packages/
-  shared/               zod-схемы и денежная арифметика
+  shared/               zod schemas, money arithmetic, i18n dictionaries
 ```
 
-Фронтенд разложен по Feature-Sliced Design: слой импортирует только то, что лежит строго ниже него (`app → pages → widgets → features → entities → shared`), к соседнему слайсу обращается через его `index.ts`. Направление импортов проверяет `pnpm lint` — правило в `eslint.config.js`, а не договорённость на словах.
+The frontend follows Feature-Sliced Design: a layer imports only from layers strictly below it (`app → pages → widgets → features → entities → shared`) and reaches a neighbouring slice only through its `index.ts`. `pnpm lint` enforces the import direction — it's a rule in `eslint.config.js`, not a verbal agreement.
 
-`packages/shared` — ключевой элемент: схема валидации объявляется один раз, API проверяет ею входящие запросы, фронтенд — поля формы, типы на обеих сторонах выводятся автоматически.
+`packages/shared` is the key piece: a validation schema is declared once, the API validates incoming requests with it, the frontend validates form fields with it, and types on both sides are inferred from it.
 
-## Что сделано в фазе 0
+## Phase 0
 
-- Монорепо, TypeScript в strict, ESLint, Prettier, CI.
-- Схема `users`, `sessions`, `refresh_tokens`, `user_tokens`, `currencies` + миграции.
-- Регистрация (имя, email, пароль), вход, refresh с ротацией и детекцией переиспользования токена, выход, выход со всех устройств.
-- Первичная настройка после первого входа: базовая валюта и таймзона — модальным окном поверх главной страницы, без возможности пропустить. Таймзона выбирается из списка с городами и смещениями, а не вводится текстом.
-- Список активных устройств с отзывом конкретной сессии (`/sessions`). Рядом с адресом — город и страна: голый IP не отвечает на вопрос «это точно я?», потому что своих адресов человек не помнит. Место определяется при входе и складывается в сессию, а не запрашивается при каждом открытии списка; меняется адрес — прежнее место стирается сразу, не дожидаясь нового. Выключается через `GEOIP_LOOKUP`.
-- Смена пароля, сброс пароля по email-токену, подтверждение email.
-- argon2id, проверка пароля по базе утечек через k-anonymity, защита от перечисления пользователей, CSRF, rate limiting.
-- Денежная арифметика на decimal.js с тестами на границы `NUMERIC(38,18)`.
-- Прод-`Dockerfile`, `compose.prod.yml`, `Caddyfile`.
+- Monorepo, TypeScript in strict mode, ESLint, Prettier, CI.
+- Schema for `users`, `sessions`, `refresh_tokens`, `user_tokens`, `currencies` + migrations.
+- Sign-up (name, email, password), sign-in, refresh with rotation and reuse detection, sign-out, sign-out everywhere.
+- First-run setup after the first sign-in: base currency and time zone, in a modal over the home page that can't be skipped. The time zone is picked from a list with cities and offsets rather than typed.
+- Active devices list with per-session revocation (`/sessions`). Next to the address there's a city and a country: a bare IP doesn't answer "is this really me?", because nobody remembers their own addresses. The location is resolved at sign-in and stored with the session rather than looked up every time the list opens; when the address changes, the old location is cleared immediately. Can be turned off with `GEOIP_LOOKUP`. Each device shows its OS logo (Windows, Apple, Android, Linux, ChromeOS).
+- Password change, password reset via an email token, email verification.
+- argon2id, password check against breach data via k-anonymity, protection against user enumeration, CSRF, rate limiting.
+- Money arithmetic on decimal.js with tests at the `NUMERIC(38,18)` boundaries.
+- Production `Dockerfile`, `compose.prod.yml`, `Caddyfile`.
 
-## Фаза 1
+## Phase 1
 
-Счета готовы: CRUD, баланс, архив.
+Accounts: CRUD, balance, archive.
 
-Баланс считается в том же запросе, что и список — начальный остаток плюс сумма операций по счёту. `amount_account` хранится со знаком, поэтому это обычная сумма по колонке, без `case`.
+The balance is computed in the same query as the list — the opening balance plus the sum of the account's transactions. `amount_account` is stored signed, so it's a plain column sum with no `case`.
 
-Валюта счёта задаётся при создании и дальше не меняется: `updateAccountSchema` её просто не содержит, поэтому поле в теле запроса молча отбрасывается. Сменить её задним числом — значит оставить историю операций, посчитанную в одних единицах, под заголовком с другими.
+An account's currency is set at creation and never changes: `updateAccountSchema` simply doesn't contain it, so the field is silently dropped from the request body. Changing it retroactively would leave a history computed in one unit under a heading in another.
 
-Счёт с операциями не удаляется даже мягко — он назван в каждой своей операции. Для таких есть архив, и API отвечает 409 с этим указанием; кнопка удаления в интерфейсе показывается только там, где удаление возможно.
+Any account can be deleted, archived or not. Deleting one with history takes its transactions with it (and both legs of every transfer it took part in, as deleting a single transfer does), its recurring rules and its budget — all soft and in one database transaction. The account dialog says what will go before it deletes. Archiving remains the way to hide an account and keep its history.
 
-Категории — два уровня, доходы и расходы отдельными деревьями. Вид категории не меняется после создания: категория расходов, ставшая категорией доходов, переписала бы знак у всей своей истории.
+Categories are a fixed catalog defined in code, not user data: they can't be created, renamed or deleted, and their names follow the interface language. Income and expense categories are separate lists.
 
-Удаление ничего не теряет. Операции переезжают в выбранную категорию или остаются без категории, вложенные поднимаются на верхний уровень, и API возвращает, сколько всего переехало — действие, молча перестроившее дерево, выглядит потерей данных.
+Transactions are income, expense and transfer. The sign is derived from the kind on the server: if the client sent it, an expense with a positive amount would increase the balance, and the mistake would only surface at reconciliation.
 
-Стартовый набор из пятнадцати категорий заводится при первичной настройке на языке запроса. Дальше это обычные пользовательские записи: переименовываются, удаляются, и смена языка интерфейса их не трогает.
+A transfer is two transactions sharing a `transfer_group_id`, inserted in one database transaction: a transfer whose debit happened but whose credit didn't is missing money. A leg can't be edited or deleted on its own. For accounts in different currencies the person enters both amounts and the cross rate is derived from them.
 
-Операции — доход, расход и перевод. Знак выводится из вида на сервере: если бы его присылал клиент, расход с положительной суммой увеличивал бы баланс, и ошибка нашлась бы только при сверке остатков.
+Retrying a request doesn't create a duplicate: `POST /transactions` accepts an `Idempotency-Key`, the key lives as long as the open form, and a second click returns the transaction already created.
 
-Перевод — две транзакции с общим `transfer_group_id`, вставленные одной транзакцией БД: перевод, у которого списание произошло, а зачисление нет, — это пропавшие деньги. Ногу нельзя править и нельзя удалить поодиночке. Для счетов в разных валютах человек вводит обе суммы, и кросс-курс выводится из них — выдумывать курс до фазы 2 приложение не станет.
+The list uses cursor pagination over `(occurred_on DESC, id DESC)`. The cursor keeps both parts: the date alone can't tell two transactions on the same day apart, and `OFFSET` drifts as soon as a backdated transaction is added between page requests.
 
-Повтор запроса не создаёт дубль: `POST /transactions` принимает `Idempotency-Key`, ключ живёт столько же, сколько открытая форма, и второе нажатие возвращает уже созданную операцию.
+## Phase 2
 
-Список — курсорная пагинация по `(occurred_on DESC, id DESC)`. Курсор хранит обе части: по одной дате не отличить две операции одного дня, а `OFFSET` съезжает, стоит добавить операцию задним числом между запросами страниц.
+Exchange rates live in `exchange_rates` against a single pivot currency — the euro. Cross rates are derived by division, because a full matrix of three hundred currencies would cost a hundred thousand rows a day for values that are fully recoverable from those three hundred.
 
-## Фаза 2
+The source from the spec didn't work out. The ECB knows 29 currencies, and none of them is the Belarusian rouble, the hryvnia, the tenge or the lari — exactly the ones this app is multi-currency for; exchangerate.host has since gone behind a key. Fiat comes from `@fawazahmed0/currency-api` (served from a CDN, no keys, with history by date), crypto from CoinGecko as the spec asked: it also has Toncoin, which the first source lacks. Sources are queried in turn and each one only gets the currencies not found yet, so one source failing costs its own currencies, not the whole load.
 
-Курсы валют лежат в `exchange_rates` с одной опорной валютой — евро. Кросс-курс выводится делением, потому что полная матрица из трёх сотен валют стоила бы сто тысяч строк в сутки ради значений, которые из этих трёх сотен полностью восстанавливаются.
+A missing rate blocks nothing. The nearest rate not later than the date is used, and if history doesn't reach that far — the earliest known one; both are marked stale and the client sees their real date. Currencies with no rate at all are left out of the total and listed separately: showing an incomplete total as complete is worse than saying one currency wasn't counted. Historical rates are never overwritten — only today's rate is updated until the day ends.
 
-Источник из спеки не подошёл. ECB знает 29 валют, и среди них нет ни белорусского рубля, ни гривны, ни тенге, ни лари — то есть ровно тех, ради которых приложение и мультивалютное; exchangerate.host с тех пор закрылся за ключ. Фиат берётся из `@fawazahmed0/currency-api` (раздаётся с CDN, без ключей, с историей по датам), крипта — из CoinGecko, как спека и просила: там же лежит Toncoin, которого в первом источнике нет. Источники опрашиваются по очереди, каждому достаются только ненайденные валюты, поэтому падение одного стоит его валют, а не всей загрузки.
+The combined balance is computed in the base currency and can be switched to any other right on the home page. Data doesn't change: accounts stay in their currencies, only the total is recalculated. The chart is built from `net_worth_snapshots` — daily snapshots rather than recomputing the whole history on every page open; a snapshot stores the currency it was computed in, so changing the base currency doesn't rewrite history.
 
-Отсутствие курса ничего не блокирует. Берётся ближайший курс не позже даты, а если история так далеко не достаёт — самый ранний известный; оба помечены как неактуальные, и клиенту видна их настоящая дата. Валюты, курса которых нет вовсе, в итог не входят и перечисляются отдельно: показать неполный итог полным хуже, чем сказать, что одна валюта не посчитана. Исторические курсы не перезаписываются — обновляется только сегодняшний, пока сутки не кончились.
+A transaction can be entered in a foreign currency: a card in roubles, a receipt in złoty. The debited amount is optional — without it the rate for the transaction date is used — but a reference rate and the bank's rate are different numbers, and there's a field for the latter. The rate is fixed in the transaction and isn't recalculated when the amount is edited.
 
-Сводный баланс считается в базовой валюте и переключается на любую другую прямо на главной. Данные при этом не меняются: счета остаются в своих валютах, пересчитывается только итог. График строится по `net_worth_snapshots` — ежедневным снимкам, а не пересчётом всей истории на каждое открытие страницы; снимок хранит валюту, в которой посчитан, поэтому смена базовой валюты не переписывает историю задним числом.
+Background jobs run on pg-boss on the same Postgres: the daily rate load and the daily snapshot. An in-process schedule would mean a job lost on every restart and two jobs at once as soon as there are two processes. The worker lives inside the API process — on a single-core server a separate container for two jobs a day costs more than it gives.
 
-Операцию можно ввести в чужой валюте: карта в рублях, чек в злотых. Сумма списания необязательна — без неё работает курс на дату операции, но справочный курс и курс банка это разные числа, и поле для второго есть. Курс фиксируется в операции и при правке суммы не пересчитывается.
+By hand: `pnpm --filter @moneymap/api db:rates --days 30` and `db:snapshots --days 30` fill in history from before the app was installed.
 
-Фоновые задачи — pg-boss на том же Postgres: ежедневная загрузка курсов и ежедневный снимок. Расписание в памяти процесса означало бы задачу, пропущенную при каждом рестарте, и две задачи сразу, когда процессов станет два. Воркер живёт в процессе API — на одноядерном сервере отдельный контейнер ради двух задач в сутки стоит дороже, чем даёт.
+## What's missing
 
-Руками: `pnpm --filter @moneymap/api db:rates --days 30` и `db:snapshots --days 30` — наполнить историю, которой до установки приложения не было.
+Phase 6 (polish) from the spec:
 
-## Чего ещё нет
+- **Sending email.** The mailer is a stub: in production it logs an error instead of sending, so verification and password-reset emails don't go out. Waiting on a sending mailbox or an own domain.
+- **Off-server backups.** Daily dumps are kept on the server itself for now (see [Backups](#backups)).
+- **Automated integration tests** on a real Postgres and an end-to-end test; everything below that isn't unit-tested was checked by hand.
+- **Full data export** to CSV and JSON (only the report export exists).
+- **Two-factor authentication.**
+- **Email reminders** and storing each user's language for emails.
 
-Фазы 0–5 закрыты. По спеке остаётся фаза 6 — доводка: отправка писем через настоящий SMTP, интеграционные тесты на реальном Postgres, бэкапы наружу. Из инфраструктуры: отправка email (фаза 6), интеграционные тесты на реальном Postgres, бэкапы наружу (пока только на сервере). Библиотека графиков не выбрана — на главной линия нарисована вручную, настоящие графики с осями начинаются в отчётах.
+## Installing on a phone
 
-## Установка на телефон
+The icon is drawn once in `apps/web/scripts/icons.mjs` — a single source for all variants: an M monogram in one stroke on a lime plate. The script writes `favicon.svg` (rounded square) and `icon-maskable.svg` (full bleed, with the letter inside Android's "safe circle" that no mask will crop) and packs `favicon.ico`. The PNGs next to them are committed: they're rendered from those SVGs by a browser (headless Edge or a canvas), to avoid adding a rasteriser to the project for images that change once in a lifetime.
 
-Рисунок иконки живёт в `apps/web/scripts/icons.mjs` — одним исходником на все варианты. Скрипт пишет `favicon.svg` (скруглённый квадрат) и `icon-maskable.svg` (во всю площадь, метка внутри «безопасного круга», который не срежет маска Android) и упаковывает `favicon.ico`. PNG рядом лежат в git: они сделаны отрисовкой этих SVG в canvas браузера, чтобы не тащить в проект растеризатор ради картинок, которые меняются раз в жизни.
+`manifest.webmanifest` with `display: standalone` and `apple-mobile-web-app-capable` in the markup make "Add to Home Screen" produce an app with its own icon rather than a shortcut with the address bar and browser buttons. iOS takes the icon only from `apple-touch-icon` and only as PNG, and keeps it from the moment it was added — a new icon appears only after removing the app and adding it again. Android takes it from the manifest, separately for normal display and for the mask.
 
-`manifest.webmanifest` с `display: standalone` и `apple-mobile-web-app-capable` в разметке — чтобы «добавить на главный экран» давало приложение со своей иконкой, а не ярлык с адресной строкой и кнопками браузера. iOS берёт иконку только из `apple-touch-icon` и только PNG; Android — из манифеста, причём отдельно для обычного показа и для маски.
+`public/sw.js` caches nothing. Chrome needs it: a site without a service worker with a `fetch` handler isn't considered installable, and "Add to Home Screen" creates a shortcut. Caching an app that holds financial records is a separate decision with its own cost, and not one to make alongside an icon.
 
-`public/sw.js` ничего не кеширует. Он нужен Chrome: сайт без service worker с обработчиком `fetch` не считается устанавливаемым, и «добавить на главный экран» создаёт ярлык. Кеш приложения, где лежит учёт денег, — отдельное решение с отдельной ценой, и принимать его заодно с иконкой не стоит.
+All of this works only over a secure connection, which is why the app moved from a bare IP to a name with a Let's Encrypt certificate (see [Certificate](#certificate)). On an IP with a self-signed certificate the browser doesn't register the service worker and doesn't offer installation.
 
-Всё это работает только на защищённом соединении, поэтому приложение и переехало с голого IP на имя с сертификатом Let's Encrypt (см. «Сертификат» в разделе про деплой). По IP с самоподписанным сертификатом браузер не регистрирует service worker и установку не предлагает.
+## Deployment
 
-## Деплой
+Push to `master` → CI (format, lint, types, tests, build) → API image in GHCR → **waits for approval** → rollout to the server. Approval is configured through the GitHub Environment `production`: nothing reaches the server without a click.
 
-Пуш в `master` → CI (формат, линтер, типы, тесты, сборка) → образ API в GHCR → **ожидание подтверждения** → выкат на сервер. Подтверждение настроено через GitHub Environment `production`: без клика на сервер ничего не уезжает.
+There's deliberately no `prod` branch. The project has one developer, nobody merges into `master` in parallel, and a second branch would be a manual switch dressed as a branch — at risk of falling behind and turning "what's in production" into an investigation. If named releases are needed, tags are better: a tag is immutable, and a rollback is "deploy `v0.1.0`".
 
-Отдельной ветки `prod` нет сознательно. В проекте один разработчик, в `master` никто не вливает параллельно, и вторая ветка была бы ручным рубильником, переодетым в ветку, — с риском отстать и превратить вопрос «что сейчас на проде» в раскопки. Если понадобятся именованные релизы, лучше теги: тег неизменяем, и откат — это «разверни `v0.1.0`».
+### Port 8443, not 443
 
-### Порт 8443, а не 443
+On the server, 443 is taken by OpenVPN (`proto tcp`), and that's on purpose — the VPN is there to get around blocking. So the app lives on 8443 and 443 isn't touched at all: no sslh, no `port-share`, no risk of breaking working access.
 
-На сервере 443 занят OpenVPN (`proto tcp`), и это не случайность — VPN там стоит ради обхода блокировок. Поэтому приложение живёт на 8443, а 443 не трогаем вовсе: ни sslh, ни `port-share`, ни риска задеть рабочий доступ.
+Two consequences:
 
-Два следствия:
+- **The port stays in the address.** Caddy listens on 80 and redirects to HTTPS, so the bare address still gets you where you need to go, but the browser shows `:8443`.
+- **HSTS is off, and must be.** The header is remembered per host name and knows nothing about ports: after the first visit the browser would rewrite `http://host` to `https://host`, i.e. to 443, where the VPN is. Turn it back on only together with a move to 443 — there's a comment at that spot in the `Caddyfile`.
 
-- **Порт остаётся в адресе.** Caddy слушает 80 и редиректит на HTTPS, так что по голому адресу всё равно попадаешь куда надо, но в строке браузера будет `:8443`.
-- **HSTS выключен, и это обязательно.** Заголовок запоминается на имя хоста и ничего не знает про порт: после первого визита браузер переписал бы `http://хост` в `https://хост`, то есть в 443, где стоит VPN. Включать обратно только вместе с переездом на 443 — в `Caddyfile` на этом месте стоит комментарий.
+### Certificate
 
-### Сертификат
+The app answers on `77-239-97-120.nip.io` — not a domain of ours but a service that resolves "IP with dashes" to that IP. It's needed because a bare IP can only have a self-signed certificate, and with one the browser treats the site as insecure: it doesn't register the service worker or offer installation. With a name, Caddy gets a normal Let's Encrypt certificate via HTTP-01 over the free port 80 — TLS-ALPN doesn't work here, it requires 443.
 
-Приложение отвечает на `77-239-97-120.nip.io` — это не домен, а сервис, который резолвит «IP с дефисами» в сам этот IP. Нужен он затем, что на голый IP сертификат бывает только самоподписанный, а с ним браузер считает сайт незащищённым: не регистрирует service worker и не предлагает установку на домашний экран. С именем Caddy берёт обычный сертификат Let's Encrypt по HTTP-01 через свободный порт 80 — TLS-ALPN для этого не годится, он требует именно 443.
+The cost: `nip.io` isn't on the [Public Suffix List](https://publicsuffix.org/), so for Let's Encrypt all its subdomains are one "registered domain" with a shared limit of 50 certificates a week across all users of the service. Issuance went through on the first try, but a renewal may hit someone else's traffic. If it does, the fix is switching to a PSL subdomain (`duckdns.org`, `freemyip.com`) or a real domain; four lines change in `/opt/moneymap/.env`, and Caddy does the rest.
 
-Цена решения: `nip.io` нет в [Public Suffix List](https://publicsuffix.org/), поэтому для Let's Encrypt все его поддомены — один «зарегистрированный домен» с общим лимитом в 50 сертификатов в неделю на всех пользователей сервиса. Сегодня выпуск прошёл с первой попытки, но продление может упереться в чужой трафик. Если упрётся — лечится сменой имени на поддомен из PSL (`duckdns.org`, `freemyip.com`) или настоящим доменом; меняются четыре строки в `/opt/moneymap/.env`, остальное Caddy сделает сам.
+### What a rollout does
 
-### Что делает выкат
+[`scripts/deploy.sh`](scripts/deploy.sh), step by step:
 
-[`scripts/deploy.sh`](scripts/deploy.sh), по шагам:
+1. Dumps the database to `/opt/moneymap/backups` — **before** migrations; the last 10 are kept.
+2. Pulls the image by commit tag.
+3. Runs migrations as a separate step, before the new API starts (§10.2).
+4. Starts `api` and `caddy`, then the daily backup container (see below).
+5. Waits for `healthy` from Docker itself — the `HEALTHCHECK` is defined in the image.
+6. If migrations failed or the container didn't become healthy, rolls back to the previous image tag.
 
-1. Дамп базы в `/opt/moneymap/backups` — **до** миграций, хранятся последние 10.
-2. Загрузка образа по тегу коммита.
-3. Миграции отдельным шагом, до старта нового API (§10.2).
-4. Запуск `api` и `caddy`.
-5. Ожидание `healthy` от самого Docker — `HEALTHCHECK` уже описан в образе.
-6. Если миграции упали или контейнер не стал здоровым — откат на предыдущий тег образа.
+The frontend is built in CI and arrives ready: the server has one core, and a Vite build would take it from the running app. For the same reason the API image is built in CI, not on the server.
 
-Фронтенд собирается в CI и приезжает готовым: на сервере одно ядро, и сборка Vite отняла бы его у работающего приложения. По той же причине образ API собирается в CI, а не на сервере.
+The script lives in the repository rather than inside the YAML, because a deployment is something you want to read in full before it touches the production database, and something you sometimes need to run by hand.
 
-Скрипт лежит в репозитории, а не внутри YAML, потому что деплой — это то, что хочется прочитать целиком перед тем, как он тронет боевую базу, и то, что иногда нужно запустить руками.
+### Backups
 
-### Разовая настройка
+Two kinds of dumps, both in `/opt/moneymap/backups` on the server:
 
-На сервере уже сделано: каталог `/opt/moneymap`, `.env` с секретами (права 600), отдельный SSH-ключ для CI с опцией `restrict`, порты 80 и 8443 в ufw, установлен rsync.
+| When           | Where                    | Kept    | Taken by                                                         |
+| -------------- | ------------------------ | ------- | ---------------------------------------------------------------- |
+| Before deploys | `backups/*.sql.gz`       | last 10 | [`scripts/deploy.sh`](scripts/deploy.sh)                         |
+| Once a day     | `backups/daily/*.sql.gz` | last 14 | the `backup` container, [`scripts/backup.sh`](scripts/backup.sh) |
 
-В GitHub нужно добавить (Settings → Secrets and variables → Actions):
+The daily dump is taken after 03:00 UTC (06:00 Moscow time). The container checks every ten minutes whether there's already a dump for today, so a restart or downtime at the scheduled hour doesn't lose the backup — it's taken at the first check afterwards. The hour and the number of dumps kept are set with `BACKUP_HOUR` and `BACKUP_KEEP` in `.env`.
 
-| Секрет               | Значение                |
-| -------------------- | ----------------------- |
-| `DEPLOY_HOST`        | адрес сервера           |
-| `DEPLOY_USER`        | `root`                  |
-| `DEPLOY_SSH_KEY`     | приватный ключ целиком  |
-| `DEPLOY_KNOWN_HOSTS` | строка из `ssh-keyscan` |
+A file appears under its real name only when complete: the dump is written to a temporary file, the archive is verified along with the line `pg_dump` writes only at the end of a finished dump, and only then is it renamed. A failed dump leaves a log entry and nothing on disk.
 
-И Environment `production` с обязательным ревьюером — это и есть кнопка подтверждения.
+A one-off backup right now (on the server, from `/opt/moneymap`):
 
-Отпечаток хоста берётся из секрета, а не принимается при первом подключении: `StrictHostKeyChecking=no` принял бы и подменённый сервер, а деплой несёт туда секреты.
+```bash
+docker compose -f compose.prod.yml run --rm -e BACKUP_ONCE=1 backup
+```
 
-**Чего это стоит по безопасности.** Ключ даёт CI root на сервере, то есть тот, кто получит доступ к репозиторию, получит и сервер. Для личного проекта это обычный размен, но знать о нём стоит.
+What the backups have been doing:
 
-## Фаза 3
+```bash
+docker compose -f compose.prod.yml logs --tail 50 backup
+```
 
-Регулярные операции: подписки, аренда, зарплата. Правило — шаблон, а не расписание уже созданного: правка правила не трогает то, что оно успело создать, иначе смена цены подписки переписала бы год платежей.
+Restoring — a dump is applied over the existing database with one command: it's taken with `--clean --if-exists` and drops what it recreates. Stop `api` first so nothing writes to the database mid-restore:
 
-Генерируют двое, и спека объясняет, почему двое. Ежедневная задача pg-boss — только триггер; обязательна вторая, догоняющая генерация при входе: сервер, выключенный в три часа ночи, иначе потерял бы списание навсегда. Запускать обе безопасно — уникальность `(rule_id, due_on)` делает генерацию идемпотентной на уровне БД, а не по договорённости двух путей в коде.
+```bash
+cd /opt/moneymap && set -a && . ./.env && set +a
+docker compose -f compose.prod.yml stop api
+gunzip -c backups/daily/daily-YYYYMMDD-HHMMSS.sql.gz \
+  | docker compose -f compose.prod.yml exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1
+docker compose -f compose.prod.yml start api
+```
 
-Срабатывания живут отдельной таблицей, а не колонкой `transactions.occurrence_date` из спеки (см. «Отклонения»). Проведение идёт в порядке: строка срабатывания → операция → отметка «проведено». Обрыв посередине оставляет ожидающее срабатывание, которое доводит до конца следующий прогон; обратный порядок оставил бы списание, которого никто не делал.
+Verified locally: a dump restored into an empty database matched the source in users, accounts, transactions, sessions and the sum of all transactions.
 
-Даты считаются в таймзоне пользователя — иначе «первое число» наступает для части людей двадцать восьмого в одиннадцать вечера. Арифметика расписаний лежит в общем пакете со своими тестами: короткие месяцы, 29 февраля, правило, которое не может сработать никогда, и ежедневное правило многолетней давности, которое нельзя обходить по дню.
+**Backups stay on the server for now — a deliberate choice.** They protect against mistakes, a bad migration and corrupted data, but not against losing the server itself, since they share its disk. An off-server copy (S3-compatible storage, §10.2) is the next step once a place for it is chosen; the off-site job would just pick up the files from `backups/daily`.
 
-Дата начала в прошлом означает «правило действует с такого-то числа», а не «создай задним числом год списаний»: первое срабатывание нового правила не раньше сегодняшнего дня. Предстоящие списания считаются из правил и нигде не хранятся — их ещё не было, а строка о том, что «возможно случится», устарела бы при первой правке.
+### One-time setup
 
-## Фаза 4
+Already done on the server: the `/opt/moneymap` directory, `.env` with secrets (mode 600), a separate SSH key for CI with the `restrict` option, ports 80 and 8443 open in ufw, rsync installed.
 
-Сверка остатков — главный инструмент контроля качества учёта: человек вводит то, что показывает банк, приложение показывает расхождение со своим расчётом, и расхождение означает незафиксированную операцию.
+In GitHub (Settings → Secrets and variables → Actions):
 
-Хранятся оба числа: введённое и рассчитанное **на момент ввода**. Расчётное именно запоминается, а не пересчитывается при чтении: операция, добавленная задним числом, изменила бы расчёт и стёрла сам факт расхождения, ради которого запись и заводилась.
+| Secret               | Value                     |
+| -------------------- | ------------------------- |
+| `DEPLOY_HOST`        | server address            |
+| `DEPLOY_USER`        | `root`                    |
+| `DEPLOY_SSH_KEY`     | the whole private key     |
+| `DEPLOY_KNOWN_HOSTS` | a line from `ssh-keyscan` |
 
-Закрыть расхождение можно одним действием — обычной операцией, а не особой записью. Она и должна вести себя как обычная: попадать в ленту, в баланс и в отчёты. Расхождение означает забытую операцию, и честный способ его закрыть — завести ту операцию, пусть и без подробностей. Повторная сверка того же счёта на ту же дату переписывает запись, а не создаёт вторую: два разных ответа на вопрос «сколько было на счёте в тот день» — это не история, а противоречие.
+Plus the `production` Environment with a required reviewer — that's the approval button.
 
-Напоминание о сверке — день месяца (или «последний день»), время и каналы: уведомление в приложении, письмо. Задача ходит раз в час, а не раз в сутки: время задано в зоне пользователя, и суточный прогон попадал бы в него только у тех, чья зона совпала с серверной. Строка «захватывается» условным обновлением до того, как уйдёт письмо: два проснувшихся одновременно процесса получат один победивший UPDATE на двоих. Обратный порядок — сначала отправить, потом отметить — дублировал бы напоминание при любом обрыве, а дубль здесь хуже пропуска.
+The host fingerprint comes from a secret rather than being accepted on first connect: `StrictHostKeyChecking=no` would accept a substituted server too, and the deployment carries secrets there.
 
-Уведомления хранят только параметры; текст собирает интерфейс на своём языке. На главной они показаны списком, а не колокольчиком со счётчиком: вид пока один — напоминание раз в месяц, — и прятать его за иконкой значит сделать так, чтобы его не увидели.
+**What this costs in security.** The key gives CI root on the server, so whoever gets access to the repository gets the server too. For a personal project that's a usual trade-off, but worth knowing.
 
-## Фаза 5
+## Phase 3
 
-Отчёты отвечают на четыре вопроса за период: сколько пришло и ушло, куда ушло, в каких валютах и какие операции были крупными. Суммы приводятся к одной валюте по курсу **на дату операции**: расход в злотых прошлой весной стоил столько, сколько стоил тогда, и переоценивать его сегодняшним курсом значит незаметно переписать закрытый месяц.
+Recurring transactions: subscriptions, rent, salary. A rule is a template, not a schedule of what it already created: editing a rule doesn't touch what it produced, otherwise a subscription price change would rewrite a year of payments.
 
-### Почему графики нарисованы руками
+Two things generate, and the spec explains why two. The daily pg-boss job is only a trigger; the second one, catch-up generation on sign-in, is required: a server that was off at three in the morning would otherwise lose a charge forever. Running both is safe — uniqueness of `(rule_id, due_on)` makes generation idempotent at the database level, not by agreement between two code paths.
 
-Recharts — очевидный ответ, и он весит в сжатом виде примерно столько же, сколько всё это приложение. Здесь три формы, и формы — дешёвая часть графика; библиотека на самом деле продаёт оси, деления и подсказки, а они заняли около двухсот строк. Решает довод про темы: наши цвета — CSS-переменные с отдельно подобранными светлыми и тёмными шагами, а библиотека хочет hex-пропсы, и каждое переключение темы пришлось бы протаскивать через React вместо каскада.
+Occurrences live in their own table rather than in a `transactions.occurrence_date` column from the spec (see [Deviations](#deviations-from-the-spec)). Posting goes in this order: occurrence row → transaction → "posted" mark. A break in the middle leaves a pending occurrence that the next run finishes; the reverse order would leave a charge nobody made.
 
-Форма выбрана по задаче данных, поэтому круговых диаграмм нет нигде. Расходы по категориям — горизонтальные полосы: длину глаз сравнивает точно, площадь сектора — нет, а длинным названиям категорий горизонталь нужна и так. Структура по валютам — одна полоса с легендой. Кэшфлоу — сгруппированные столбцы на одной общей шкале: вторая ось превратила бы сравнение в игру с масштабом. Итоговые числа — плитки, а не графики из одного столбца.
+Dates are computed in the user's time zone — otherwise "the first of the month" arrives for some people on the 28th at eleven at night. Schedule arithmetic lives in the shared package with its own tests: short months, February 29, a rule that can never fire, and a years-old daily rule that must not be walked day by day.
 
-Палитра серий проверена, а не подобрана на глаз: и светлые, и тёмные шаги проходят проверку на полосу светлоты, насыщенность, различимость соседних пар при дальтонизме и контраст с нашими поверхностями. У тёмной темы свои шаги, а не осветлённые светлые. У каждой полосы подписано значение, поэтому цвет нигде не остаётся единственным носителем смысла.
+A start date in the past means "the rule applies from that date", not "backfill a year of charges": a new rule's first occurrence is never before today. Upcoming charges are computed from rules and stored nowhere — they haven't happened yet, and a row about what "might happen" would be stale after the first edit.
 
-### Бюджеты
+## Phase 4
 
-Лимит на категорию постоянный, месяц входит в расчёт, а не в хранение: «на продукты шестьсот» — решение, а не ежемесячная работа. Перенос неизрасходованного берётся только из месяца, в котором лимит уже существовал, и только на один месяц назад: ноль, потраченный до появления лимита, — это не сэкономленные деньги, а сумма остатков за год — уже не бюджет, а второй счёт.
+Balance reconciliation is the main quality check for the books: the person enters what the bank shows, the app shows the difference from its own calculation, and a difference means a transaction that wasn't recorded.
 
-### Импорт и экспорт
+Both numbers are stored: the entered one and the computed one **at the time of entry**. The computed value is remembered rather than recalculated on read: a backdated transaction would change the calculation and erase the very discrepancy the record was made for.
 
-Выгрузка — те же строки, что и в отчёте. Поля, начинающиеся с `=`, `+` или `@`, получают апостроф, чтобы таблица не исполнила чужое примечание как формулу; числа из этого правила исключены, иначе каждая отрицательная сумма приезжала бы текстом.
+A discrepancy can be closed in one action — with an ordinary transaction, not a special record. It should behave like an ordinary one: show up in the feed, the balance and the reports. A discrepancy means a forgotten transaction, and the honest way to close it is to record that transaction, even without details. Reconciling the same account on the same date again overwrites the record rather than adding a second one: two answers to "how much was on the account that day" isn't history, it's a contradiction.
 
-Импорт читает выписку: разделитель и формат даты определяются сами, сопоставление колонок предлагается по заголовкам и правится человеком до записи. Повторный импорт того же файла ничего не удваивает — у строки считается отпечаток от счёта, даты, суммы и описания, и защищает от дубля уникальный индекс, а не сравнение в приложении. Разбор CSV свой: формат описан в RFC 4180 на полторы страницы, и нужная его часть уместилась в тридцать строк.
+The reconciliation reminder is a day of the month (or "the last day"), a time and channels: an in-app notification, an email. The job runs hourly rather than daily: the time is in the user's zone, and a daily run would only hit it for people whose zone matches the server's. A row is "claimed" with a conditional update before the email goes out: two processes waking up at once get one winning UPDATE between them. The reverse order — send first, mark later — would duplicate the reminder on any interruption, and a duplicate is worse than a miss here.
 
-## Иконки
+Notifications store only parameters; the interface builds the text in its own language. They're behind the bell in the header, with an unread counter.
 
-[lucide](https://lucide.dev) — поддерживаемый форк Feather, в стиле которого интерфейс уже был нарисован, поэтому переход со своих SVG ничего не изменил визуально.
+## Phase 5
 
-Проект знает про библиотеку в одном файле — `apps/web/src/shared/ui/Icon/icons.ts`. Там явная карта «наше имя → компонент», а компоненты пишут `<Icon name="eye" />`.
+Reports answer four questions for a period: how much came in and went out, where it went, in which currencies, and which transactions were large. Amounts are converted to one currency at the rate **on the transaction date**: an expense in złoty last spring cost what it cost then, and revaluing it at today's rate would quietly rewrite a closed month.
 
-Карта явная, а не `import * as icons`, по двум причинам. В бандл попадает только перечисленное: пять иконок и рантайм lucide стоят 6,7 КБ (1,9 КБ в gzip) против 474 КБ всего бандла. И в фазе 1 у счетов и категорий появится поле `icon` — имя иконки строкой в БД; выбирать человек будет не из 1 625 вариантов, а из этой подборки, а имя в базе останется нашим, так что переименование иконки в библиотеке чинится здесь, а не миграцией пользовательских данных.
+### Charts
 
-## Языки
+The report charts are drawn by hand — a donut, a stacked bar and grouped columns — and only the home page's balance-over-time chart uses Recharts, loaded lazily so it doesn't delay the first screen. Recharts weighs about as much as the rest of the app compressed; here the shapes are the cheap part of a chart, and the axes, ticks and tooltips took about two hundred lines. The deciding argument is theming: our colours are CSS variables with separately tuned light and dark steps, while a library wants hex props, and every theme switch would have to go through React instead of the cascade.
 
-Интерфейс на русском и английском. Переключатель языка и темы — в настройках, рядом друг с другом: это выбор, который делают один раз, и в шапке он каждый день соперничал за внимание с навигацией. Исключение — страницы входа и регистрации: там переключатели остались на виду, потому что настроек у неавторизованного человека нет, а попасть на незнакомый язык он может.
+Expenses by category and by currency are donuts: they answer "what was the month made of" at a glance, and every legend row carries its amount and percentage, so precision isn't lost. Every category gets its own segment; the first eight use palette colours and the rest a neutral grey rather than a generated ninth hue. Cash flow is grouped columns on one shared scale, showing at least the last six months: a second axis would turn comparison into a game with scale. Totals are tiles, not single-column charts.
 
-Выбор запоминается в `localStorage`, а не в профиле: это свойство устройства, а не человека — телефон в тёмной теме и рабочий компьютер в светлой обычное дело, а одно значение на аккаунт переписывало бы одно другим. При первом заходе язык берётся из браузера.
+The series palette is validated rather than picked by eye: both light and dark steps pass checks for lightness band, chroma, separation of adjacent pairs under colour blindness, and contrast against our surfaces. The dark theme has its own steps, not lightened light ones.
 
-Словари — по одному файлу на язык:
+### Budgets
+
+A budget is a monthly limit either for a category or for a whole account, and it's permanent — the month is part of the calculation, not of storage: "six hundred for groceries" is a decision, not monthly work. Unspent rollover is taken only from a month in which the limit already existed, and only one month back: zero spent before the limit existed isn't savings, and a year's worth of remainders is no longer a budget but a second account.
+
+### Import and export
+
+The export is the same rows as the report. Fields starting with `=`, `+` or `@` get an apostrophe so a spreadsheet doesn't execute someone's note as a formula; numbers are exempt from this rule, otherwise every negative amount would arrive as text.
+
+The import reads a bank statement: the delimiter and date format are detected, column mapping is suggested from headers and edited by the person before anything is written. Importing the same file again duplicates nothing — each row gets a fingerprint from account, date, amount and description, and a unique index guards against duplicates rather than a comparison in the app. CSV parsing is our own: the format is described in RFC 4180 in a page and a half, and the part we need fit in thirty lines.
+
+### Currency converter
+
+A converter for fiat and crypto in the header, next to the bell. Both fields are equal: type in either and the other is computed instantly — the pair's rate is fetched once, and multiplication happens on the client with the same `convert()` the server uses. Commas and dots are accepted in either role, and thousands are always grouped with a space, so whatever the converter prints parses back to the same number in any interface language.
+
+## Design
+
+The interface uses the "graphite" theme: a near-black background, surfaces half a step above it, almost no borders, and lime only as an accent — the primary button, the active section icon, chart lines. Lists are single surfaces with hairline rows; a row opens its item, and rare actions (edit, archive, delete) live inside that dialog. Fields are filled rather than underlined, and where the browser supports it (Chrome and Edge 135+, `appearance: base-select`) select dropdowns and checkboxes are styled too. The light theme is the same system with neutral greys and a darker accent for lines and icons.
+
+## Icons
+
+[lucide](https://lucide.dev) — a maintained fork of Feather, in whose style the interface was already drawn.
+
+The project knows about the library in one file — `apps/web/src/shared/ui/Icon/icons.ts`. It holds an explicit map "our name → component", and components write `<Icon name="eye" />`.
+
+The map is explicit rather than `import * as icons` for two reasons. Only what's listed ends up in the bundle. And category icons are stored by name in the database; the name stays ours, so a renamed icon in the library is fixed here, not with a migration of user data.
+
+OS logos on the devices page aren't in lucide (it has no brand icons). Apple, Android, Linux and Chrome paths are copied from [Simple Icons](https://simpleicons.org) (CC0) into `entities/session/lib/os-logos.ts`; Windows isn't in Simple Icons and is drawn as four squares.
+
+## Languages
+
+The interface is in Russian and English. The language and theme switches are in the profile; on the sign-in and sign-up pages they stay visible in the corner, because a signed-out person has no settings and can land on an unfamiliar language.
+
+The choice is remembered in `localStorage`, not in the profile: it's a property of the device, not the person — a phone in the dark theme and a work computer in the light one is normal, and one value per account would overwrite one with the other. On the first visit the language comes from the browser.
+
+Dictionaries — one file per language:
 
 ```
 packages/shared/src/i18n/locales/ru.json
 packages/shared/src/i18n/locales/en.json
 ```
 
-Они лежат в общем пакете, а не во фронтенде, потому что ими пользуются обе стороны: сообщения валидации рождаются в zod-схемах, и одно и то же «Минимум 8 символов» показывает и форма до отправки, и API после. Внутри приложения сообщения ходят ключами; текст появляется на сервере по `Accept-Language` и на клиенте — по выбранному языку.
+They live in the shared package rather than the frontend because both sides use them: validation messages are born in zod schemas, and the same "At least 8 characters" is shown by the form before submit and by the API after. Inside the app, messages travel as keys; the text appears on the server by `Accept-Language` and on the client by the selected language.
 
-Добавить язык — положить рядом третий JSON и дописать его код в `LOCALES`. Тест в `packages/shared` падает, если в каком-то словаре не хватает ключа, есть пустая строка или разошлись плейсхолдеры.
+To add a language, put a third JSON next to these and add its code to `LOCALES`. A test in `packages/shared` fails if a dictionary is missing a key, has an empty string or mismatched placeholders.
 
-## Отклонения от спеки
+## Deviations from the spec
 
-Зафиксированы сознательно, обсуждаемы:
+Made deliberately, open to discussion:
 
-1. **Стили написаны с нуля, а не перенесены.** §3.2 и §14 предполагали перенос `adaptiveValue`, `null.scss` и миксинов из прототипа. Вместо этого — своя система: функция `fluid()` вместо миксина `adaptiveValue`, свой reset, CSS Modules, токены в CSS-переменных, cascade layers. Причины — в [docs/styles.md](docs/styles.md).
+1. **Styles written from scratch rather than ported.** §3.2 and §14 assumed porting `adaptiveValue`, `null.scss` and mixins from the prototype. Instead there's our own system: a `fluid()` function instead of the `adaptiveValue` mixin, our own reset, CSS Modules, tokens in CSS variables, cascade layers. Reasons — in [docs/styles.md](docs/styles.md).
 
-2. **Сессии разнесены на две таблицы.** §7 описывает одну таблицу `sessions` с `refresh_token_hash` и `replaced_by`. Здесь `sessions` (устройство) и `refresh_tokens` (выданные токены) разделены: иначе «отозвать устройство» требует обхода цепочки ротаций, а список активных устройств — фильтрации её вершин. Семантика §6.3 сохранена полностью.
+2. **Sessions split into two tables.** §7 describes one `sessions` table with `refresh_token_hash` and `replaced_by`. Here `sessions` (the device) and `refresh_tokens` (issued tokens) are separate: otherwise "revoke a device" requires walking the rotation chain, and the active devices list requires filtering its heads. The semantics of §6.3 are fully preserved.
 
-3. **Добавлена таблица `user_tokens`.** §9 требует эндпоинты подтверждения email и сброса пароля, а в перечне таблиц фазы 0 их носителя нет.
+3. **A `user_tokens` table was added.** §9 requires email verification and password reset endpoints, and the phase 0 table list has nothing to carry them.
 
-4. **Регистрация сообщает о занятом email.** Требование §6.5 о неперечислимости пользователей реализовано для входа (одинаковый ответ и время отклика). На регистрации скрывать занятость адреса означало бы ломать её основной сценарий; `/forgot-password` отвечает одинаково всегда.
+4. **Sign-up reports a taken email.** The non-enumeration requirement of §6.5 is implemented for sign-in (same response and timing). Hiding that an address is taken on sign-up would break its main scenario; `/forgot-password` always answers the same.
 
-5. **У ротации refresh-токена есть окно в 10 секунд**, внутри которого повторное предъявление считается сетевым ретраем, а не кражей. Без него любой повтор запроса выбрасывал бы пользователя из аккаунта. Клиент дополнительно сериализует refresh в один поток.
+5. **Refresh-token rotation has a 10-second window** in which a repeated presentation counts as a network retry, not theft. Without it any retried request would sign the user out. The client also serialises refreshes into a single stream.
 
-6. **Онбординг вместо полей на регистрации.** §8.1 в исходной редакции спрашивал базовую валюту и таймзону прямо на форме регистрации. Они перенесены в модальное окно поверх главной страницы после первого входа, спека обновлена под это. Регистрация осталась с тремя полями: имя, email, пароль.
+6. **Onboarding instead of fields on sign-up.** §8.1 originally asked for the base currency and time zone right on the sign-up form. They moved to a modal over the home page after the first sign-in, and the spec was updated accordingly. Sign-up kept three fields: name, email, password.
 
-7. **Срабатывания регулярных правил — отдельная таблица.** §7 кладёт идемпотентность генерации на `transactions (recurring_rule_id, occurrence_date)`. Здесь для этого есть `recurring_occurrences`: у срабатывания бывают состояния, которых не бывает у операции. Ожидающее подтверждения — ещё не списание, а отклонённое должно остаться отклонённым, иначе догоняющая генерация предложит его завтра снова. Разложить запись об одном срабатывании по двум таблицам значило бы получить два ответа на вопрос «прошло ли оно».
+7. **Recurring occurrences are a separate table.** §7 puts generation idempotency on `transactions (recurring_rule_id, occurrence_date)`. Here there's `recurring_occurrences` for that: an occurrence has states a transaction doesn't. A pending one isn't a charge yet, and a declined one must stay declined, otherwise catch-up generation would offer it again tomorrow. Splitting the record of one occurrence across two tables would give two answers to "did it happen".
 
-8. **Минимальная длина пароля — 8, а не 10.** §6.5 в исходной редакции требовал десять. Восемь выбрано как нижняя граница, совместимая с проверкой по базе утечек: на шести знаках практически любой придуманный человеком пароль уже в дампах, и форма отклоняла бы почти всё, что обещала принять.
+8. **Minimum password length is 8, not 10.** §6.5 originally required ten. Eight was chosen as the lower bound compatible with the breach check: at six characters practically any password a person comes up with is already in the dumps, and the form would reject almost everything it promised to accept.
 
-## Проверено и не проверено
+9. **Categories are a fixed catalog.** The spec treated categories as user data; here the set is defined in code and identical for everyone, so names follow the interface language and there's no editing.
 
-Проходят: `typecheck`, `lint`, `format:check`, `vitest` (42 теста), прод-сборка API и фронтенда.
+## What's verified and what isn't
 
-Против живой базы (Postgres 17 в Docker) проверено вручную: регистрация, вход, ротация refresh-токена, детекция повторного использования с отзывом сессии, список устройств и отзыв, выход со всех устройств, смена и сброс пароля, подтверждение email, rate limiting, изоляция данных между пользователями, онбординг и оба гарда маршрута.
+Passing: `typecheck`, `lint`, `format:check`, `vitest` (93 tests), production build of the API and the frontend.
 
-**Не проверено:** автоматических интеграционных тестов на реальном Postgres (testcontainers) по-прежнему нет — всё перечисленное проверялось руками.
+Checked by hand against a live database (Postgres 17 in Docker): sign-up, sign-in, refresh-token rotation, reuse detection with session revocation, the devices list and revocation, sign-out everywhere, password change and reset, email verification, rate limiting, data isolation between users, onboarding and both route guards; daily backup, restore, rotation and the failure path.
+
+**Not verified:** there are still no automated integration tests on a real Postgres (testcontainers) — everything above was checked by hand.
