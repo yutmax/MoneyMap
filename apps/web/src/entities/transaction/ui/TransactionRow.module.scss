@@ -12,8 +12,10 @@
   column-gap: var(--space-xs);
   align-items: center;
   inline-size: 100%;
-  padding: var(--space-xs) var(--space-s);
+  min-block-size: rem(60);
+  padding: var(--space-2xs) var(--space-xs);
   text-align: start;
+  border-radius: var(--radius-m);
   color: inherit;
 
   @include transition(background-color);
@@ -27,22 +29,27 @@ button.row {
   }
 }
 
+// Плитка значка: цвет категории приходит переменной из разметки, подложка —
+// он же, разведённый до намёка. Без переменной плитка нейтральная.
 .icon {
   display: grid;
+  flex: none;
   place-items: center;
-  inline-size: rem(36);
-  block-size: rem(36);
-  color: var(--c-text-muted);
-  background-color: var(--c-surface-raised);
-  border-radius: 50%;
+  inline-size: rem(40);
+  block-size: rem(40);
+  color: var(--tile, var(--c-text-muted));
+  background-color: color-mix(in oklab, var(--tile, var(--c-text-muted)) 14%, transparent);
+  border-radius: var(--radius-m);
 }
 
+// Доход без категории всё равно читается доходом.
 .iconIncome {
-  color: var(--c-income);
+  --tile: var(--c-income);
 }
 
 .iconTransfer {
-  color: var(--c-text-faint);
+  color: var(--c-text-muted);
+  background-color: var(--c-surface-raised);
 }
 
 .glyph {
@@ -92,4 +99,47 @@ button.row {
   white-space: nowrap;
 
   @include tabular-numbers;
+}
+
+/* ───────────────────────── табличная раскладка ───────────────────────── */
+
+// Ячейки счёта и заметки есть в разметке только у табличной ленты и видны
+// только на широком экране.
+.cell {
+  display: none;
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+
+  @include clamp-lines(1);
+}
+
+.columns {
+  @include from("lg") {
+    .row {
+      grid-template-columns: auto minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 1.4fr) minmax(
+          rem(110),
+          auto
+        );
+    }
+
+    .cell {
+      display: block;
+    }
+
+    // Счёт и заметка уже стоят в своих колонках.
+    .meta {
+      display: none;
+    }
+  }
+}
+
+.selected .row {
+  background-color: var(--c-surface-raised);
+}
+
+// У выделенной строки и у следующей за ней линия-разделитель лишняя:
+// подложка уже отделяет.
+.selected,
+.selected + .root {
+  border-block-start-color: transparent;
 }

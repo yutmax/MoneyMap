@@ -22,7 +22,7 @@
   block-size: rem(40);
   color: var(--c-text-muted);
   background-color: var(--c-surface-raised);
-  border-radius: 50%;
+  border-radius: var(--radius-m);
 }
 
 .logo {

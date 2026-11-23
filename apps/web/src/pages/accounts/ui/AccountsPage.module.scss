@@ -1,6 +1,6 @@
 .root {
   display: grid;
-  row-gap: var(--space-m);
+  row-gap: var(--space-s);
   align-content: start;
 }
 
@@ -8,22 +8,64 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-s);
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
 }
 
-.subtitle {
-  max-width: 60ch;
-  margin-block-start: var(--space-3xs);
-  font-size: var(--step--1);
-  color: var(--c-text-muted);
+.plus {
+  inline-size: rem(16);
+  block-size: rem(16);
+  margin-inline-start: rem(-4);
 }
 
-// Счета — один блок со строками через линию, как день в ленте операций.
-.list {
-  overflow: hidden;
+/* ─────────────────────────────── сводка ─────────────────────────────── */
+
+.summary {
+  display: grid;
+  row-gap: var(--space-xs);
+  padding: var(--space-m);
   background-color: var(--c-surface);
   border-radius: var(--radius-l);
+}
+
+.summaryHead {
+  display: flex;
+  gap: var(--space-s);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.eyebrow {
+  @include eyebrow;
+}
+
+.count {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
+
+.total {
+  margin-block-end: var(--space-2xs);
+  font-size: fluid(48, 34);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  letter-spacing: -0.03em;
+
+  @include tabular-numbers;
+}
+
+.negative {
+  color: var(--c-expense);
+}
+
+/* ─────────────────────────────── карточки ─────────────────────────────── */
+
+// Сколько поместится, поровну; на телефоне — в один столбец: в карточке
+// крупный остаток и полоса доли, вдвоём в ряд им тесно.
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(rem(260), 100%), 1fr));
+  gap: var(--space-s);
 }
 
 .empty {
@@ -36,13 +78,22 @@
 
 .section {
   display: grid;
-  row-gap: var(--space-2xs);
+  row-gap: var(--space-xs);
+  margin-block-start: var(--space-s);
 }
 
 .sectionTitle {
-  padding-inline: var(--space-s);
-  font-size: var(--step--1);
-  font-weight: var(--weight-regular);
+  padding-inline: var(--space-3xs);
+
+  @include eyebrow;
+}
+
+// Пояснение про валюту счёта — сноской под карточками: оно нужно один раз,
+// и над списком отнимало место у самих счетов.
+.subtitle {
+  max-width: 60ch;
+  padding-inline: var(--space-3xs);
+  font-size: var(--step--2);
   color: var(--c-text-faint);
 }
 

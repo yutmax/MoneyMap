@@ -1,0 +1,129 @@
+// Панель едет вместе с прокруткой ленты: длинная лента иначе увозила бы
+// открытую операцию за верхний край.
+.root {
+  position: sticky;
+  inset-block-start: var(--space-s);
+  display: grid;
+  row-gap: var(--space-s);
+  padding: var(--space-m);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.eyebrow {
+  @include eyebrow;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  inline-size: rem(36);
+  block-size: rem(36);
+  color: var(--c-text-muted);
+  background-color: var(--c-surface-raised);
+  border-radius: 50%;
+
+  @include transition(color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+  }
+}
+
+.closeIcon {
+  inline-size: rem(16);
+  block-size: rem(16);
+}
+
+.lead {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: rem(48);
+  block-size: rem(48);
+  color: var(--tile, var(--c-text-muted));
+  background-color: color-mix(in oklab, var(--tile, var(--c-text-muted)) 14%, transparent);
+  border-radius: rem(14);
+}
+
+.iconTransfer {
+  background-color: var(--c-surface-raised);
+}
+
+.glyph {
+  inline-size: rem(22);
+  block-size: rem(22);
+}
+
+.leadText {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.title {
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+
+  @include clamp-lines(1);
+}
+
+.kind {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
+
+.amount {
+  font-size: var(--step-4);
+  font-weight: var(--weight-semibold);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+
+  @include tabular-numbers;
+  @include clamp-lines(1);
+}
+
+.positive {
+  color: var(--c-income);
+}
+
+.fields {
+  display: grid;
+}
+
+.field {
+  display: flex;
+  gap: var(--space-s);
+  justify-content: space-between;
+  padding-block: var(--space-xs);
+  font-size: var(--step--1);
+  border-block-start: var(--border-width) solid var(--c-border);
+
+  dt {
+    flex: none;
+    color: var(--c-text-faint);
+  }
+
+  dd {
+    min-inline-size: 0;
+    text-align: end;
+    overflow-wrap: anywhere;
+  }
+}
+
+.none {
+  color: var(--c-text-faint);
+}

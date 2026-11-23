@@ -1,28 +1,32 @@
 .root {
   display: grid;
-  row-gap: var(--space-m);
+  row-gap: var(--space-xs);
   inline-size: 100%;
 }
 
 .day {
   display: grid;
-  row-gap: var(--space-2xs);
 }
 
+// Заголовок дня — рубрикой: дата слева, итог дня справа.
 .date {
-  padding-inline: var(--space-s);
-  font-size: var(--step--1);
-  font-weight: var(--weight-regular);
-  color: var(--c-text-faint);
+  display: flex;
+  gap: var(--space-s);
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--space-2xs) var(--space-xs) var(--space-3xs);
 
-  // Первая буква заглавная: Intl отдаёт «пт, 21 ноября», а это заголовок.
-  &::first-letter {
-    text-transform: uppercase;
-  }
+  @include eyebrow;
 }
 
+.total {
+  white-space: nowrap;
+
+  @include tabular-numbers;
+}
+
+// Дни лежат на поверхности родителя: своя карточка у каждого дня дробила
+// ленту на коробки, а разделяет дни и так заголовок.
 .list {
-  overflow: hidden;
-  background-color: var(--c-surface);
-  border-radius: var(--radius-l);
+  display: grid;
 }

@@ -15,13 +15,13 @@
  * сектор соседствует с первым.
  */
 export const CHART_SERIES = [
-  { light: '#2a78d6', dark: '#3987e5' },
-  { light: '#eb6834', dark: '#d95926' },
-  { light: '#1baf7a', dark: '#199e70' },
-  { light: '#eda100', dark: '#c98500' },
-  { light: '#e87ba4', dark: '#d55181' },
-  { light: '#008300', dark: '#008300' },
-  { light: '#4a3aa7', dark: '#9085e9' },
+  { light: '#2a78d6', dark: '#5b9cf5' },
+  { light: '#eb6834', dark: '#f08a4b' },
+  { light: '#1baf7a', dark: '#3fc79a' },
+  { light: '#eda100', dark: '#e0a82e' },
+  { light: '#e87ba4', dark: '#e06c9f' },
+  { light: '#008300', dark: '#9a8cf0' },
+  { light: '#4a3aa7', dark: '#58b7c9' },
   { light: '#e34948', dark: '#e66767' },
 ] as const;
 

@@ -12,8 +12,7 @@
   display: flex;
   gap: rem(2);
   padding: rem(3);
-  background-color: var(--c-surface-sunken);
-  border: var(--border-width) solid var(--c-border);
+  background-color: var(--c-surface-raised);
   border-radius: var(--radius-pill);
 }
 
@@ -37,22 +36,152 @@
   color: var(--c-text);
   // Нейтральная подложка вместо лаймовой: переключатель встречается на
   // многих экранах, и залитый акцентом он перебивал основную кнопку.
-  background-color: color-mix(in oklab, var(--c-text) 12%, transparent);
+  background-color: var(--c-border-strong);
 
   @include hover {
     color: var(--c-text);
   }
 }
 
-.amountRow {
-  // Сумма тянется, валюта занимает ровно столько, сколько нужно трём буквам.
+/* Сумма — главный элемент окна: крупная, по центру, без рамки поля. */
+.amountHero {
   display: grid;
-  gap: var(--space-s);
-  grid-template-columns: 1fr rem(104);
-  // Иначе лишнее место сетки растянуло бы внутренние строки полей, и подпись
-  // валюты разъехалась бы с подписью суммы.
-  align-content: start;
-  align-items: start;
+  row-gap: var(--space-2xs);
+  justify-items: center;
+}
+
+.amountLabel {
+  inline-size: 100%;
+}
+
+.amountInput {
+  inline-size: 100%;
+  padding: 0;
+  font-size: fluid(56, 44);
+  font-weight: var(--weight-semibold);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--c-text);
+  text-align: center;
+  background: none;
+  border: 0;
+  outline: none;
+  // Курсор цветом акцента — единственный лайм в окне, кроме кнопки.
+  caret-color: var(--c-accent-line);
+
+  @include tabular-numbers;
+
+  &::placeholder {
+    color: var(--c-text-faint);
+  }
+}
+
+.amountCurrency {
+  inline-size: rem(96);
+  font-size: var(--step--1);
+}
+
+.pickBlock {
+  display: grid;
+  row-gap: var(--space-2xs);
+  justify-items: center;
+}
+
+/* Категории сеткой плиток: все на виду, ничего не уезжает за край окна.
+   Четыре в ряд на телефоне и пять на широком экране: в более узкой ячейке
+   «Развлечения» и «Subscriptions» рвались посреди слова. Число колонок
+   повторено в коде формы — от него считается, сколько плиток видно.
+   Поле в три пикселя — под кольцо выбранной плитки: свёрнутая сетка
+   обрезает содержимое, и без поля кольцо у крайних плиток срезалось бы. */
+.picks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  row-gap: rem(12);
+  inline-size: 100%;
+  padding: rem(3);
+
+  @include from("sm") {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+// Два ряда: поле, плитка с подписью, зазор, ещё плитка с подписью. Высоты
+// заданы числами, потому что ряд собран из фиксированных частей — плитки
+// в 48 и двух строк подписи по 14 с зазором в 4 между ними.
+.picksCollapsed {
+  max-block-size: rem(3 + 80 + 12 + 80);
+  overflow: hidden;
+}
+
+.picksToggle {
+  min-block-size: rem(32);
+  padding-inline: var(--space-s);
+  font-size: var(--step--2);
+  color: var(--c-text-muted);
+  background-color: var(--c-surface-raised);
+  border-radius: var(--radius-pill);
+
+  @include transition(color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+  }
+}
+
+.pick {
+  display: grid;
+  row-gap: rem(4);
+  justify-items: center;
+  min-inline-size: 0;
+  font-size: rem(11);
+  color: var(--c-text-muted);
+  border-radius: var(--radius-m);
+
+  @include focus-ring($offset: 2px);
+}
+
+.pickTile {
+  display: grid;
+  place-items: center;
+  inline-size: rem(48);
+  block-size: rem(48);
+  color: var(--tile);
+  background-color: color-mix(in oklab, var(--tile) 14%, transparent);
+  border-radius: rem(16);
+
+  @include transition(box-shadow);
+}
+
+.pickGlyph {
+  inline-size: rem(22);
+  block-size: rem(22);
+}
+
+// Подпись в две строки и всегда одной высоты: «Одежда и обувь» в одну не
+// помещается, а обрезанное «Одежда и…» выбирать вслепую. Одинаковая высота
+// держит ряды ровными, даже когда у соседа подпись короткая.
+.pickName {
+  // На три пикселя шире ячейки в каждую сторону — в поле сетки: самому
+  // длинному слову каталога, «Коммунальные», ровно этого не хватало.
+  inline-size: calc(100% + #{rem(6)});
+  margin-inline: rem(-3);
+  block-size: rem(28);
+  line-height: rem(14);
+  letter-spacing: -0.01em;
+  text-align: center;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+
+  @include clamp-lines(2);
+}
+
+.pickActive {
+  color: var(--c-text);
+
+  .pickTile {
+    box-shadow: 0 0 0 2px var(--c-accent-line);
+  }
 }
 
 .danger {

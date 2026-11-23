@@ -1,5 +1,6 @@
 import { shiftDays, todayIn, TRANSACTION_KINDS, type TransactionResponse } from '@moneymap/shared';
 import { useEffect, useId, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useAccounts } from '@/entities/account';
 import { categoryName, useCategories } from '@/entities/category';
 import { TransactionList, useTransactions, type TransactionFilters } from '@/entities/transaction';
@@ -8,8 +9,10 @@ import { ImportModal } from '@/features/import-csv';
 import { TransactionFormModal } from '@/features/transaction-form';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
+import { cx } from '@/shared/lib';
 import { Alert, Button, Icon, SectionTabs } from '@/shared/ui';
 import { FilterPill } from './FilterPill.tsx';
+import { TransactionDetails } from './TransactionDetails.tsx';
 import styles from './TransactionsPage.module.scss';
 
 type FormState = null | 'new' | TransactionResponse;
@@ -52,6 +55,13 @@ function periodRange(period: Period, today: string): { from?: string; to?: strin
 const SEARCH_DELAY = 300;
 
 /**
+ * С этой ширины подробности операции открываются панелью рядом с лентой,
+ * уже — окном поверх: для второй колонки на телефоне нет места. Значение
+ * совпадает с брейкпоинтом lg в стилях.
+ */
+const WIDE = '(width >= 64rem)';
+
+/**
  * Операции: вкладки и действия в одной строке, под ними — поиск и фильтры
  * таблетками, ниже лента по дням.
  *
@@ -72,9 +82,19 @@ export function TransactionsPage() {
   const [kind, setKind] = useState('');
   const [period, setPeriod] = useState<Period>('');
   const [custom, setCustom] = useState<{ from: string; to: string }>({ from: '', to: '' });
-  const [searchText, setSearchText] = useState('');
-  const [search, setSearch] = useState('');
+  // Запрос может прийти из поиска в шапке — тогда он уже в адресе.
+  const [params] = useSearchParams();
+  const fromUrl = params.get('search') ?? '';
+  const [searchText, setSearchText] = useState(fromUrl);
+  const [search, setSearch] = useState(fromUrl);
   const [form, setForm] = useState<FormState>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Повторный поиск из шапки, когда страница уже открыта: адрес меняется,
+  // а компонент остаётся тем же, и начальное значение второй раз не читается.
+  useEffect(() => {
+    setSearchText(fromUrl);
+  }, [fromUrl]);
   const [importing, setImporting] = useState(false);
 
   // Поиск с задержкой: без неё каждая буква — отдельный запрос и мигание
@@ -105,6 +125,15 @@ export function TransactionsPage() {
   const query = useTransactions(filters);
 
   const rows = query.data?.pages.flatMap((page) => page.transactions) ?? [];
+  // Выбранная операция ищется в загруженной ленте, а не хранится копией:
+  // после правки в окне панель показывает уже новые данные, а удалённая
+  // операция закрывает панель сама.
+  const selected = rows.find((row) => row.id === selectedId) ?? null;
+
+  const open = (transaction: TransactionResponse) => {
+    if (window.matchMedia(WIDE).matches) setSelectedId(transaction.id);
+    else setForm(transaction);
+  };
   const filtered = Object.keys(filters).length > 0 || searchText !== '';
 
   const resetAll = () => {
@@ -140,10 +169,6 @@ export function TransactionsPage() {
           >
             <Icon name="file-up" className={styles.iconButtonGlyph} />
           </button>
-          <Button size="small" onClick={() => setForm('new')}>
-            <Icon name="plus" className={styles.plus} />
-            {t('transactions.createShort')}
-          </Button>
         </div>
       </header>
 
@@ -247,20 +272,48 @@ export function TransactionsPage() {
           {filtered ? t('transactions.emptyFiltered') : t('transactions.empty')}
         </p>
       ) : (
-        <>
-          {/* Нажатие на строку открывает операцию: там и правка, и удаление. */}
-          <TransactionList transactions={rows} onOpen={setForm} />
+        <div className={cx(styles.board, selected && styles.split)}>
+          <div className={styles.listCard}>
+            {/* Шапка колонок — только там, где строки раскладываются в таблицу. */}
+            <div className={styles.columnsHead} aria-hidden="true">
+              <span>{t('transactions.category')}</span>
+              <span>{t('transactions.account')}</span>
+              <span>{t('transactions.note')}</span>
+              <span className={styles.columnsAmount}>{t('transactions.amount')}</span>
+            </div>
 
-          {query.hasNextPage && (
-            <Button
-              variant="secondary"
-              onClick={() => void query.fetchNextPage()}
-              loading={query.isFetchingNextPage}
-            >
-              {t('transactions.loadMore')}
-            </Button>
+            <TransactionList
+              transactions={rows}
+              onOpen={open}
+              totals
+              partialLast={query.hasNextPage}
+              columns
+              selectedId={selected?.id ?? null}
+            />
+
+            {query.hasNextPage && (
+              <div className={styles.more}>
+                <Button
+                  variant="secondary"
+                  onClick={() => void query.fetchNextPage()}
+                  loading={query.isFetchingNextPage}
+                >
+                  {t('transactions.loadMore')}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {selected && (
+            <div className={styles.details}>
+              <TransactionDetails
+                transaction={selected}
+                onEdit={() => setForm(selected)}
+                onClose={() => setSelectedId(null)}
+              />
+            </div>
           )}
-        </>
+        </div>
       )}
 
       {form !== null && (

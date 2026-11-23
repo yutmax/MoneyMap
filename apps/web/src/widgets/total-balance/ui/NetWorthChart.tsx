@@ -1,13 +1,5 @@
 import { formatMoney, toDecimal, type NetWorthPoint } from '@moneymap/shared';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useT } from '@/shared/i18n';
 import { formatDate } from '@/shared/lib';
 import styles from './NetWorthChart.module.scss';
@@ -33,7 +25,7 @@ interface NetWorthChartProps {
  * есть, поэтому переключение темы остаётся делом каскада, а не React.
  */
 export function NetWorthChart({ points, currency, decimals, symbol }: NetWorthChartProps) {
-  const { t, locale } = useT();
+  const { locale } = useT();
 
   const data = points.map((point) => ({
     date: point.date,
@@ -74,7 +66,7 @@ export function NetWorthChart({ points, currency, decimals, symbol }: NetWorthCh
   return (
     <div className={styles.root}>
       <ResponsiveContainer width="100%" height={160}>
-        <AreaChart data={data} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 0, bottom: 4, left: 0 }}>
           <defs>
             {/* Заливка под линией — тот же цвет, уведённый в прозрачность:
                 она подсказывает направление, но не спорит с самой линией. */}
@@ -84,14 +76,16 @@ export function NetWorthChart({ points, currency, decimals, symbol }: NetWorthCh
             </linearGradient>
           </defs>
 
-          <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
           <XAxis
             dataKey="date"
             tickFormatter={day}
             tick={{ fill: 'var(--c-text-faint)', fontSize: 11 }}
             tickLine={false}
-            axisLine={{ stroke: 'var(--chart-axis)' }}
-            minTickGap={24}
+            axisLine={false}
+            minTickGap={32}
+            // График идёт от края карточки до края, а подписи крайних дней
+            // при этом не должны упираться в её скругление.
+            padding={{ left: 20, right: 20 }}
           />
           {/* Ось значений скрыта: точное число есть в итоге над графиком и
               в подсказке под курсором, а шестизначные деления не помещались
@@ -134,13 +128,6 @@ export function NetWorthChart({ points, currency, decimals, symbol }: NetWorthCh
           />
         </AreaChart>
       </ResponsiveContainer>
-
-      <p className={styles.caption}>
-        {t('summary.change', {
-          amount: money(last - first),
-          days: data.length,
-        })}
-      </p>
     </div>
   );
 }

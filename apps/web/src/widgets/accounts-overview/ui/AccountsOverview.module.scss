@@ -1,9 +1,7 @@
 .root {
   display: grid;
   row-gap: var(--space-xs);
-  padding: var(--space-s) var(--space-m) var(--space-xs);
-  background-color: var(--c-surface);
-  border-radius: var(--radius-l);
+  min-inline-size: 0;
 }
 
 .header {
@@ -11,11 +9,12 @@
   gap: var(--space-s);
   align-items: baseline;
   justify-content: space-between;
+  padding-inline: var(--space-3xs);
 }
 
 .title {
   font-size: var(--step-0);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
 }
 
 .more {
@@ -31,54 +30,98 @@
 }
 
 .empty {
-  padding-block-end: var(--space-xs);
+  padding: var(--space-m);
   font-size: var(--step--1);
   color: var(--c-text-muted);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
 }
 
-.list {
+/*
+ * Сетка, а не лента с прокруткой вбок: на телефоне две карточки в ряд, с
+ * планшета — сколько поместится, поровну.
+ *
+ * Лента была здесь сначала и не прижилась: узкое окно бывает и на
+ * компьютере, а мышью ленту без полосы прокрутки не пролистать — счета за
+ * краем оставались недоступны, и обрезанная карточка выглядела поломкой.
+ * В сетке все счета видны сразу, а четыре карточки занимают два ряда.
+ */
+.strip {
   display: grid;
-}
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2xs);
 
-.row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  column-gap: var(--space-xs);
-  align-items: center;
-  padding-block: var(--space-2xs);
-
-  & + & {
-    border-block-start: var(--border-width) solid var(--c-border);
+  @include from("md") {
+    grid-template-columns: repeat(auto-fit, minmax(rem(200), 1fr));
+    gap: var(--space-s);
   }
+}
+
+.item {
+  min-inline-size: 0;
+}
+
+.card {
+  display: grid;
+  row-gap: rem(2);
+  block-size: 100%;
+  padding: var(--space-s);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
+
+  @include transition(background-color);
+  @include focus-ring($offset: -2px);
+
+  @include hover {
+    background-color: var(--c-surface-raised);
+  }
+}
+
+.top {
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: var(--space-xs);
 }
 
 .icon {
   display: grid;
+  flex: none;
   place-items: center;
-  inline-size: rem(32);
-  block-size: rem(32);
-  color: var(--c-text-muted);
-  background-color: var(--c-surface-raised);
-  border-radius: 50%;
+  inline-size: rem(36);
+  block-size: rem(36);
+  color: var(--tile);
+  background-color: color-mix(in oklab, var(--tile) 14%, transparent);
+  border-radius: var(--radius-m);
 }
 
 .glyph {
-  inline-size: rem(16);
-  block-size: rem(16);
+  inline-size: rem(18);
+  block-size: rem(18);
+}
+
+.code {
+  white-space: nowrap;
+
+  @include eyebrow;
 }
 
 .name {
-  font-size: var(--step--1);
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
 
   @include clamp-lines(1);
 }
 
 .balance {
-  font-size: var(--step--1);
-  font-weight: var(--weight-medium);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
   white-space: nowrap;
 
   @include tabular-numbers;
+  @include clamp-lines(1);
 }
 
 .negative {

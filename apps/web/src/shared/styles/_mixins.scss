@@ -38,6 +38,21 @@
   border-radius: var(--radius-l);
 }
 
+/// Рубрика над блоком: моноширинная, прописными, с разрядкой.
+///
+/// Вторая гарнитура в интерфейсе — только для таких подписей («Общий
+/// баланс», «Сегодня»): они отделяют служебный слой от содержимого без
+/// помощи цвета и размера.
+@mixin eyebrow {
+  font-family: var(--font-mono);
+  font-size: fn.rem(11);
+  font-weight: var(--weight-regular);
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-faint);
+}
+
 /// Обрезка текста в N строк.
 @mixin clamp-lines($lines: 1) {
   @if $lines == 1 {

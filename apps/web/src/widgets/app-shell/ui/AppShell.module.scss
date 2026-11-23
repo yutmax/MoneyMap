@@ -1,10 +1,6 @@
 /**
- * Панель, шапка и содержимое лежат на одном фоне, без рамок между ними.
- *
- * Раньше содержимое сидело в скруглённом окне, вставленном в раму, а внутри
- * окна — карточки в рамках: коробка в коробке. В «графите» части экрана
- * разделяет расстояние и ступень светлоты у самих блоков, а не обводка
- * вокруг каждого уровня.
+ * Панель, шапка и содержимое лежат на одном фоне, без рамок между ними:
+ * части экрана разделяет расстояние и ступень светлоты у самих блоков.
  */
 .root {
   min-block-size: 100svh;
@@ -13,7 +9,7 @@
   // а навигация уезжает вниз.
   @include from("md") {
     display: grid;
-    grid-template-columns: rem(232) 1fr;
+    grid-template-columns: rem(248) minmax(0, 1fr);
     background-color: var(--c-bg);
   }
 }
@@ -32,14 +28,14 @@
     row-gap: var(--space-m);
     block-size: 100svh;
     padding: var(--space-m) var(--space-s);
-    // Границы нет намеренно: панель и шапка — одна поверхность, и линия
-    // между ними снова разрезала бы её надвое.
   }
 }
 
 .railFooter {
+  display: grid;
   grid-row: 4;
-  padding-inline: var(--space-2xs);
+  row-gap: var(--space-s);
+  justify-items: start;
 }
 
 .brand {
@@ -59,7 +55,8 @@
   display: flex;
   gap: var(--space-xs);
   align-items: center;
-  padding: var(--space-2xs) var(--space-xs);
+  min-block-size: rem(44);
+  padding-inline: var(--space-xs);
   font-size: var(--step--1);
   color: var(--c-text-muted);
   border-radius: var(--radius-m);
@@ -74,8 +71,67 @@
 }
 
 .railLink.active {
+  font-weight: var(--weight-medium);
   color: var(--c-text);
   background-color: var(--c-surface-raised);
+}
+
+/* Плашка профиля внизу панели: кто вошёл и выход рядом. */
+.user {
+  display: flex;
+  gap: var(--space-3xs);
+  align-items: center;
+  inline-size: 100%;
+}
+
+.userLink {
+  display: flex;
+  flex: 1;
+  gap: var(--space-xs);
+  align-items: center;
+  min-inline-size: 0;
+  padding: var(--space-2xs);
+  border-radius: var(--radius-m);
+
+  @include transition(background-color);
+  @include focus-ring($offset: -2px);
+
+  @include hover {
+    background-color: var(--c-surface);
+  }
+}
+
+.userActive {
+  background-color: var(--c-surface-raised);
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: rem(36);
+  block-size: rem(36);
+  font-size: rem(13);
+  font-weight: var(--weight-semibold);
+  background-color: var(--c-border-strong);
+  border-radius: 50%;
+}
+
+.userText {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.userName {
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+
+  @include clamp-lines(1);
+}
+
+.userMeta {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
 }
 
 /* ────────────────────────────── верхняя строка ──────────────────────────── */
@@ -94,53 +150,35 @@
   gap: var(--space-s);
   align-items: center;
   justify-content: space-between;
-  min-block-size: rem(56);
+  min-block-size: rem(60);
   background-color: color-mix(in oklab, var(--c-bg) 85%, transparent);
   backdrop-filter: blur(10px);
 
   @include container;
 
   @include from("md") {
-    /*
-     * Шапка не закрепляется и уезжает вместе со страницей.
-     *
-     * Приклеенная, она накрывала окно сверху: его край подрезался ровно по
-     * её нижней границе, и окно выглядело обрезанным, а не уехавшим.
-     * Заголовок при этом не терялся — какой раздел открыт, видно по
-     * подсвеченному пункту боковой панели, а она остаётся на месте.
-     *
-     * Отсюда и непрозрачный фон без размытия: шапка больше ни на что не
-     * накладывается, она продолжает панель слева.
-     */
+    // На широком экране шапка уезжает вместе со страницей: какой раздел
+    // открыт, видно по боковой панели, а она остаётся на месте.
     position: static;
-    min-block-size: rem(72);
+    min-block-size: rem(88);
     background-color: var(--c-bg);
     backdrop-filter: none;
-    // Те же поля, ширина и центровка, что у содержимого: заголовок
-    // начинается на одной вертикали с первым блоком страницы.
     inline-size: 100%;
     max-width: var(--page-max);
     margin-inline: auto;
-    padding-inline: var(--space-l);
+    padding-inline: var(--space-s) var(--space-l);
   }
 }
 
-.headerActions {
-  display: flex;
-  gap: var(--space-3xs);
-  align-items: center;
+.heading {
+  display: grid;
+  min-inline-size: 0;
 }
 
-/**
- * Заголовок страницы в верхней строке.
- *
- * Занимает то место, где на телефоне была марка приложения: название
- * раздела в этой строке полезнее логотипа, а на главную уводит нижняя
- * панель. На широком экране марка осталась в боковой панели.
- */
 .pageTitle {
   font-size: var(--step-1);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
   min-width: 0;
 
   @include clamp-lines(1);
@@ -150,19 +188,83 @@
   }
 }
 
+.pageDate {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+.headerActions {
+  display: flex;
+  flex: 1;
+  gap: var(--space-2xs);
+  align-items: center;
+  justify-content: flex-end;
+  min-inline-size: 0;
+}
+
+/* Поиск в шапке — только на широком экране: на телефоне он живёт на
+   странице операций, а в строке заголовка для поля нет места. */
+.search {
+  display: none;
+
+  @include from("lg") {
+    display: flex;
+    flex: 1;
+    gap: var(--space-2xs);
+    align-items: center;
+    max-inline-size: rem(380);
+    min-block-size: var(--control-height);
+    padding-inline: var(--space-s);
+    color: var(--c-text-faint);
+    background-color: var(--c-surface);
+    border-radius: var(--radius-pill);
+
+    &:focus-within {
+      box-shadow: inset 0 0 0 var(--border-width) var(--c-accent-line);
+    }
+  }
+}
+
+.searchIcon {
+  flex: none;
+  inline-size: rem(16);
+  block-size: rem(16);
+}
+
+.searchInput {
+  flex: 1;
+  min-inline-size: 0;
+  font-size: var(--step--1);
+  color: var(--c-text);
+  background: none;
+  border: 0;
+  outline: none;
+
+  &::placeholder {
+    color: var(--c-text-faint);
+  }
+}
+
 .bell {
   position: relative;
-  display: inline-flex;
-  padding: var(--space-2xs);
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--control-height);
+  block-size: var(--control-height);
   color: var(--c-text-muted);
-  border-radius: var(--radius-m);
+  background-color: var(--c-surface);
+  border-radius: 50%;
 
   @include transition(color, background-color);
   @include focus-ring;
 
   @include hover {
     color: var(--c-text);
-    background-color: var(--c-surface);
+    background-color: var(--c-surface-raised);
   }
 }
 
@@ -173,8 +275,8 @@
 
 .badge {
   position: absolute;
-  inset-block-start: rem(-1);
-  inset-inline-end: rem(-1);
+  inset-block-start: rem(2);
+  inset-inline-end: rem(2);
   min-inline-size: rem(16);
   padding-inline: rem(4);
   font-size: rem(10);
@@ -186,47 +288,60 @@
   border-radius: var(--radius-pill);
 }
 
+/* Главное действие приложения — единственная лаймовая кнопка в шапке.
+   На телефоне её заменяет «+» в нижней панели. */
+.add {
+  display: none;
+
+  @include from("md") {
+    display: inline-flex;
+    gap: var(--space-2xs);
+    align-items: center;
+    min-block-size: var(--control-height);
+    padding-inline: var(--space-s) var(--space-m);
+    font-weight: var(--weight-medium);
+    color: var(--c-accent-ink);
+    white-space: nowrap;
+    background-color: var(--c-accent);
+    border-radius: var(--radius-pill);
+
+    @include transition(background-color);
+    @include focus-ring;
+
+    @include hover {
+      background-color: var(--c-accent-hover);
+    }
+  }
+}
+
 .main {
   flex: 1;
-  padding-block: var(--space-m) var(--space-2xl);
+  padding-block: var(--space-2xs) var(--space-2xl);
 
   @include container;
 
-  /*
-   * Предельная ширина — чтобы на большом мониторе строка операции не
-   * растягивалась в метр между названием и суммой. Сверх неё страница
-   * центрируется в колонке: прижатая к панели, она оставляла справа пустую
-   * полосу в треть экрана.
-   */
+  // Предельная ширина — чтобы на большом мониторе строка операции не
+  // растягивалась в метр между названием и суммой.
   @include from("md") {
     inline-size: 100%;
     max-width: var(--page-max);
     margin-inline: auto;
     padding-block-start: 0;
-    padding-inline: var(--space-l);
+    padding-inline: var(--space-s) var(--space-l);
   }
 
   // Место под нижнюю панель, чтобы она не накрывала последнюю карточку.
-  // Панель теперь висит над краем, поэтому к её высоте добавлен и зазор
-  // под ней.
   @include until("md") {
-    padding-block-end: calc(rem(92) + env(safe-area-inset-bottom));
+    padding-block-end: calc(rem(104) + env(safe-area-inset-bottom));
   }
 }
 
 /* ───────────────────────────── нижняя панель ────────────────────────────── */
 
 /**
- * Панель висит над нижним краем, а не лежит на нём.
- *
- * Прижатая к самому низу, она упиралась в зону системного жеста: на телефонах
- * без аппаратных кнопок нижние пиксели принадлежат полосе «домой», и попасть
- * в крайнюю вкладку, не задев её, не получалось. Отступ снизу складывается из
- * безопасной зоны и обычного поля — панель оказывается там же, где её ждёт
- * большой палец.
- *
- * Отсюда и форма: оторванный от краёв блок обязан выглядеть блоком, поэтому
- * скругление, граница и тень, а не одна линия сверху.
+ * Панель висит над нижним краем, а не лежит на нём: нижние пиксели на
+ * телефонах без кнопок принадлежат полосе «домой», и попасть в крайнюю
+ * вкладку, не задев её, иначе не получается.
  */
 .bar {
   position: fixed;
@@ -234,9 +349,10 @@
   z-index: var(--z-sticky);
   display: flex;
   gap: rem(2);
-  padding: rem(6);
-  background-color: color-mix(in oklab, var(--c-surface-raised) 88%, transparent);
-  border: var(--border-width) solid var(--c-border);
+  align-items: center;
+  justify-content: space-between;
+  padding: rem(8);
+  background-color: color-mix(in oklab, var(--c-surface-raised) 92%, transparent);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-card);
   backdrop-filter: blur(12px);
@@ -246,52 +362,54 @@
   }
 }
 
-/**
- * В нижней панели только значки: пять подписей по одиннадцать пикселей на
- * узком экране читает не глаз, а догадка, и места они съедают больше, чем
- * сообщают. Названия остаются в разметке скрытыми — для скринридера.
- *
- * Высота считается от пальца, а не от содержимого: сорок восемь пикселей —
- * нижняя граница, в которую попадают, не целясь.
- */
+// В нижней панели только значки: названия остаются в разметке скрытыми —
+// для скринридера. Высота считается от пальца, а не от содержимого.
 .tab {
   display: grid;
   place-items: center;
   flex: 1;
-  padding-block: var(--space-2xs);
   min-block-size: rem(48);
-  // Скругление под стать панели: подсветка активной вкладки должна читаться
-  // как таблетка внутри таблетки, а не как прямоугольная заплата.
   border-radius: var(--radius-pill);
   color: var(--c-text-faint);
 
-  @include transition(color, background-color);
+  @include transition(color);
   @include focus-ring($offset: -3px);
 }
 
-// Значок крупнее, чем в боковой панели: там рядом с ним есть подпись,
-// а здесь он отвечает за раздел один.
 .tab .icon {
   inline-size: rem(24);
   block-size: rem(24);
 }
 
-/*
- * Активный раздел — нейтральная подсветка и лаймовый значок. Цветная
- * таблетка на каждом экране делала акцент фоном, а не акцентом.
- */
+/* Новая операция — в середине панели и единственная залитая акцентом:
+   это то, ради чего приложение открывают на телефоне чаще всего. */
+.barAdd {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: rem(60);
+  block-size: rem(48);
+  margin-inline: var(--space-3xs);
+  color: var(--c-accent-ink);
+  background-color: var(--c-accent);
+  border-radius: var(--radius-pill);
+
+  @include focus-ring;
+}
+
+.barAdd .icon {
+  inline-size: rem(24);
+  block-size: rem(24);
+}
+
+// Активный раздел — лаймовый значок без подложки: залитая таблетка в
+// панели одна, и это кнопка новой операции.
 .active {
   color: var(--c-text);
 }
 
 .active .icon {
   color: var(--c-accent-line);
-}
-
-// В нижней панели подложка светлее: панель сама лежит на приподнятой
-// поверхности, и ступень `surface-raised` на ней не видна.
-.tab.active {
-  background-color: color-mix(in oklab, var(--c-text) 9%, transparent);
 }
 
 .icon {

@@ -13,6 +13,13 @@
   inline-size: 100%;
   block-size: 100%;
 
+  // На телефоне окно — лист, прижатый к нижнему краю: до его кнопок
+  // дотягивается большой палец, а окно посреди экрана оставляло их наверху.
+  @include until("md") {
+    place-items: end stretch;
+    padding: var(--space-l) 0 0;
+  }
+
   &::backdrop {
     background-color: rgb(0 0 0 / 55%);
     backdrop-filter: blur(3px);
@@ -46,6 +53,15 @@
   // растворяется в подложке.
   border: var(--border-width) solid var(--c-border);
   box-shadow: var(--shadow-card);
+
+  @include until("md") {
+    max-width: 100%;
+    padding: var(--space-l) var(--space-l) calc(var(--space-l) + env(safe-area-inset-bottom));
+    border-inline: 0;
+    border-block-end: 0;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
 }
 
 .header {

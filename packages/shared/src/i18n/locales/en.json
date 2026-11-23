@@ -213,9 +213,9 @@
     "submit": "Done"
   },
   "dashboard": {
-    "title": "Overview",
+    "title": "Home",
     "recent": "Last transactions",
-    "showAll": "See all",
+    "showAll": "All transactions",
     "income": "Income",
     "expense": "Expenses",
     "net": "Net",
@@ -223,7 +223,19 @@
     "allAccounts": "All accounts",
     "topSpending": "Top spending",
     "noSpending": "No spending this month yet.",
-    "toReports": "Reports"
+    "toReports": "Reports",
+    "daysLeft": "{{count}} days left",
+    "lastDay": "last day of the month",
+    "spentOfIncome": "Spent {{percent}}% of income",
+    "noIncome": "No income this month yet",
+    "left": "Left",
+    "report": "Report",
+    "whereMoneyWent": "Where the money went",
+    "upcoming": "Upcoming payments",
+    "upcomingEmpty": "No recurring payments in the next month.",
+    "toRecurring": "Recurring",
+    "shareOfTotal": "{{code}} · {{percent}}%",
+    "otherCategories": "Everything else"
   },
   "summary": {
     "title": "Total balance",
@@ -231,7 +243,8 @@
     "empty": "No accounts yet — add the first one and the total will appear here.",
     "stale": "The rate is not from today ({{currencies}}) — the total is approximate.",
     "missing": "No rate for {{currencies}}: those balances are not in the total.",
-    "change": "over {{days}} days: {{amount}}"
+    "change": "over {{days}} days: {{amount}}",
+    "changeChip": "{{amount}} in {{days}} days"
   },
   "sessions": {
     "title": "Active devices",
@@ -272,7 +285,9 @@
     "sections": "Sections",
     "categoriesHint": "Income and expense categories",
     "devicesHint": "Where your account is signed in",
-    "emailUnverified": "Email not verified"
+    "emailUnverified": "Email not verified",
+    "accountsHint": "Balances, new accounts and balance check",
+    "recurringHint": "Subscriptions, rent, salary"
   },
   "notFound": {
     "title": "404",
@@ -317,7 +332,9 @@
     "deleteConfirm": "Delete",
     "deleteCancel": "Cancel",
     "deleteFailed": "Could not delete the account",
-    "currency": "Currency"
+    "currency": "Currency",
+    "shareOfTotal": "{{percent}}% of total",
+    "count": "{{count}} accounts"
   },
   "categories": {
     "title": "Categories",
@@ -417,7 +434,12 @@
     "periodThisYear": "This year",
     "periodCustom": "Custom range…",
     "dateFrom": "From",
-    "dateTo": "To"
+    "dateTo": "To",
+    "detailsClose": "Close details",
+    "detailsOriginal": "Amount in original currency",
+    "detailsNoNote": "None",
+    "categoriesAll": "All categories",
+    "categoriesLess": "Show less"
   },
   "recurring": {
     "title": "Recurring",
@@ -508,9 +530,9 @@
     "period": "{{from}} — {{to}}",
     "range": "Period",
     "ranges": {
-      "month": "This month",
-      "quarter": "Three months",
-      "year": "This year"
+      "month": "Month",
+      "quarter": "3 months",
+      "year": "Year"
     },
     "export": "Export CSV",
     "loadFailed": "Could not build the report",
@@ -518,12 +540,15 @@
     "other": "Other",
     "income": "Income",
     "expense": "Expenses",
-    "net": "Difference",
+    "net": "Net",
     "count": "Transactions",
-    "cashflowTitle": "By month",
+    "cashflowTitle": "Income and expenses",
     "byCategoryTitle": "Expenses by category",
     "byCurrencyTitle": "Expenses by currency",
-    "largestTitle": "Largest transactions"
+    "largestTitle": "Largest transactions",
+    "versusPrevious": "{{change}} vs previous period",
+    "saved": "Saved from income",
+    "countInline": "{{count}} transactions"
   },
   "budgets": {
     "title": "Budgets",
@@ -601,5 +626,10 @@
     },
     "title": "Notifications",
     "empty": "No notifications yet."
+  },
+  "shell": {
+    "search": "Search transactions",
+    "newTransaction": "Transaction",
+    "newTransactionAria": "New transaction"
   }
 }

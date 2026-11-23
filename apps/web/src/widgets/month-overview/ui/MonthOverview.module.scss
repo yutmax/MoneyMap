@@ -1,44 +1,46 @@
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-2xs);
-}
-
-.tile {
-  display: grid;
-  row-gap: var(--space-3xs);
-  min-width: 0;
-  padding: var(--space-xs) var(--space-s);
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  min-inline-size: 0;
+  padding: var(--space-m);
   background-color: var(--c-surface);
   border-radius: var(--radius-l);
 }
 
-.tileLabel {
+.cardHeader {
+  display: flex;
+  gap: var(--space-s);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.eyebrow {
+  @include eyebrow;
+}
+
+.faint {
   font-size: var(--step--2);
   color: var(--c-text-faint);
-
-  @include clamp-lines(1);
 }
 
-// Месяц в подписи прячется на телефоне: три плитки в ряд там и так узкие.
-.tileMonth {
-  @include until("sm") {
-    display: none;
-  }
+.pair {
+  display: flex;
+  gap: var(--space-s);
+  justify-content: space-between;
 }
 
-.tileValue {
-  font-size: var(--step-0);
-  font-weight: var(--weight-medium);
+.end {
+  text-align: end;
+}
+
+.kpi {
+  font-size: var(--step-2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 
   @include tabular-numbers;
-
-  @include from("sm") {
-    font-size: var(--step-1);
-  }
 }
 
 .income {
@@ -49,26 +51,72 @@
   color: var(--c-expense);
 }
 
-/* ─────────────────────────────── главные траты ─────────────────────────────── */
-
-.block {
-  display: grid;
-  row-gap: var(--space-s);
-  padding: var(--space-s) var(--space-m) var(--space-m);
-  background-color: var(--c-surface);
-  border-radius: var(--radius-l);
+// Какая часть дохода уже потрачена. Заливка нейтральная: это мера, а не
+// оценка, и красной она становится только когда расход обогнал доход.
+.meter {
+  block-size: rem(10);
+  overflow: hidden;
+  background-color: var(--c-surface-raised);
+  border-radius: var(--radius-pill);
 }
 
-.blockHeader {
+.meterFill {
+  display: block;
+  block-size: 100%;
+  background-color: var(--c-text);
+  border-radius: var(--radius-pill);
+}
+
+.over {
+  background-color: var(--c-expense);
+}
+
+.meterNote {
+  margin-block-start: var(--space-2xs);
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+}
+
+.cardFooter {
   display: flex;
   gap: var(--space-s);
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
+  padding-block-start: var(--space-s);
+  // Подвал прижат к низу: карточка месяца стоит рядом с балансом и тянется
+  // на его высоту.
+  margin-block-start: auto;
+  border-block-start: var(--border-width) solid var(--c-border);
 }
+
+.button {
+  display: inline-flex;
+  gap: var(--space-3xs);
+  align-items: center;
+  min-block-size: var(--control-height);
+  padding-inline: var(--space-s) var(--space-xs);
+  font-weight: var(--weight-medium);
+  background-color: var(--c-surface-raised);
+  border-radius: var(--radius-pill);
+
+  @include transition(background-color);
+  @include focus-ring;
+
+  @include hover {
+    background-color: var(--c-surface-hover);
+  }
+}
+
+.buttonIcon {
+  inline-size: rem(16);
+  block-size: rem(16);
+}
+
+/* ───────────────────────────── куда ушли деньги ───────────────────────────── */
 
 .blockTitle {
   font-size: var(--step-0);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
 }
 
 .more {
@@ -88,39 +136,56 @@
   color: var(--c-text-muted);
 }
 
-.bars {
-  display: grid;
-  row-gap: var(--space-s);
+.stack {
+  display: flex;
+  // Зазор цветом поверхности: без него соседние доли сливаются в одну.
+  gap: rem(3);
+  block-size: rem(10);
 }
 
-.bar {
+.segment {
+  flex-basis: 0;
+  min-inline-size: rem(6);
+  border-radius: var(--radius-pill);
+}
+
+.legend {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  row-gap: var(--space-3xs);
+  row-gap: var(--space-xs);
+}
+
+.legendRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto rem(72);
+  column-gap: var(--space-xs);
+  align-items: center;
   font-size: var(--step--1);
 }
 
-.barName {
+.dot {
+  inline-size: rem(8);
+  block-size: rem(8);
+  border-radius: 50%;
+}
+
+.legendName {
   @include clamp-lines(1);
 }
 
-.barValue {
+.muted {
   color: var(--c-text-muted);
+}
+
+.share {
+  color: var(--c-text-faint);
 
   @include tabular-numbers;
 }
 
-.track {
-  grid-column: 1 / -1;
-  block-size: rem(4);
-  background-color: var(--c-surface-raised);
-  border-radius: var(--radius-pill);
-}
+.amount {
+  font-weight: var(--weight-medium);
+  text-align: end;
+  white-space: nowrap;
 
-// Одна полоса цветом акцента: категории здесь различает подпись, а не цвет.
-.fill {
-  display: block;
-  block-size: 100%;
-  background-color: var(--c-accent-line);
-  border-radius: var(--radius-pill);
+  @include tabular-numbers;
 }

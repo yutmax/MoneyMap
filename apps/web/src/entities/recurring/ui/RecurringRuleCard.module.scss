@@ -1,53 +1,86 @@
-// Строка в общем списке, а не отдельная карточка: соседей отделяет линия.
+// Значок, сведения, сумма и действия — в одну строку на широком экране.
+// На узком действия переносятся под сведения: трём кнопкам рядом с суммой
+// на телефоне места нет.
 .root {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-s);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-2xs) var(--space-xs);
   align-items: center;
-  justify-content: space-between;
-  padding: var(--space-s) var(--space-m);
+  padding-block: var(--space-xs);
 
   & + & {
     border-block-start: var(--border-width) solid var(--c-border);
   }
+
+  @include from("sm") {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
 }
 
+// Правило на паузе видно, но не спорит за внимание с работающими.
 .paused {
-  // Правило на паузе видно, но не спорит за внимание с работающими.
-  opacity: 0.6;
+  .icon,
+  .info,
+  .amount {
+    opacity: 0.55;
+  }
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: rem(40);
+  block-size: rem(40);
+  color: var(--tile);
+  background-color: color-mix(in oklab, var(--tile) 14%, transparent);
+  border-radius: var(--radius-m);
+}
+
+.glyph {
+  inline-size: rem(18);
+  block-size: rem(18);
 }
 
 .info {
   display: grid;
-  row-gap: rem(2);
-  min-width: 0;
-  flex: 1 1 rem(200);
+  row-gap: rem(1);
+  min-inline-size: 0;
 }
 
 .name {
   display: flex;
-  gap: var(--space-2xs);
-  align-items: center;
   flex-wrap: wrap;
+  gap: var(--space-3xs) var(--space-2xs);
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.title {
   font-weight: var(--weight-medium);
+
+  @include clamp-lines(1);
 }
 
 .badge {
   padding: rem(1) var(--space-2xs);
-  font-size: var(--step--2);
-  font-weight: var(--weight-regular);
-  color: var(--c-text-faint);
-  background-color: var(--c-surface-sunken);
+  font-size: rem(11);
+  color: var(--c-text-muted);
+  white-space: nowrap;
+  background-color: var(--c-surface-raised);
   border-radius: var(--radius-pill);
 }
 
 .meta {
   font-size: var(--step--2);
   color: var(--c-text-faint);
+
+  @include clamp-lines(1);
 }
 
 .amount {
   font-weight: var(--weight-medium);
+  white-space: nowrap;
 
   @include tabular-numbers;
 }
@@ -56,12 +89,12 @@
   color: var(--c-income);
 }
 
-.expense {
-  color: var(--c-text);
-}
-
 .actions {
   display: flex;
-  gap: var(--space-2xs);
-  flex-wrap: wrap;
+  grid-column: 2 / -1;
+  gap: var(--space-3xs);
+
+  @include from("sm") {
+    grid-column: auto;
+  }
 }

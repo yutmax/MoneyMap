@@ -1,5 +1,6 @@
 import { formatMoney, isNegative, type TransactionResponse } from '@moneymap/shared';
-import { categoryNameOrNull, useCategories } from '@/entities/category';
+import type { CSSProperties } from 'react';
+import { categoryColor, categoryNameOrNull, useCategories } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import { useT } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
@@ -10,6 +11,14 @@ interface TransactionRowProps {
   transaction: TransactionResponse;
   /** Нажатие на строку открывает операцию. Без него строка просто читается. */
   onOpen?: (transaction: TransactionResponse) => void;
+  /**
+   * Табличная раскладка для широкого экрана: счёт и заметка встают в свои
+   * колонки. На узком экране строка остаётся прежней — две строки текста и
+   * сумма, — колонки там просто не поместятся.
+   */
+  columns?: boolean;
+  /** Строка, чьи подробности сейчас открыты рядом. */
+  selected?: boolean;
 }
 
 /**
@@ -20,7 +29,12 @@ interface TransactionRowProps {
  * ради действий, которые нужны раз в неделю. Теперь строка сама кнопка:
  * нажал — открыл, а удалить можно в открывшемся окне.
  */
-export function TransactionRow({ transaction, onOpen }: TransactionRowProps) {
+export function TransactionRow({
+  transaction,
+  onOpen,
+  columns = false,
+  selected = false,
+}: TransactionRowProps) {
   const { t, locale } = useT();
   const currencies = useCurrencies();
   const categories = useCategories();
@@ -44,6 +58,12 @@ export function TransactionRow({ transaction, onOpen }: TransactionRowProps) {
     ? t('transactions.transfer')
     : (categoryNameOrNull(t, transaction.categoryKey) ?? t('transactions.noCategory'));
 
+  // Плитка значка красится цветом категории — тем же, что у её строки в
+  // отчётах. Перевод остаётся нейтральным: это не трата и не доход.
+  const tile = transfer
+    ? undefined
+    : ({ '--tile': categoryColor(transaction.categoryId, categories.data) } as CSSProperties);
+
   const body = (
     <>
       <span
@@ -52,6 +72,7 @@ export function TransactionRow({ transaction, onOpen }: TransactionRowProps) {
           transaction.kind === 'income' && styles.iconIncome,
           transfer && styles.iconTransfer,
         )}
+        style={tile}
       >
         <Icon name={icon} className={styles.glyph} />
       </span>
@@ -63,6 +84,13 @@ export function TransactionRow({ transaction, onOpen }: TransactionRowProps) {
           {transaction.accountName}
         </span>
       </span>
+
+      {columns && (
+        <>
+          <span className={styles.cell}>{transaction.accountName}</span>
+          <span className={styles.cell}>{transaction.note ?? '—'}</span>
+        </>
+      )}
 
       <span className={styles.amounts}>
         <span className={cx(styles.amount, !negative && styles.positive)}>
@@ -92,9 +120,14 @@ export function TransactionRow({ transaction, onOpen }: TransactionRowProps) {
   );
 
   return (
-    <li className={styles.root}>
+    <li className={cx(styles.root, columns && styles.columns, selected && styles.selected)}>
       {onOpen ? (
-        <button type="button" className={styles.row} onClick={() => onOpen(transaction)}>
+        <button
+          type="button"
+          className={styles.row}
+          onClick={() => onOpen(transaction)}
+          aria-current={selected ? 'true' : undefined}
+        >
           {body}
         </button>
       ) : (

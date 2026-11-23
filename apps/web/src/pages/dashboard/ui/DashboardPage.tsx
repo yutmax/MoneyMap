@@ -1,17 +1,17 @@
 import { AccountsOverview } from '@/widgets/accounts-overview';
-import { MonthTiles, TopSpending } from '@/widgets/month-overview';
+import { MonthCard, WhereMoneyWent } from '@/widgets/month-overview';
 import { RecentTransactions } from '@/widgets/recent-transactions';
 import { TotalBalance } from '@/widgets/total-balance';
+import { UpcomingPayments } from '@/widgets/upcoming-payments';
 import styles from './DashboardPage.module.scss';
 
 /**
- * Обзор: сколько всего, как идёт месяц, где деньги и что было недавно.
+ * Главная: сколько всего, как идёт месяц, где деньги, что было и что будет.
  *
- * Раньше здесь были только итог и пять операций, и на широком экране
- * половина страницы пустовала, а за ответом «сколько я потратил в этом
- * месяце» надо было идти в отчёты. Теперь главная собрана из четырёх
- * ответов, по убыванию того, как часто их ищут: итог с графиком, три
- * числа за месяц, лента слева, счета и главные траты справа.
+ * Порядок — по убыванию того, как часто ответ ищут. Первая строка — итог с
+ * графиком и карточка месяца рядом с ним: это два числа, ради которых
+ * приложение открывают. Под ними карточки счетов, затем операции слева и
+ * справа — на что ушли деньги и что спишется дальше.
  *
  * Баннера о неподтверждённом email здесь нет: это уведомление у
  * колокольчика, читать его можно, когда дойдут руки.
@@ -19,14 +19,18 @@ import styles from './DashboardPage.module.scss';
 export function DashboardPage() {
   return (
     <div className={styles.root}>
-      <TotalBalance />
-      <MonthTiles />
+      <div className={styles.hero}>
+        <TotalBalance />
+        <MonthCard />
+      </div>
+
+      <AccountsOverview />
 
       <div className={styles.columns}>
         <RecentTransactions />
         <aside className={styles.side}>
-          <AccountsOverview />
-          <TopSpending />
+          <WhereMoneyWent />
+          <UpcomingPayments />
         </aside>
       </div>
     </div>

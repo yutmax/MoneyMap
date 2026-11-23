@@ -1,46 +1,94 @@
 /*
- * Итог — без карточки: это заголовок страницы, а не один из её блоков.
- * Самое крупное число на экране стоит прямо на фоне, и всё остальное
- * читается как подробности к нему.
+ * Главная карточка страницы. График прижат к её нижнему и боковым краям:
+ * линия идёт от края до края, и карточка читается одним блоком, а не
+ * рамкой вокруг маленького графика.
  */
 .root {
-  display: grid;
-  row-gap: var(--space-xs);
-  padding-block-start: var(--space-2xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-inline-size: 0;
+  padding: var(--space-m) var(--space-m) 0;
+  overflow: hidden;
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
 }
 
 .header {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-s);
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
 }
 
 .title {
-  font-size: var(--step--1);
-  font-weight: var(--weight-regular);
-  color: var(--c-text-faint);
+  @include eyebrow;
 }
 
 .picker {
   // Выбор валюты не должен конкурировать с итогом: достаточно трёх букв.
-  inline-size: rem(88);
+  inline-size: rem(92);
   font-size: var(--step--2);
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  min-block-size: rem(220);
+}
+
+.figure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-s);
+  align-items: flex-end;
 }
 
 .total {
   // Самая крупная цифра в приложении: с неё начинают смотреть на экран.
-  font-size: var(--step-4);
-  font-weight: var(--weight-medium);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  font-size: fluid(56, 38);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  letter-spacing: -0.03em;
 
   @include tabular-numbers;
 }
 
 .negative {
   color: var(--c-expense);
+}
+
+// Изменение за период — таблеткой рядом с числом: это второй вопрос после
+// «сколько», и ответ на него должен стоять вплотную.
+.delta {
+  display: inline-flex;
+  gap: var(--space-3xs);
+  align-items: center;
+  min-block-size: rem(26);
+  padding-inline: var(--space-2xs) var(--space-xs);
+  margin-block-end: rem(4);
+  font-size: var(--step--2);
+  font-weight: var(--weight-medium);
+  color: var(--c-income);
+  white-space: nowrap;
+  background-color: color-mix(in oklab, var(--c-income) 14%, transparent);
+  border-radius: var(--radius-pill);
+
+  @include tabular-numbers;
+}
+
+.deltaDown {
+  color: var(--c-expense);
+  background-color: color-mix(in oklab, var(--c-expense) 14%, transparent);
+
+  .deltaIcon {
+    transform: scaleY(-1);
+  }
+}
+
+.deltaIcon {
+  inline-size: rem(14);
+  block-size: rem(14);
 }
 
 .note {
@@ -52,7 +100,17 @@
   color: var(--c-warning);
 }
 
+.chart {
+  margin-block-start: auto;
+  margin-inline: calc(var(--space-m) * -1);
+}
+
 .chartPlaceholder {
   // Та же высота, что у графика: иначе карточка прыгает, когда он доезжает.
-  block-size: rem(176);
+  block-size: rem(160);
+}
+
+// Без графика карточке всё равно нужен нижний отступ.
+.spacer {
+  block-size: var(--space-m);
 }

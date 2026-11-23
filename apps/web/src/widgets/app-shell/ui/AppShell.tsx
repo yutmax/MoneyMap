@@ -1,12 +1,14 @@
-import { Suspense } from 'react';
+import { todayIn } from '@moneymap/shared';
+import { Suspense, useState, type FormEvent } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useNotifications } from '@/entities/reconciliation';
 import { useMe } from '@/entities/user';
 import { LogoutIconButton } from '@/features/auth-logout';
 import { ThemeToggle } from '@/features/theme-switch';
+import { TransactionFormModal } from '@/features/transaction-form';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
-import { cx } from '@/shared/lib';
+import { cx, formatDate } from '@/shared/lib';
 import { Icon, Logo, PageFallback, type IconName } from '@/shared/ui';
 import styles from './AppShell.module.scss';
 
@@ -21,13 +23,36 @@ import styles from './AppShell.module.scss';
  * в него попадал палец. Всё, что осталось за ними, живёт внутри разделов —
  * категории и устройства в профиле, сверка у счетов, подписки у операций.
  */
-const TABS: { to: string; key: string; icon: IconName; end?: boolean }[] = [
-  { to: ROUTES.home, key: 'nav.overview', icon: 'home', end: true },
-  { to: ROUTES.transactions, key: 'nav.transactions', icon: 'transactions' },
-  { to: ROUTES.accounts, key: 'nav.accounts', icon: 'accounts' },
-  { to: ROUTES.reports, key: 'nav.reports', icon: 'reports' },
-  { to: ROUTES.profile, key: 'nav.profile', icon: 'profile' },
-];
+interface Tab {
+  to: string;
+  key: string;
+  icon: IconName;
+  end?: boolean;
+}
+
+const HOME: Tab = { to: ROUTES.home, key: 'nav.overview', icon: 'home', end: true };
+const TRANSACTIONS: Tab = {
+  to: ROUTES.transactions,
+  key: 'nav.transactions',
+  icon: 'transactions',
+};
+const ACCOUNTS: Tab = { to: ROUTES.accounts, key: 'nav.accounts', icon: 'accounts' };
+const REPORTS: Tab = { to: ROUTES.reports, key: 'nav.reports', icon: 'reports' };
+const RECURRING: Tab = { to: ROUTES.recurring, key: 'nav.recurring', icon: 'repeat' };
+const PROFILE: Tab = { to: ROUTES.profile, key: 'nav.profile', icon: 'profile' };
+
+/**
+ * Наборы разделов расходятся намеренно.
+ *
+ * В боковой панели места хватает на всё, чем пользуются каждый день, а
+ * профиль там — плашка с именем внизу. В нижней панели середину занимает
+ * кнопка новой операции: внести трату — главное действие на телефоне, и
+ * оно должно быть под большим пальцем с любого экрана. Счета на телефоне
+ * открываются с главной, из блока счетов.
+ */
+const RAIL: Tab[] = [HOME, TRANSACTIONS, ACCOUNTS, REPORTS, RECURRING];
+const BAR_START: Tab[] = [HOME, TRANSACTIONS];
+const BAR_END: Tab[] = [REPORTS, PROFILE];
 
 /**
  * Заголовок страницы для верхней строки.
@@ -56,10 +81,10 @@ const TITLES: Record<string, string> = {
   [ROUTES.notifications]: 'notifications.title',
 };
 
-function Tabs({ variant }: { variant: 'bar' | 'rail' }) {
+function Tabs({ tabs, variant }: { tabs: Tab[]; variant: 'bar' | 'rail' }) {
   const { t } = useT();
 
-  return TABS.map((tab) => (
+  return tabs.map((tab) => (
     <NavLink
       key={tab.to}
       to={tab.to}
@@ -78,11 +103,31 @@ function Tabs({ variant }: { variant: 'bar' | 'rail' }) {
 }
 
 export function AppShell() {
-  const { t } = useT();
+  const { t, locale } = useT();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { user } = useMe();
   const notifications = useNotifications();
+  const [adding, setAdding] = useState(false);
+  const [query, setQuery] = useState('');
+
+  // Поиск в шапке — вход в ленту операций, а не отдельный экран: запрос
+  // уезжает в адрес, и страница операций подхватывает его как свой фильтр.
+  const submitSearch = (event: FormEvent) => {
+    event.preventDefault();
+    const text = query.trim();
+    void navigate(
+      text ? ROUTES.transactions + '?search=' + encodeURIComponent(text) : ROUTES.transactions,
+    );
+    setQuery('');
+  };
+
+  const initials = (user?.name ?? '')
+    .split(/\s+/)
+    .map((part) => part[0] ?? '')
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   const titleKey = TITLES[pathname];
 
@@ -102,7 +147,7 @@ export function AppShell() {
           <Logo />
         </NavLink>
         <nav className={styles.railNav} aria-label={t('nav.aria')}>
-          <Tabs variant="rail" />
+          <Tabs tabs={RAIL} variant="rail" />
         </nav>
 
         {/* Переключатель темы внизу панели: он нужен раз в полгода и не
@@ -111,6 +156,25 @@ export function AppShell() {
             панели нет. */}
         <div className={styles.railFooter}>
           <ThemeToggle />
+
+          {/* Профиль — плашкой с именем, а не шестой строкой меню: это не
+              раздел учёта, а «кто вошёл», и место ему там, где его ищут во
+              всех рабочих приложениях. */}
+          <div className={styles.user}>
+            <NavLink
+              to={ROUTES.profile}
+              className={({ isActive }) => cx(styles.userLink, isActive && styles.userActive)}
+            >
+              <span className={styles.avatar} aria-hidden="true">
+                {initials}
+              </span>
+              <span className={styles.userText}>
+                <span className={styles.userName}>{user?.name}</span>
+                <span className={styles.userMeta}>{user?.baseCurrency}</span>
+              </span>
+            </NavLink>
+            <LogoutIconButton onDone={() => void navigate(ROUTES.login, { replace: true })} />
+          </div>
         </div>
       </aside>
 
@@ -122,9 +186,30 @@ export function AppShell() {
             На телефоне он занимает место марки — название раздела в этой
             строке полезнее логотипа, а на главную уводит нижняя панель.
           */}
-          {titleKey !== undefined && <h1 className={styles.pageTitle}>{t(titleKey)}</h1>}
+          <div className={styles.heading}>
+            {titleKey !== undefined && <h1 className={styles.pageTitle}>{t(titleKey)}</h1>}
+            {/* Дата — только на главной: там она отвечает на «на какой день
+                этот итог», на остальных страницах период задаёт сама страница. */}
+            {pathname === ROUTES.home && (
+              <p className={styles.pageDate}>
+                {formatDate(todayIn(user?.timezone ?? 'UTC'), locale)}
+              </p>
+            )}
+          </div>
 
           <div className={styles.headerActions}>
+            <form className={styles.search} role="search" onSubmit={submitSearch}>
+              <Icon name="search" className={styles.searchIcon} />
+              <input
+                type="search"
+                className={styles.searchInput}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t('shell.search')}
+                aria-label={t('shell.search')}
+              />
+            </form>
+
             {/* Конвертер — в шапке, а не шестой вкладкой: в нижней панели
                 места на шестую нет, а здесь он в одном нажатии с любого
                 экрана — как и нужно инструменту «прикинуть, сколько это». */}
@@ -148,7 +233,10 @@ export function AppShell() {
               {unread > 0 && <span className={styles.badge}>{unread > 9 ? '9+' : unread}</span>}
             </NavLink>
 
-            <LogoutIconButton onDone={() => void navigate(ROUTES.login, { replace: true })} />
+            <button type="button" className={styles.add} onClick={() => setAdding(true)}>
+              <Icon name="plus" className={styles.icon} />
+              {t('shell.newTransaction')}
+            </button>
           </div>
         </header>
 
@@ -163,8 +251,19 @@ export function AppShell() {
       </div>
 
       <nav className={styles.bar} aria-label={t('nav.aria')}>
-        <Tabs variant="bar" />
+        <Tabs tabs={BAR_START} variant="bar" />
+        <button
+          type="button"
+          className={styles.barAdd}
+          onClick={() => setAdding(true)}
+          aria-label={t('shell.newTransactionAria')}
+        >
+          <Icon name="plus" className={styles.icon} />
+        </button>
+        <Tabs tabs={BAR_END} variant="bar" />
       </nav>
+
+      {adding && <TransactionFormModal onClose={() => setAdding(false)} />}
     </div>
   );
 }

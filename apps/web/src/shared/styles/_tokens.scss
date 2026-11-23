@@ -14,10 +14,15 @@
 @mixin light-theme {
   color-scheme: light;
 
-  --c-bg: #f3f4f6;
+  /// Три ступени, как в тёмной теме: фон, карточка и «ступень на карточке»
+  /// (дорожки полос, плитки значков, подложки переключателей). Последняя
+  /// раньше совпадала с карточкой — белое на белом, и всё, что на ней
+  /// держалось, в светлой теме пропадало. Теперь она между фоном и
+  /// карточкой: видна и на белом, и на сером.
+  --c-bg: #e9ebef;
   --c-surface: #ffffff;
-  --c-surface-raised: #ffffff;
-  --c-surface-sunken: #e9ebee;
+  --c-surface-raised: #f2f3f6;
+  --c-surface-sunken: #dfe2e7;
   --c-border: #e2e4e8;
   --c-border-strong: #c9cdd3;
   /// Заливка полей ввода: на белой карточке на полтона темнее неё.
@@ -26,15 +31,21 @@
 
   --c-text: #14161a;
   --c-text-muted: #565b64;
-  --c-text-faint: #868b94;
+  --c-text-faint: #6f747d;
 
   --c-accent: #c0e24a;
   --c-accent-ink: #1b1c1a;
-  /// Акцент как линия или значок, а не как заливка под тёмным текстом:
-  /// светлый лайм на белом не виден, поэтому здесь шаг темнее.
-  --c-accent-line: #5f8f0f;
+  /// Акцент как линия или значок, а не как заливка под тёмным текстом.
+  /// Светлый лайм на белом не виден, а затемнённый превращался в оливковый
+  /// и сливался с зелёным дохода. Поэтому здесь — чернила: та же пара
+  /// «графит и лайм», что в тёмной теме, только наоборот.
+  --c-accent-line: #1b1c1a;
+  /// Кольцо фокуса — тоже чернилами: лаймовое на белом не видно.
+  --c-focus: #1b1c1a;
 
-  --c-income: oklch(52% 0.14 150);
+  /// Доход — холодный, бирюзово-зелёный: подальше по кругу от лайма,
+  /// чтобы «пришли деньги» и «акцент интерфейса» не читались одним цветом.
+  --c-income: oklch(50% 0.11 170);
   --c-expense: oklch(53% 0.19 25);
   --c-warning: oklch(60% 0.15 75);
   --c-danger: oklch(53% 0.21 25);
@@ -69,19 +80,19 @@
        сливается (поля ввода, всплывающие окна). */
     color-scheme: dark;
 
-    --c-bg: #0e0f11;
-    --c-surface: #16181b;
-    --c-surface-raised: #1d2024;
-    --c-surface-sunken: #0a0b0c;
-    --c-border: #23262b;
+    --c-bg: #0a0b0d;
+    --c-surface: #131518;
+    --c-surface-raised: #1b1e23;
+    --c-surface-sunken: #070809;
+    --c-border: #23262c;
     --c-border-strong: #353940;
     /* Заливка полей ввода: на полтона светлее карточки, на которой лежит. */
-    --c-field: #1d2024;
-    --c-field-hover: #23262b;
+    --c-field: #1b1e23;
+    --c-field-hover: #23262c;
 
-    --c-text: #ecedee;
-    --c-text-muted: #a3a8b0;
-    --c-text-faint: #6f757e;
+    --c-text: #f2f3f1;
+    --c-text-muted: #a4a9b1;
+    --c-text-faint: #848a93;
 
     /* Лайм остаётся, но только акцентом: основная кнопка, активный раздел,
        линия графика. Чем реже он встречается, тем лучше работает. */
@@ -91,22 +102,23 @@
     /* Акцент линией или значком. На тёмном фоне это сам лайм. */
     --c-accent-line: var(--c-accent);
 
-    --c-income: oklch(80% 0.15 148);
-    --c-expense: oklch(72% 0.18 25);
+    /* Доход — холодный, бирюзово-зелёный: подальше по кругу от лайма. */
+    --c-income: #5fd6b0;
+    --c-expense: #ff8573;
     --c-warning: oklch(80% 0.14 85);
     --c-danger: oklch(68% 0.2 25);
 
     /* Свои шаги, а не осветление светлых: автоматический переворот даёт
        на тёмном фоне либо блёклые, либо кислотные цвета. */
-    --chart-series-1: #3987e5;
-    --chart-series-2: #d95926;
-    --chart-series-3: #199e70;
-    --chart-series-4: #c98500;
-    --chart-series-5: #d55181;
-    --chart-series-6: #008300;
-    --chart-series-7: #9085e9;
+    --chart-series-1: #5b9cf5;
+    --chart-series-2: #f08a4b;
+    --chart-series-3: #3fc79a;
+    --chart-series-4: #e0a82e;
+    --chart-series-5: #e06c9f;
+    --chart-series-6: #9a8cf0;
+    --chart-series-7: #58b7c9;
     --chart-series-8: #e66767;
-    --chart-rest: #4a4e55;
+    --chart-rest: #6b717b;
     --chart-grid: #1f2226;
     --chart-axis: #2c3036;
 
@@ -123,8 +135,9 @@
 
     /* ────────────────────────── типографическая шкала ──────────────────────── */
 
-    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
+    --font-sans: "Onest", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono:
+      "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
 
     /* Шкала, а не произвольные размеры на каждом месте вызова.
        Прототип набирал по восемь несвязанных чисел на один экран — здесь
@@ -159,8 +172,8 @@
     /* ───────────────────────────────── формы ───────────────────────────────── */
 
     --radius-s: #{fn.rem(6)};
-    --radius-m: #{fn.rem(10)};
-    --radius-l: #{fn.rem(16)};
+    --radius-m: #{fn.rem(12)};
+    --radius-l: #{fn.rem(20)};
     --radius-xl: #{fn.rem(24)};
     --radius-pill: 999px;
 

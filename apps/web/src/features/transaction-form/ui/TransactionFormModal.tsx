@@ -6,15 +6,15 @@ import {
   toMoney,
   type TransactionResponse,
 } from '@moneymap/shared';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useAccounts } from '@/entities/account';
-import { categoryName, useCategories } from '@/entities/category';
+import { categoryColor, categoryName, useCategories } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import { useConvert } from '@/entities/rate';
 import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
-import { formatDate } from '@/shared/lib';
-import { Alert, Button, Field, Modal, Select, toast } from '@/shared/ui';
+import { cx, formatDate } from '@/shared/lib';
+import { Alert, Button, Field, Icon, isIconName, Modal, Select, toast } from '@/shared/ui';
 import {
   useCreateTransaction,
   useCreateTransfer,
@@ -62,6 +62,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   // Удаление в два нажатия: первое спрашивает, второе удаляет. Отдельное
   // окно подтверждения поверх окна операции было бы третьим слоем.
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [allCategories, setAllCategories] = useState(false);
   const dangerRef = useRef<HTMLDivElement>(null);
 
   // Вопрос об удалении — внизу длинной формы: подкручиваем к нему.
@@ -150,6 +151,22 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const categoryOptions = (categories.data ?? []).filter(
     (c) => c.kind === (mode === 'income' ? 'income' : 'expense'),
   );
+
+  /**
+   * Плитки категорий свёрнуты до двух рядов: девятнадцать категорий расходов
+   * целиком — это четыре ряда значков между суммой и кнопкой. В ряду четыре
+   * плитки на телефоне и пять на широком экране (как в стилях), порог — два
+   * ряда. Лента с прокруткой вбок здесь
+   * не годится: мышью её не прокрутить, и обрезанная краем плитка выглядит
+   * ошибкой, а не приглашением листать.
+   *
+   * Если выбранная категория оказалась бы в скрытой части (правка старой
+   * операции), сетка открывается сразу: выбор должен быть виден.
+   */
+  const FOLD = (window.matchMedia('(width >= 30rem)').matches ? 5 : 4) * 2;
+  const canCollapse = categoryOptions.length > FOLD;
+  const selectedHidden = categoryOptions.findIndex((c) => c.id === categoryId) >= FOLD;
+  const collapsed = canCollapse && !allCategories && !selectedHidden;
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -327,67 +344,34 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
           </div>
         )}
 
-        <div className={styles.fields}>
-          <Select
-            label={mode === 'transfer' ? t('transactions.accountFrom') : t('transactions.account')}
-            value={selectedAccountId}
-            disabled={isEdit}
-            onChange={(e) => setAccountId(e.currentTarget.value)}
-          >
-            {open.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name} · {account.currencyCode}
-              </option>
-            ))}
-          </Select>
-
-          {mode === 'transfer' ? (
-            <Select
-              label={t('transactions.accountTo')}
-              value={toAccountId}
-              onChange={(e) => setToAccountId(e.currentTarget.value)}
-            >
-              <option value="">—</option>
-              {open
-                .filter((a) => a.id !== selectedAccountId)
-                .map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.name} · {account.currencyCode}
-                  </option>
-                ))}
-            </Select>
-          ) : (
-            <Select
-              label={t('transactions.category')}
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.currentTarget.value)}
-            >
-              <option value="">{t('transactions.categoryNone')}</option>
-              {categoryOptions.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.parentId
-                    ? `— ${categoryName(t, category.key)}`
-                    : categoryName(t, category.key)}
-                </option>
-              ))}
-            </Select>
-          )}
-
-          <div className={styles.amountRow}>
-            <Field
-              label={t('transactions.amount')}
+        {/*
+          Сумма — первой и крупно: с неё операция начинается в голове («кофе,
+          четыре пятьдесят»), а счёт и дата почти всегда уже верные. Поле
+          открывает цифровую клавиатуру телефона — своей на экране нет: системная
+          знакома руке и умеет вставку.
+        */}
+        <div className={styles.amountHero}>
+          <label className={styles.amountLabel}>
+            <span className="visually-hidden">{t('transactions.amount')}</span>
+            <input
+              className={styles.amountInput}
               inputMode="decimal"
+              autoComplete="off"
+              placeholder="0"
               autoFocus
               value={amount}
               onChange={(e) => setAmount(e.currentTarget.value)}
             />
+          </label>
 
-            {/* Валюта суммы отдельным полем: покупка за границей вводится
-                в валюте чека, а не в валюте карты (§8.5). У перевода её нет —
-                там валюты заданы двумя счетами. */}
-            {mode !== 'transfer' && (
+          {/* Валюта операции. Нужна, когда платёж за границей: чек приходит
+              в валюте чека, а не в валюте карты (§8.5). У перевода её нет —
+              там валюты заданы двумя счетами. */}
+          {mode !== 'transfer' && (
+            <div className={styles.amountCurrency}>
               <Select
                 label={t('transactions.currency')}
+                variant="pill"
                 value={entryCurrency}
                 disabled={isEdit}
                 onChange={(e) =>
@@ -402,10 +386,94 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
                   </option>
                 ))}
               </Select>
+            </div>
+          )}
+        </div>
+
+        {/*
+          Категория — плитками, а не списком: выбрать значок одним касанием
+          быстрее, чем открыть список и найти в нём строку. Повторное нажатие
+          снимает выбор — операция останется без категории.
+        */}
+        {mode !== 'transfer' && categoryOptions.length > 0 && (
+          <div className={styles.pickBlock}>
+            <div
+              className={cx(styles.picks, collapsed && styles.picksCollapsed)}
+              role="group"
+              aria-label={t('transactions.category')}
+            >
+              {categoryOptions.map((category) => {
+                const active = category.id === categoryId;
+                const icon =
+                  category.icon && isIconName(category.icon) ? category.icon : 'circle-ellipsis';
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    className={cx(styles.pick, active && styles.pickActive)}
+                    onClick={() => setCategoryId(active ? '' : category.id)}
+                    aria-pressed={active}
+                  >
+                    <span
+                      className={styles.pickTile}
+                      style={
+                        { '--tile': categoryColor(category.id, categories.data) } as CSSProperties
+                      }
+                    >
+                      <Icon name={icon} className={styles.pickGlyph} />
+                    </span>
+                    <span className={styles.pickName}>{categoryName(t, category.key)}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {canCollapse && (
+              <button
+                type="button"
+                className={styles.picksToggle}
+                onClick={() => setAllCategories((shown) => !shown)}
+                aria-expanded={!collapsed}
+              >
+                {collapsed ? t('transactions.categoriesAll') : t('transactions.categoriesLess')}
+              </button>
             )}
           </div>
+        )}
 
-          {/* Сколько списалось со счёта. Пустое поле — значит «по курсу дня»:
+        <div className={styles.fields}>
+          <Select
+            label={mode === 'transfer' ? t('transactions.accountFrom') : t('transactions.account')}
+            value={selectedAccountId}
+            disabled={isEdit}
+            onChange={(e) => setAccountId(e.currentTarget.value)}
+          >
+            {open.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name} · {account.currencyCode}
+              </option>
+            ))}
+          </Select>
+
+          {mode === 'transfer' && (
+            <Select
+              label={t('transactions.accountTo')}
+              value={toAccountId}
+              onChange={(e) => setToAccountId(e.currentTarget.value)}
+            >
+              <option value="">—</option>
+              {open
+                .filter((a) => a.id !== selectedAccountId)
+                .map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name} · {account.currencyCode}
+                  </option>
+                ))}
+            </Select>
+          )}
+
+          {/* Сколько списалось со счёта. Можно не заполнять — посчитаем по
+              курсу на дату. Сумма со счёта остаётся подсказкой под полем:
               подставлять справочное число в поле нельзя, человек увидит
               в выписке другое и не заметит подмены. */}
           {foreign && (
@@ -418,7 +486,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
             />
           )}
 
-          {/* Вторая сумма появляется ровно тогда, когда без неё не обойтись:
+          {/* Сумма зачисления нужна только для кросс-валютного перевода:
               счета в разных валютах, и курс выводится из двух чисел. */}
           {crossCurrency && (
             <Field

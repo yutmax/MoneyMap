@@ -1,6 +1,6 @@
 .root {
   display: grid;
-  row-gap: var(--space-l);
+  row-gap: var(--space-s);
   align-content: start;
 }
 
@@ -8,61 +8,118 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-s);
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
 }
 
 .subtitle {
-  margin-block-start: var(--space-3xs);
   font-size: var(--step--1);
   color: var(--c-text-muted);
 }
 
 .controls {
   display: flex;
-  gap: var(--space-s);
-  align-items: end;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  align-items: center;
+}
+
+// Период — переключателем: три варианта видны сразу, без раскрытия списка.
+.ranges {
+  display: inline-flex;
+  padding: rem(3);
+  background-color: var(--c-surface-raised);
+  border-radius: var(--radius-pill);
+}
+
+.range {
+  min-block-size: rem(36);
+  padding-inline: var(--space-s);
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+  white-space: nowrap;
+  border-radius: var(--radius-pill);
+
+  @include transition(color, background-color);
+  @include focus-ring($offset: 1px);
+
+  @include hover {
+    color: var(--c-text);
+  }
+}
+
+.rangeActive {
+  font-weight: var(--weight-medium);
+  color: var(--c-text);
+  background-color: var(--c-border-strong);
 }
 
 .export {
-  padding-block-end: rem(6);
+  display: inline-flex;
+  align-items: center;
+  min-block-size: rem(42);
+  padding-inline: var(--space-s);
   font-size: var(--step--1);
-  color: var(--c-text);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  font-weight: var(--weight-medium);
   white-space: nowrap;
+  background-color: var(--c-surface-raised);
+  border-radius: var(--radius-pill);
 
+  @include transition(background-color);
   @include focus-ring;
+
+  @include hover {
+    background-color: var(--c-surface-hover);
+  }
 }
 
-// Четыре плитки — четыре равные колонки на всю ширину. Сетка с
-// автозаполнением оставляла справа пустые колонки под плитки, которых нет.
+/* ──────────────────────────────── итоги ──────────────────────────────── */
+
 .totals {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2xs);
 
-  @include from("md") {
+  @include from("lg") {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-s);
   }
 }
 
-/* Плитка, а не график из одного столбца: одно число — это одно число. */
 .tile {
   display: grid;
-  row-gap: rem(2);
+  row-gap: var(--space-2xs);
+  align-content: start;
+  min-inline-size: 0;
 
-  @include surface(var(--space-s) var(--space-m));
+  @include surface(var(--space-m));
 }
 
 .tileLabel {
-  font-size: var(--step--2);
-  color: var(--c-text-faint);
+  @include eyebrow;
 }
 
+// На телефоне плитки стоят по две в ряд, и крупная цифра с копейками в
+// половину экрана не помещается — там шаг меньше.
 .tileValue {
   font-size: var(--step-1);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+
+  @include tabular-numbers;
+  @include clamp-lines(1);
+
+  @include from("lg") {
+    font-size: var(--step-3);
+  }
+}
+
+// Сравнение с предыдущим периодом той же длины.
+.tileNote {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
 
   @include tabular-numbers;
 }
@@ -75,23 +132,76 @@
   color: var(--c-expense);
 }
 
-// auto-fit, а не fill: два кольца делят ширину пополам, а не оставляют
-// справа пустую колонку под третье.
+.meter {
+  block-size: rem(8);
+  margin-block-start: var(--space-2xs);
+  overflow: hidden;
+  background-color: var(--c-surface-raised);
+  border-radius: var(--radius-pill);
+}
+
+.meterFill {
+  display: block;
+  block-size: 100%;
+  background-color: var(--c-accent);
+  border-radius: var(--radius-pill);
+}
+
+/* ─────────────────────────────── блоки ─────────────────────────────── */
+
+// График и бюджеты: две трети графику, ему нужна ширина под полгода.
+.split {
+  display: grid;
+  gap: var(--space-s);
+  align-items: start;
+
+  @include from("lg") {
+    grid-template-columns: minmax(0, 2fr) minmax(rem(300), 1fr);
+  }
+}
+
 .columns {
-  @include auto-grid(rem(300), var(--space-m), fit);
+  display: grid;
+  gap: var(--space-s);
+  align-items: start;
+
+  @include from("lg") {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+
+.side {
+  display: grid;
+  gap: var(--space-s);
+  min-inline-size: 0;
 }
 
 .block {
   display: grid;
   row-gap: var(--space-s);
   align-content: start;
+  min-inline-size: 0;
 
   @include surface(var(--space-m));
 }
 
+.blockHeader {
+  display: flex;
+  gap: var(--space-s);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
 .blockTitle {
   font-size: var(--step-0);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
+}
+
+.blockMeta {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+
+  @include tabular-numbers;
 }
 
 .empty {
@@ -101,39 +211,135 @@
   text-align: center;
 }
 
-.largest {
+/* ─────────────────────────── рейтинг категорий ─────────────────────────── */
+
+.rank {
   display: grid;
-  row-gap: rem(4);
+  row-gap: var(--space-2xs);
 }
 
-.largestRow {
+// На телефоне полоса уходит на вторую строку под название: в одну строку
+// четыре колонки не помещаются.
+.rankRow {
   display: grid;
-  column-gap: var(--space-s);
-  grid-template-columns: auto 1fr auto;
-  align-items: baseline;
+  grid-template-columns: minmax(0, 1fr) auto rem(84);
+  gap: var(--space-3xs) var(--space-xs);
+  align-items: center;
+  min-block-size: rem(36);
   font-size: var(--step--1);
+
+  @include from("sm") {
+    grid-template-columns: rem(160) minmax(0, 1fr) rem(40) rem(92);
+  }
 }
 
-.date {
+.rankName {
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.rankLabel {
+  @include clamp-lines(1);
+}
+
+.dot {
+  flex: none;
+  inline-size: rem(8);
+  block-size: rem(8);
+  border-radius: 50%;
+}
+
+.rankTrack {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  block-size: rem(6);
+  background-color: var(--c-surface-raised);
+  border-radius: var(--radius-pill);
+
+  @include from("sm") {
+    grid-row: auto;
+    grid-column: auto;
+  }
+}
+
+.rankFill {
+  display: block;
+  block-size: 100%;
+  min-inline-size: rem(4);
+  border-radius: var(--radius-pill);
+}
+
+.rankShare {
   color: var(--c-text-faint);
+  text-align: end;
 
   @include tabular-numbers;
 }
 
+.rankAmount {
+  font-weight: var(--weight-medium);
+  text-align: end;
+  white-space: nowrap;
+
+  @include tabular-numbers;
+}
+
+/* ─────────────────────────── крупнейшие операции ─────────────────────────── */
+
+.largest {
+  display: grid;
+}
+
+.largestRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: var(--space-xs);
+  align-items: center;
+  min-block-size: rem(60);
+
+  & + & {
+    border-block-start: var(--border-width) solid var(--c-border);
+  }
+}
+
+.largestIcon {
+  display: grid;
+  place-items: center;
+  inline-size: rem(40);
+  block-size: rem(40);
+  color: var(--tile);
+  background-color: color-mix(in oklab, var(--tile) 14%, transparent);
+  border-radius: var(--radius-m);
+}
+
+.largestGlyph {
+  inline-size: rem(18);
+  block-size: rem(18);
+}
+
+.largestInfo {
+  display: grid;
+  min-inline-size: 0;
+}
+
 .largestName {
-  display: flex;
-  gap: var(--space-2xs);
-  align-items: baseline;
-  min-width: 0;
+  font-weight: var(--weight-medium);
 
   @include clamp-lines(1);
 }
 
-.account {
+.largestMeta {
   font-size: var(--step--2);
   color: var(--c-text-faint);
+
+  @include clamp-lines(1);
 }
 
 .largestAmount {
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+
   @include tabular-numbers;
 }

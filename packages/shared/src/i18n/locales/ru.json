@@ -213,9 +213,9 @@
     "submit": "Готово"
   },
   "dashboard": {
-    "title": "Обзор",
+    "title": "Главная",
     "recent": "Последние операции",
-    "showAll": "Показать все",
+    "showAll": "Все операции",
     "income": "Доходы",
     "expense": "Расходы",
     "net": "Разница",
@@ -223,15 +223,28 @@
     "allAccounts": "Все счета",
     "topSpending": "Главные траты",
     "noSpending": "В этом месяце трат пока нет.",
-    "toReports": "Отчёты"
+    "toReports": "Отчёты",
+    "daysLeft": "осталось дней: {{count}}",
+    "lastDay": "последний день месяца",
+    "spentOfIncome": "Потрачено {{percent}}% дохода",
+    "noIncome": "Доходов в этом месяце пока нет",
+    "left": "Остаётся",
+    "report": "Отчёт",
+    "whereMoneyWent": "Куда ушли деньги",
+    "upcoming": "Ближайшие платежи",
+    "upcomingEmpty": "Регулярных платежей в ближайший месяц нет.",
+    "toRecurring": "Регулярные",
+    "shareOfTotal": "{{code}} · {{percent}}%",
+    "otherCategories": "Остальное"
   },
   "summary": {
-    "title": "Всего на счетах",
+    "title": "Общий баланс",
     "displayIn": "Валюта",
     "empty": "Пока нет счетов — добавьте первый, и здесь появится итог.",
     "stale": "Курс не на сегодня ({{currencies}}) — итог приблизительный.",
     "missing": "Нет курса для {{currencies}}: эти остатки в итог не вошли.",
-    "change": "за {{days}} дн.: {{amount}}"
+    "change": "за {{days}} дн.: {{amount}}",
+    "changeChip": "{{amount}} за {{days}} дн."
   },
   "sessions": {
     "title": "Активные устройства",
@@ -274,7 +287,9 @@
     "sections": "Разделы",
     "categoriesHint": "Набор категорий доходов и расходов",
     "devicesHint": "Где выполнен вход в аккаунт",
-    "emailUnverified": "Почта не подтверждена"
+    "emailUnverified": "Почта не подтверждена",
+    "accountsHint": "Остатки, новые счета и сверка",
+    "recurringHint": "Подписки, аренда, зарплата"
   },
   "notFound": {
     "title": "404",
@@ -319,7 +334,9 @@
     "deleteConfirm": "Удалить",
     "deleteCancel": "Отмена",
     "deleteFailed": "Не удалось удалить счёт",
-    "currency": "Валюта"
+    "currency": "Валюта",
+    "shareOfTotal": "{{percent}}% от всех денег",
+    "count": "счетов: {{count}}"
   },
   "categories": {
     "title": "Категории",
@@ -421,7 +438,12 @@
     "periodThisYear": "Этот год",
     "periodCustom": "Свой период…",
     "dateFrom": "С",
-    "dateTo": "По"
+    "dateTo": "По",
+    "detailsClose": "Закрыть подробности",
+    "detailsOriginal": "Сумма в валюте операции",
+    "detailsNoNote": "Нет",
+    "categoriesAll": "Все категории",
+    "categoriesLess": "Свернуть"
   },
   "recurring": {
     "title": "Регулярные операции",
@@ -512,9 +534,9 @@
     "period": "{{from}} — {{to}}",
     "range": "Период",
     "ranges": {
-      "month": "Этот месяц",
-      "quarter": "Три месяца",
-      "year": "Этот год"
+      "month": "Месяц",
+      "quarter": "3 месяца",
+      "year": "Год"
     },
     "export": "Выгрузить CSV",
     "loadFailed": "Не удалось построить отчёт",
@@ -522,12 +544,15 @@
     "other": "Прочее",
     "income": "Доходы",
     "expense": "Расходы",
-    "net": "Разница",
+    "net": "Остаток",
     "count": "Операций",
-    "cashflowTitle": "По месяцам",
+    "cashflowTitle": "Доходы и расходы",
     "byCategoryTitle": "Расходы по категориям",
     "byCurrencyTitle": "Расходы по валютам",
-    "largestTitle": "Крупнейшие операции"
+    "largestTitle": "Крупнейшие операции",
+    "versusPrevious": "{{change}} к прошлому периоду",
+    "saved": "Сохранено от дохода",
+    "countInline": "операций: {{count}}"
   },
   "budgets": {
     "title": "Бюджеты",
@@ -605,5 +630,10 @@
     },
     "title": "Уведомления",
     "empty": "Уведомлений пока нет."
+  },
+  "shell": {
+    "search": "Поиск по операциям",
+    "newTransaction": "Операция",
+    "newTransactionAria": "Новая операция"
   }
 }

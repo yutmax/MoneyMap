@@ -1,14 +1,18 @@
+// Тот же переключатель, что у периода в отчётах и вида операции в форме:
+// приподнятая подложка без рамки и нейтральная таблетка активной вкладки.
 .root {
   display: inline-flex;
   gap: rem(2);
   padding: rem(3);
-  background-color: var(--c-surface-sunken);
-  border: var(--border-width) solid var(--c-border);
+  background-color: var(--c-surface-raised);
   border-radius: var(--radius-pill);
 }
 
 .tab {
-  padding: var(--space-3xs) var(--space-s);
+  display: inline-flex;
+  align-items: center;
+  min-block-size: rem(36);
+  padding-inline: var(--space-s);
   font-size: var(--step--1);
   color: var(--c-text-muted);
   border-radius: var(--radius-pill);
@@ -23,10 +27,11 @@
 }
 
 .active {
+  font-weight: var(--weight-medium);
   color: var(--c-text);
   // Нейтральная подложка вместо лаймовой: переключатель встречается на
   // многих экранах, и залитый акцентом он перебивал основную кнопку.
-  background-color: color-mix(in oklab, var(--c-text) 12%, transparent);
+  background-color: var(--c-border-strong);
 
   @include hover {
     color: var(--c-text);

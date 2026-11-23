@@ -12,11 +12,16 @@ import { Icon, type IconName } from '@/shared/ui';
 import styles from './ProfilePage.module.scss';
 
 /**
- * Разделы, которым не нашлось места в нижней панели. Они открываются раз в
- * несколько месяцев, и занимать ими одну из пяти вкладок значило бы
- * отодвинуть то, чем пользуются каждый день.
+ * Разделы, которым не нашлось места в нижней панели.
+ *
+ * Счета и регулярные стоят здесь с тех пор, как середину панели заняла
+ * кнопка новой операции: на телефоне это второй путь к ним, кроме ссылок с
+ * главной и вкладок на странице операций. Категории и устройства
+ * открываются раз в несколько месяцев и вкладки никогда не заслуживали.
  */
 const LINKS: Array<{ to: string; key: string; hint: string; icon: IconName }> = [
+  { to: ROUTES.accounts, key: 'nav.accounts', hint: 'settings.accountsHint', icon: 'accounts' },
+  { to: ROUTES.recurring, key: 'nav.recurring', hint: 'settings.recurringHint', icon: 'repeat' },
   {
     to: ROUTES.categories,
     key: 'nav.categories',

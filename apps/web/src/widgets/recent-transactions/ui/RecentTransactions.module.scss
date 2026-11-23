@@ -1,7 +1,13 @@
+// Лента лежит в одной карточке: заголовок, дни и строки — один блок,
+// а не стопка карточек по дням.
 .root {
   display: grid;
-  row-gap: var(--space-s);
+  row-gap: var(--space-2xs);
   align-content: start;
+  min-inline-size: 0;
+  padding: var(--space-m) var(--space-s) var(--space-xs);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
 }
 
 .header {
@@ -9,11 +15,14 @@
   gap: var(--space-s);
   align-items: baseline;
   justify-content: space-between;
+  // Строки внутри уже с собственным полем под подсветку наведения —
+  // заголовок доводится до их текста.
+  padding-inline: var(--space-xs);
 }
 
 .title {
   font-size: var(--step-0);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
 }
 
 .all {
@@ -30,15 +39,10 @@
 
 .skeleton {
   block-size: rem(240);
-  background-color: var(--c-surface);
-  border-radius: var(--radius-l);
 }
 
 .empty {
-  padding: var(--space-m);
+  padding: var(--space-m) var(--space-xs);
   font-size: var(--step--1);
   color: var(--c-text-muted);
-  text-align: center;
-  background-color: var(--c-surface);
-  border-radius: var(--radius-l);
 }

@@ -1,35 +1,53 @@
 import { formatMoney, type RecurringRuleResponse } from '@moneymap/shared';
-import type { ReactNode } from 'react';
-import { categoryNameOrNull } from '@/entities/category';
+import type { CSSProperties, ReactNode } from 'react';
+import { categoryColor, categoryNameOrNull, useCategories } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import { useT } from '@/shared/i18n';
 import { cx, formatDate } from '@/shared/lib';
+import { Icon, isIconName, type IconName } from '@/shared/ui';
 import { scheduleText } from '../lib/schedule-text.ts';
 import styles from './RecurringRuleCard.module.scss';
 
 interface RecurringRuleCardProps {
   rule: RecurringRuleResponse;
-  /** Кнопки приходят снаружи: действия живут в features. */
+  /** Кнопки управления правилом. Задаёт страница: карточка только рисует. */
   actions?: ReactNode;
 }
 
+/**
+ * Строка правила: значок категории, название, расписание, сумма и действия.
+ *
+ * Значок и цвет — те же, что у операций этой категории в ленте: правило —
+ * это будущие операции, и узнаваться оно должно так же. Правило без
+ * категории получает значок повтора.
+ */
 export function RecurringRuleCard({ rule, actions }: RecurringRuleCardProps) {
   const { t, locale } = useT();
   const currencies = useCurrencies();
+  const categories = useCategories();
   const currency = currencies.data?.find((c) => c.code === rule.currencyCode);
 
-  const amount = formatMoney(rule.amount, {
+  const amount = formatMoney(rule.kind === 'expense' ? `-${rule.amount}` : rule.amount, {
     currency: rule.currencyCode,
     decimals: currency?.decimals ?? 2,
     locale,
+    signDisplay: 'always',
     ...(currency?.symbol ? { symbol: currency.symbol } : {}),
   });
 
+  const categoryIcon = categories.data?.find((c) => c.id === rule.categoryId)?.icon;
+  const icon: IconName = categoryIcon && isIconName(categoryIcon) ? categoryIcon : 'repeat';
+  const tile = { '--tile': categoryColor(rule.categoryId, categories.data) } as CSSProperties;
+
   return (
     <li className={cx(styles.root, rule.isPaused && styles.paused)}>
+      <span className={styles.icon} style={tile}>
+        <Icon name={icon} className={styles.glyph} />
+      </span>
+
       <div className={styles.info}>
         <p className={styles.name}>
-          {rule.name}
+          <span className={styles.title}>{rule.name}</span>
           {rule.isPaused && <span className={styles.badge}>{t('recurring.paused')}</span>}
           {/* Подтверждение вручную — не настройка, а обещание спросить,
               и о нём стоит сказать прямо в списке. */}
@@ -46,10 +64,7 @@ export function RecurringRuleCard({ rule, actions }: RecurringRuleCardProps) {
         </p>
       </div>
 
-      <p className={cx(styles.amount, rule.kind === 'expense' ? styles.expense : styles.income)}>
-        {rule.kind === 'expense' ? '−' : '+'}
-        {amount}
-      </p>
+      <p className={cx(styles.amount, rule.kind === 'income' && styles.income)}>{amount}</p>
 
       {actions && <div className={styles.actions}>{actions}</div>}
     </li>

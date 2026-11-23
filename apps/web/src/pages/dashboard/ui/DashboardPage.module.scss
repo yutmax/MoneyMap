@@ -3,24 +3,30 @@
   row-gap: var(--space-m);
 }
 
-/*
- * На широком экране лента слева, справа — счета и траты. Колонка справа
- * фиксированной меры: в ней короткие строки, и растянутая она разносит
- * название и сумму по краям.
- */
-.columns {
+// Итог и месяц: рядом на широком экране, друг под другом на узком.
+// Две трети итогу — в нём график, которому нужна ширина.
+.hero {
   display: grid;
-  gap: var(--space-m);
-  align-items: start;
+  gap: var(--space-s);
 
   @include from("lg") {
-    grid-template-columns: minmax(0, 1fr) rem(340);
+    grid-template-columns: minmax(0, 2fr) minmax(rem(300), 1fr);
   }
 }
 
-// В одну колонку порядок тот же, что и в разметке: сначала лента, за ней
-// счета и главные траты.
+// Лента слева, справа — траты и ближайшие платежи.
+.columns {
+  display: grid;
+  gap: var(--space-s);
+  align-items: start;
+
+  @include from("lg") {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+
 .side {
   display: grid;
-  gap: var(--space-m);
+  gap: var(--space-s);
+  min-inline-size: 0;
 }

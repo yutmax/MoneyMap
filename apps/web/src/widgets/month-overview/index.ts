@@ -1,1 +1,1 @@
-export { MonthTiles, TopSpending } from './ui/MonthOverview.tsx';
+export { MonthCard, WhereMoneyWent } from './ui/MonthOverview.tsx';

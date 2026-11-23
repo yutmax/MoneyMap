@@ -35,10 +35,13 @@ import {
   Moon,
   Palette,
   PartyPopper,
+  Pause,
   PawPrint,
+  Pencil,
   PiggyBank,
   Plus,
   Plane,
+  Play,
   Plug,
   Repeat,
   RotateCcw,
@@ -48,6 +51,7 @@ import {
   Sparkles,
   Sun,
   Tags,
+  Trash2,
   TrendingUp,
   User,
   Utensils,
@@ -106,6 +110,11 @@ export const ICONS = {
   search: Search,
   calendar: Calendar,
   'chevron-down': ChevronDown,
+  // Действия над строкой: правка, пауза и возобновление, удаление.
+  pencil: Pencil,
+  pause: Pause,
+  play: Play,
+  trash: Trash2,
 
   // Всплывающие уведомления: свои значки вместо залитых глифов sonner —
   // у них другая толщина и заливка, и на фоне обведённых lucide они

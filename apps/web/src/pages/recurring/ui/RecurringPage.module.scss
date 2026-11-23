@@ -1,6 +1,6 @@
 .root {
   display: grid;
-  row-gap: var(--space-l);
+  row-gap: var(--space-s);
   align-content: start;
 }
 
@@ -8,57 +8,66 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-s);
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
 }
 
-.subtitle {
-  max-width: 60ch;
-  margin-block-start: var(--space-3xs);
-  font-size: var(--step--1);
-  color: var(--c-text-muted);
+.plus {
+  inline-size: rem(16);
+  block-size: rem(16);
+  margin-inline-start: rem(-4);
 }
 
+.columns {
+  display: grid;
+  gap: var(--space-s);
+  align-items: start;
+
+  @include from("lg") {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+
+// Каждый раздел — карточка: заголовок и строки через линию.
 .section {
   display: grid;
   row-gap: var(--space-2xs);
-}
-
-.sectionTitle {
-  padding-inline: var(--space-s);
-  font-size: var(--step--1);
-  font-weight: var(--weight-regular);
-  color: var(--c-text-faint);
-}
-
-.list {
-  overflow: hidden;
+  align-content: start;
+  min-inline-size: 0;
+  padding: var(--space-m) var(--space-m) var(--space-xs);
   background-color: var(--c-surface);
   border-radius: var(--radius-l);
 }
 
+.sectionTitle {
+  font-size: var(--step-0);
+  font-weight: var(--weight-semibold);
+}
+
+.list {
+  display: grid;
+}
+
 .empty {
-  max-width: 50ch;
-  padding-block: var(--space-l);
+  padding-block: var(--space-s) var(--space-m);
+  font-size: var(--step--1);
   color: var(--c-text-muted);
-  text-align: center;
-  justify-self: center;
 }
 
 .skeleton {
   block-size: rem(64);
 }
 
-/* Очередь подтверждений отмечена полоской акцента слева: это не сводка,
-   а вопрос. Строки — внутри общего блока списка, через линию. */
+/* Очередь подтверждений: это не сводка, а вопрос, и строки в ней с
+   кнопками. Точка акцента у названия раздела отмечает, что блок ждёт
+   решения. */
 .pending {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-s);
+  gap: var(--space-xs) var(--space-s);
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-s) var(--space-m);
-  box-shadow: inset 3px 0 0 var(--c-accent-line);
+  padding-block: var(--space-xs);
 
   & + & {
     border-block-start: var(--border-width) solid var(--c-border);
@@ -67,54 +76,102 @@
 
 .info {
   display: grid;
-  row-gap: rem(2);
-  min-width: 0;
+  row-gap: rem(1);
+  min-inline-size: 0;
   flex: 1 1 rem(200);
 }
 
 .name {
   font-weight: var(--weight-medium);
+
+  @include clamp-lines(1);
 }
 
 .meta {
   font-size: var(--step--2);
   color: var(--c-text-faint);
+
+  @include clamp-lines(1);
 }
 
 .amount {
   font-weight: var(--weight-medium);
+  white-space: nowrap;
 
   @include tabular-numbers;
+}
+
+.income {
+  color: var(--c-income);
 }
 
 .actions {
   display: flex;
   gap: var(--space-2xs);
-  flex-wrap: wrap;
 }
+
+/* Действия над правилом — круглыми значками. */
+.iconButton {
+  display: grid;
+  place-items: center;
+  inline-size: rem(36);
+  block-size: rem(36);
+  color: var(--c-text-muted);
+  background-color: var(--c-surface-raised);
+  border-radius: 50%;
+
+  @include transition(color, background-color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+    background-color: var(--c-border-strong);
+  }
+}
+
+.iconDanger {
+  @include hover {
+    color: var(--c-danger);
+    background-color: color-mix(in oklab, var(--c-danger) 16%, transparent);
+  }
+}
+
+.iconGlyph {
+  inline-size: rem(16);
+  block-size: rem(16);
+}
+
+/* ─────────────────────── ближайшие срабатывания ─────────────────────── */
 
 .upcoming {
   display: grid;
-  row-gap: rem(2);
-
-  @include surface(var(--space-xs) var(--space-m));
 }
 
 .upcomingRow {
   display: grid;
-  column-gap: var(--space-s);
-  grid-template-columns: auto 1fr auto;
-  align-items: baseline;
-  padding-block: var(--space-3xs);
-  font-size: var(--step--1);
+  grid-template-columns: rem(40) minmax(0, 1fr) auto;
+  column-gap: var(--space-xs);
+  align-items: center;
+  min-block-size: rem(60);
+
+  & + & {
+    border-block-start: var(--border-width) solid var(--c-border);
+  }
 }
 
 .date {
-  color: var(--c-text-faint);
+  display: grid;
+  justify-items: center;
+}
+
+.day {
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+  line-height: 1.1;
 
   @include tabular-numbers;
 }
 
-.upcomingName {
-  @include clamp-lines(1);
+.month {
+  @include eyebrow;
 }
