@@ -1,93 +1,116 @@
 .root {
   display: grid;
-  row-gap: var(--space-s);
-  // Конвертер — инструмент на одну мысль; растянутый на всю ширину
-  // монитора, он разносит сумму и валюту по разным краям экрана.
-  max-inline-size: rem(560);
+  row-gap: var(--space-m);
 }
 
-.card {
-  display: grid;
+/* ─────────────────────────────── плитки ─────────────────────────────── */
 
-  @include surface(var(--space-m));
+.panels {
+  // Кнопка обмена позиционируется относительно пары плиток, на их стыке.
+  position: relative;
+  display: grid;
+  row-gap: rem(6);
 }
 
-.row {
+.panel {
   display: grid;
-  // Сумма шире выбора валюты: читают в первую очередь число. На телефоне
-  // у выбора остаётся ширина под код валюты — название обрежется, код нет.
-  grid-template-columns: minmax(0, 1fr) rem(112);
-  column-gap: var(--space-s);
-  align-items: end;
+  row-gap: var(--space-xs);
+  padding: var(--space-s) var(--space-m) var(--space-m);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-xl);
+  // Обводка рисуется тенью, а не рамкой: появляется у активной плитки и не
+  // сдвигает содержимое на пиксель.
+  box-shadow: inset 0 0 0 var(--border-width) transparent;
 
-  @include from("sm") {
-    grid-template-columns: minmax(0, 1fr) minmax(rem(140), rem(240));
+  @include transition(box-shadow, background-color);
+}
+
+// Плитка, в которой набирают, чуть светлее и с тонкой обводкой акцента.
+.panelActive {
+  background-color: var(--c-surface-raised);
+  box-shadow: inset 0 0 0 var(--border-width)
+    color-mix(in oklab, var(--c-accent-line) 45%, transparent);
+}
+
+.panelTop {
+  display: flex;
+  gap: var(--space-s);
+  align-items: center;
+  justify-content: space-between;
+
+  // Выбор валюты не шире половины плитки: длинное название обрежется,
+  // а код в начале строки останется виден.
+  > :last-child {
+    min-inline-size: 0;
+    max-inline-size: min(60%, rem(260));
   }
 }
 
-.amountBox {
-  min-inline-size: 0;
+.panelLabel {
+  font-size: var(--step--1);
+  color: var(--c-text-faint);
 }
 
 .amount {
   width: 100%;
-  min-height: var(--control-height);
-  padding: var(--space-2xs) 0;
-  font-size: var(--step-3);
+  padding: 0;
+  font-size: var(--step-4);
   font-weight: var(--weight-medium);
-  line-height: var(--leading-tight);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   color: var(--c-text);
   background-color: transparent;
   border: 0;
-  border-bottom: 2px solid var(--c-border);
-  border-radius: 0;
 
   @include tabular-numbers;
-  @include transition(border-color, color);
+  @include transition(color);
 
   &::placeholder {
     color: var(--c-text-faint);
   }
 
   &:focus {
-    border-bottom-color: var(--c-accent);
     outline: none;
   }
 }
 
-// Вычисленное поле приглушено, пока его не трогают: видно, какое число
-// задал человек, а какое получилось. Начал править — оно становится главным.
+// Вычисленная сумма приглушена, пока её не трогают: видно, какое число
+// задал человек, а какое получилось. Начал править — она становится главной.
 .computed:not(:focus) {
   color: var(--c-text-muted);
 }
 
 .invalid,
 .invalid:focus {
-  border-bottom-color: var(--c-danger);
+  color: var(--c-danger);
 }
 
-.swapLine {
-  display: flex;
-  justify-content: center;
-  padding-block: var(--space-2xs);
-}
+/* ─────────────────────────────── обмен ─────────────────────────────── */
 
+/*
+ * Кнопка на стыке плиток. Кольцо цветом фона страницы вырезает её из
+ * плиток, и она читается как шарнир между ними, а не как ещё одна кнопка.
+ */
 .swap {
-  display: inline-grid;
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  z-index: 1;
+  display: grid;
   place-items: center;
-  inline-size: rem(40);
-  block-size: rem(40);
-  color: var(--c-text-muted);
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-border);
+  inline-size: rem(44);
+  block-size: rem(44);
+  color: var(--c-text);
+  background-color: var(--c-surface-raised);
+  border: rem(4) solid var(--c-bg);
   border-radius: 50%;
+  translate: -50% -50%;
 
-  @include transition(color, background-color, border-color);
+  @include transition(color, background-color);
   @include focus-ring;
 
   @include hover {
-    color: var(--c-text);
-    background-color: var(--c-surface-hover);
+    color: var(--c-accent-line);
   }
 }
 
@@ -101,15 +124,19 @@
   }
 }
 
+/* ─────────────────────────────── курс ─────────────────────────────── */
+
 .info {
   display: grid;
   row-gap: var(--space-3xs);
-  padding-inline: var(--space-m);
+  justify-items: center;
+  text-align: center;
 }
 
 .rate {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   column-gap: var(--space-s);
   font-size: var(--step--1);
 
@@ -117,7 +144,7 @@
 }
 
 .inverse {
-  color: var(--c-text-muted);
+  color: var(--c-text-faint);
 }
 
 .meta {

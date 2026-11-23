@@ -12,8 +12,27 @@
   }
 }
 
+.icon {
+  display: grid;
+  flex: none;
+  // На уровне названия, а не посередине: на телефоне строка высокая.
+  align-self: flex-start;
+  place-items: center;
+  inline-size: rem(40);
+  block-size: rem(40);
+  color: var(--c-text-muted);
+  background-color: var(--c-surface-raised);
+  border-radius: 50%;
+}
+
+.logo {
+  inline-size: rem(18);
+  block-size: rem(18);
+}
+
 .info {
   display: grid;
+  flex: 1 1 rem(200);
   row-gap: rem(2);
   // min-width: 0 — чтобы длинный User-Agent не растягивал flex-строку
   // за пределы карточки.

@@ -2,6 +2,8 @@ import type { SessionSummary } from '@moneymap/shared';
 import type { ReactNode } from 'react';
 import { useT } from '@/shared/i18n';
 import { formatDateTime, formatRelative, regionName } from '@/shared/lib';
+import { Icon } from '@/shared/ui';
+import { OS_LOGO_PATHS, osLogo } from '../lib/os-logos.ts';
 import styles from './SessionCard.module.scss';
 
 interface SessionCardProps {
@@ -27,8 +29,22 @@ export function SessionCard({ session, action }: SessionCardProps) {
   const country = session.countryCode ? regionName(session.countryCode, locale) : null;
   const place = [session.city, country].filter(Boolean).join(', ');
 
+  // Логотип системы — чтобы найти «тот самый телефон» глазами, не читая
+  // строку. Незнакомая система получает нейтральный значок устройства.
+  const logo = osLogo(session.os);
+
   return (
     <li className={styles.root}>
+      <span className={styles.icon} title={session.os ?? undefined}>
+        {logo ? (
+          <svg viewBox="0 0 24 24" className={styles.logo} aria-hidden="true" focusable="false">
+            <path d={OS_LOGO_PATHS[logo]} fill="currentColor" />
+          </svg>
+        ) : (
+          <Icon name="devices" className={styles.logo} />
+        )}
+      </span>
+
       <div className={styles.info}>
         <p className={styles.device}>
           {device}

@@ -1,87 +1,182 @@
 .root {
   display: grid;
-  row-gap: var(--space-l);
-  // Длинная строка настроек неудобна: ограничиваем ширину читаемой мерой.
-  max-width: rem(760);
+  row-gap: var(--space-m);
+  align-content: start;
+}
+
+/* ─────────────────────────────── кто вошёл ─────────────────────────────── */
+
+.identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-s);
+  align-items: center;
+  padding: var(--space-m);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
+
+  @include from("sm") {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  inline-size: rem(56);
+  block-size: rem(56);
+  font-size: var(--step-1);
+  font-weight: var(--weight-medium);
+  color: var(--c-accent-ink);
+  background-color: var(--c-accent);
+  border-radius: 50%;
+}
+
+.who {
+  display: grid;
+  row-gap: rem(2);
+  min-width: 0;
 }
 
 .name {
   font-size: var(--step-1);
   font-weight: var(--weight-medium);
-}
 
-.section {
-  display: grid;
-  row-gap: var(--space-s);
-
-  @include surface(var(--space-m));
-}
-
-.sectionTitle {
-  font-size: var(--step-1);
-  font-weight: var(--weight-medium);
-}
-
-.options {
-  // dl, а не таблица и не набор div'ов: подпись и элемент управления — это
-  // пара «термин — значение», и разметка говорит ровно это.
-  display: grid;
-  gap: var(--space-2xs) var(--space-m);
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  margin: 0;
-}
-
-.optionLabel {
-  font-size: var(--step--1);
-  color: var(--c-text-muted);
-}
-
-.optionControl {
-  margin: 0;
-  justify-self: start;
-}
-
-// Прячется с планшета: то же действие есть в боковой панели.
-.narrowOnly {
-  @include from("md") {
-    display: none;
-  }
-}
-
-.header {
-  display: grid;
-  row-gap: rem(2);
+  @include clamp-lines(1);
 }
 
 .email {
   font-size: var(--step--1);
   color: var(--c-text-muted);
+
+  @include clamp-lines(1);
 }
 
-.links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2xs);
-}
-
-.link {
-  padding: var(--space-2xs) var(--space-s);
-  font-size: var(--step--1);
-  color: var(--c-text);
+.unverified {
+  display: inline-flex;
+  gap: var(--space-3xs);
+  align-items: center;
+  justify-self: start;
+  margin-block-start: var(--space-3xs);
+  padding: rem(2) var(--space-2xs);
+  font-size: var(--step--2);
+  color: var(--c-warning);
+  background-color: color-mix(in oklab, var(--c-warning) 14%, transparent);
   border-radius: var(--radius-pill);
 
-  @include surface(var(--space-2xs) var(--space-s));
-  @include transition(background-color, border-color);
   @include focus-ring;
+}
 
-  @include hover {
-    background-color: var(--c-surface-hover);
-    border-color: var(--c-border-strong);
+.unverifiedIcon {
+  inline-size: rem(14);
+  block-size: rem(14);
+}
+
+// На телефоне выход уходит под имя, во всю ширину строки.
+.logout {
+  grid-column: 1 / -1;
+
+  @include from("sm") {
+    grid-column: auto;
   }
 }
 
-.logout {
-  display: flex;
-  justify-content: start;
+/* ─────────────────────────────── колонки ─────────────────────────────── */
+
+.columns {
+  display: grid;
+  gap: var(--space-m);
+  align-items: start;
+
+  @include from("lg") {
+    grid-template-columns: minmax(0, 1fr) minmax(0, rem(400));
+  }
+}
+
+.column {
+  display: grid;
+  gap: var(--space-m);
+}
+
+.section {
+  display: grid;
+  row-gap: var(--space-s);
+  padding: var(--space-s) var(--space-m) var(--space-m);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
+}
+
+.sectionTitle {
+  font-size: var(--step-0);
+  font-weight: var(--weight-medium);
+}
+
+/* ─────────────────────────────── строки ─────────────────────────────── */
+
+.rows {
+  display: grid;
+  margin-inline: calc(var(--space-m) * -1);
+  margin-block-end: calc(var(--space-m) * -1 + var(--space-2xs));
+}
+
+.row,
+.linkRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: var(--space-xs);
+  align-items: center;
+  padding: var(--space-2xs) var(--space-m);
+}
+
+.rows > li + li {
+  border-block-start: var(--border-width) solid var(--c-border);
+}
+
+.linkRow {
+  color: inherit;
+
+  @include transition(background-color);
+  @include focus-ring($offset: -2px);
+
+  @include hover {
+    background-color: var(--c-surface-hover);
+  }
+}
+
+.rowIcon {
+  display: grid;
+  place-items: center;
+  inline-size: rem(32);
+  block-size: rem(32);
+  color: var(--c-text-muted);
+  background-color: var(--c-surface-raised);
+  border-radius: 50%;
+}
+
+.glyph {
+  inline-size: rem(16);
+  block-size: rem(16);
+}
+
+.rowText {
+  display: grid;
+  row-gap: rem(1);
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: var(--step--1);
+}
+
+.rowHint {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+
+  @include clamp-lines(1);
+}
+
+.chevron {
+  inline-size: rem(16);
+  block-size: rem(16);
+  color: var(--c-text-faint);
 }

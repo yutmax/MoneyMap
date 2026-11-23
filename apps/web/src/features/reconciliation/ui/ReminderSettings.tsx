@@ -45,16 +45,20 @@ export function ReminderSettings() {
 
   return (
     <div className={styles.root}>
+      {/* Переключатель, а не галочка: это настройка «вкл/выкл», которая
+          применяется сразу, а не пункт формы, ждущий отправки. */}
       <label className={styles.toggle}>
-        <input
-          type="checkbox"
-          checked={reminder.isEnabled}
-          onChange={(e) => save({ isEnabled: e.currentTarget.checked })}
-        />
         <span>
           {t('reminders.enable')}
           <span className={styles.hint}>{t('reminders.enableHint')}</span>
         </span>
+        <input
+          type="checkbox"
+          role="switch"
+          className={styles.switch}
+          checked={reminder.isEnabled}
+          onChange={(e) => save({ isEnabled: e.currentTarget.checked })}
+        />
       </label>
 
       {reminder.isEnabled && (

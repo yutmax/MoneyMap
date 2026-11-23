@@ -267,7 +267,12 @@
     "newPassword": "New password",
     "passwordHint": "At least {{count}} characters",
     "changePassword": "Change password",
-    "passwordChanged": "Password changed."
+    "passwordChanged": "Password changed.",
+    "app": "App",
+    "sections": "Sections",
+    "categoriesHint": "Income and expense categories",
+    "devicesHint": "Where your account is signed in",
+    "emailUnverified": "Email not verified"
   },
   "notFound": {
     "title": "404",

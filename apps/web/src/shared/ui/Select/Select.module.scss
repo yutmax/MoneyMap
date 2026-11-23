@@ -38,6 +38,26 @@
   }
 }
 
+.pill {
+  min-height: rem(40);
+  padding: var(--space-2xs) var(--space-l) var(--space-2xs) var(--space-s);
+  font-weight: var(--weight-medium);
+  background-color: var(--c-surface);
+  border: var(--border-width) solid var(--c-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+
+  @include transition(border-color, background-color);
+
+  @include hover {
+    border-color: var(--c-border-strong);
+  }
+
+  &:focus {
+    border-color: var(--c-accent-line);
+  }
+}
+
 .invalid {
   border-bottom-color: var(--c-danger);
 }

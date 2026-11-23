@@ -167,80 +167,87 @@ export function CurrencyConverter() {
 
   return (
     <div className={styles.root}>
-      <div className={styles.card}>
-        <div className={styles.row}>
-          <div className={styles.amountBox}>
-            <label className="visually-hidden" htmlFor={fromId}>
-              {t('converter.amountIn', { code: state.from })}
-            </label>
-            <input
-              id={fromId}
-              className={cx(
-                styles.amount,
-                state.side === 'from' && invalid && styles.invalid,
-                state.side === 'to' && styles.computed,
-              )}
-              type="text"
-              inputMode="decimal"
-              autoComplete="off"
-              spellCheck={false}
-              value={fromText}
-              placeholder={state.side === 'to' && waiting ? '…' : '0'}
-              onChange={edit('from')}
-              onBlur={tidy('from')}
-              aria-invalid={state.side === 'from' && invalid ? true : undefined}
+      {/*
+        Две плитки — «из» и «в», — а кнопка обмена стоит на их стыке.
+        Подсвечена та плитка, в которой человек набирает: так видно, какое
+        число задано, а какое получилось.
+      */}
+      <div className={styles.panels}>
+        <div className={cx(styles.panel, state.side === 'from' && styles.panelActive)}>
+          <div className={styles.panelTop}>
+            <span className={styles.panelLabel}>{t('converter.from')}</span>
+            <CurrencySelect
+              variant="pill"
+              label={t('converter.from')}
+              value={state.from}
+              onChange={(event) => setState((s) => ({ ...s, from: event.target.value }))}
             />
           </div>
-          <CurrencySelect
-            label={t('converter.from')}
-            value={state.from}
-            onChange={(event) => setState((s) => ({ ...s, from: event.target.value }))}
+          <label className="visually-hidden" htmlFor={fromId}>
+            {t('converter.amountIn', { code: state.from })}
+          </label>
+          <input
+            id={fromId}
+            className={cx(
+              styles.amount,
+              state.side === 'from' && invalid && styles.invalid,
+              state.side === 'to' && styles.computed,
+            )}
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            spellCheck={false}
+            value={fromText}
+            placeholder={state.side === 'to' && waiting ? '…' : '0'}
+            onChange={edit('from')}
+            onBlur={tidy('from')}
+            aria-invalid={state.side === 'from' && invalid ? true : undefined}
           />
         </div>
 
-        <div className={styles.swapLine}>
-          <button
-            type="button"
-            className={styles.swap}
-            onClick={swap}
-            aria-label={t('converter.swap')}
-            title={t('converter.swap')}
-          >
-            <Icon
-              name="swap"
-              className={styles.swapIcon}
-              style={{ transform: `rotate(${turns * 180}deg)` }}
-            />
-          </button>
-        </div>
+        <button
+          type="button"
+          className={styles.swap}
+          onClick={swap}
+          aria-label={t('converter.swap')}
+          title={t('converter.swap')}
+        >
+          <Icon
+            name="swap"
+            className={styles.swapIcon}
+            style={{ transform: `rotate(${turns * 180}deg)` }}
+          />
+        </button>
 
-        <div className={styles.row}>
-          <div className={styles.amountBox}>
-            <label className="visually-hidden" htmlFor={toId}>
-              {t('converter.amountIn', { code: state.to })}
-            </label>
-            <input
-              id={toId}
-              className={cx(
-                styles.amount,
-                state.side === 'to' && invalid && styles.invalid,
-                state.side === 'from' && styles.computed,
-              )}
-              type="text"
-              inputMode="decimal"
-              autoComplete="off"
-              spellCheck={false}
-              value={toText}
-              placeholder={state.side === 'from' && waiting ? '…' : '0'}
-              onChange={edit('to')}
-              onBlur={tidy('to')}
-              aria-invalid={state.side === 'to' && invalid ? true : undefined}
+        <div className={cx(styles.panel, state.side === 'to' && styles.panelActive)}>
+          <div className={styles.panelTop}>
+            <span className={styles.panelLabel}>{t('converter.to')}</span>
+            <CurrencySelect
+              variant="pill"
+              label={t('converter.to')}
+              value={state.to}
+              onChange={(event) => setState((s) => ({ ...s, to: event.target.value }))}
             />
           </div>
-          <CurrencySelect
-            label={t('converter.to')}
-            value={state.to}
-            onChange={(event) => setState((s) => ({ ...s, to: event.target.value }))}
+          <label className="visually-hidden" htmlFor={toId}>
+            {t('converter.amountIn', { code: state.to })}
+          </label>
+          <input
+            id={toId}
+            className={cx(
+              styles.amount,
+              state.side === 'to' && invalid && styles.invalid,
+              state.side === 'from' && styles.computed,
+            )}
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            spellCheck={false}
+            value={toText}
+            placeholder={state.side === 'from' && waiting ? '…' : '0'}
+            onChange={edit('to')}
+            onBlur={tidy('to')}
+            aria-invalid={state.side === 'to' && invalid ? true : undefined}
           />
         </div>
       </div>

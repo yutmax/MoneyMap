@@ -68,7 +68,9 @@ export function ChangePasswordForm() {
         />
       </div>
 
-      <Button type="submit" loading={isSubmitting}>
+      {/* Вторичная: на странице профиля лаймовой кнопке незачем звать к
+          действию, которое делают раз в год. */}
+      <Button type="submit" variant="secondary" loading={isSubmitting}>
         {t('settings.changePassword')}
       </Button>
     </form>

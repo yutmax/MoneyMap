@@ -269,7 +269,12 @@
     "newPassword": "Новый пароль",
     "passwordHint": "Минимум {{count}} символов",
     "changePassword": "Сменить пароль",
-    "passwordChanged": "Пароль изменён."
+    "passwordChanged": "Пароль изменён.",
+    "app": "Приложение",
+    "sections": "Разделы",
+    "categoriesHint": "Набор категорий доходов и расходов",
+    "devicesHint": "Где выполнен вход в аккаунт",
+    "emailUnverified": "Почта не подтверждена"
   },
   "notFound": {
     "title": "404",
