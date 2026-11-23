@@ -1,8 +1,12 @@
+/*
+ * Итог — без карточки: это заголовок страницы, а не один из её блоков.
+ * Самое крупное число на экране стоит прямо на фоне, и всё остальное
+ * читается как подробности к нему.
+ */
 .root {
   display: grid;
-  row-gap: var(--space-s);
-
-  @include surface(var(--space-m));
+  row-gap: var(--space-xs);
+  padding-block-start: var(--space-2xs);
 }
 
 .header {
@@ -16,14 +20,12 @@
 .title {
   font-size: var(--step--1);
   font-weight: var(--weight-regular);
-  color: var(--c-text-muted);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  color: var(--c-text-faint);
 }
 
 .picker {
   // Выбор валюты не должен конкурировать с итогом: достаточно трёх букв.
-  inline-size: rem(104);
+  inline-size: rem(88);
   font-size: var(--step--2);
 }
 
@@ -31,7 +33,8 @@
   // Самая крупная цифра в приложении: с неё начинают смотреть на экран.
   font-size: var(--step-4);
   font-weight: var(--weight-medium);
-  line-height: 1.1;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 
   @include tabular-numbers;
 }

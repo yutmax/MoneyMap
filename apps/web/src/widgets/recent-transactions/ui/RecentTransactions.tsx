@@ -1,22 +1,27 @@
+import type { TransactionResponse } from '@moneymap/shared';
+import { useState } from 'react';
 import { Link } from 'react-router';
-import { TransactionRow, useTransactions } from '@/entities/transaction';
+import { TransactionList, useTransactions } from '@/entities/transaction';
+import { TransactionFormModal } from '@/features/transaction-form';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
 import styles from './RecentTransactions.module.scss';
 
 /** Сколько строк показывать на главной: дальше начинается отдельная страница. */
-const LIMIT = 5;
+const LIMIT = 6;
 
 /**
  * Последние операции на главной.
  *
- * Пять строк, а не вся лента: главная отвечает на вопрос «что происходит»,
+ * Шесть строк, а не вся лента: главная отвечает на вопрос «что происходит»,
  * а «что было в марте» — это уже поиск, и для него есть своя страница
- * с фильтрами. Отсюда и ссылка «показать все» вместо бесконечной прокрутки.
+ * с фильтрами. Строку можно открыть прямо отсюда — поправить сумму только
+ * что внесённой покупки не должно требовать перехода.
  */
 export function RecentTransactions() {
   const { t } = useT();
   const transactions = useTransactions({});
+  const [open, setOpen] = useState<TransactionResponse | null>(null);
 
   const list = (transactions.data?.pages[0]?.transactions ?? []).slice(0, LIMIT);
 
@@ -32,20 +37,14 @@ export function RecentTransactions() {
       </header>
 
       {transactions.isPending ? (
-        <ul className={styles.list} aria-busy="true">
-          {[0, 1, 2].map((i) => (
-            <li key={i} className={styles.skeleton} />
-          ))}
-        </ul>
+        <div className={styles.skeleton} aria-busy="true" />
       ) : list.length === 0 ? (
         <p className={styles.empty}>{t('transactions.empty')}</p>
       ) : (
-        <ul className={styles.list}>
-          {list.map((transaction) => (
-            <TransactionRow key={transaction.id} transaction={transaction} />
-          ))}
-        </ul>
+        <TransactionList transactions={list} onOpen={setOpen} />
       )}
+
+      {open && <TransactionFormModal transaction={open} onClose={() => setOpen(null)} />}
     </section>
   );
 }

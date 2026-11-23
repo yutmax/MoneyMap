@@ -1,25 +1,34 @@
+import { AccountsOverview } from '@/widgets/accounts-overview';
+import { MonthTiles, TopSpending } from '@/widgets/month-overview';
 import { RecentTransactions } from '@/widgets/recent-transactions';
 import { TotalBalance } from '@/widgets/total-balance';
 import styles from './DashboardPage.module.scss';
 
 /**
- * Обзор. Сводный баланс (§8.6) и то, что требует внимания.
+ * Обзор: сколько всего, как идёт месяц, где деньги и что было недавно.
  *
- * Карточек с перечнем возможностей здесь больше нет: они были списком
- * обещаний на время, пока возможностей не было, а теперь всё это есть
- * в навигации и занимает место зря.
+ * Раньше здесь были только итог и пять операций, и на широком экране
+ * половина страницы пустовала, а за ответом «сколько я потратил в этом
+ * месяце» надо было идти в отчёты. Теперь главная собрана из четырёх
+ * ответов, по убыванию того, как часто их ищут: итог с графиком, три
+ * числа за месяц, лента слева, счета и главные траты справа.
  *
- * Баннера о неподтверждённом email здесь тоже нет. Он висел над балансом
- * каждый день, хотя сказать ему было нечего нового, и отодвигал вниз то,
- * ради чего на страницу заходят. Теперь это уведомление — его видно по
- * счётчику у колокольчика, а прочитать можно, когда дойдут руки.
+ * Баннера о неподтверждённом email здесь нет: это уведомление у
+ * колокольчика, читать его можно, когда дойдут руки.
  */
 export function DashboardPage() {
   return (
     <div className={styles.root}>
       <TotalBalance />
+      <MonthTiles />
 
-      <RecentTransactions />
+      <div className={styles.columns}>
+        <RecentTransactions />
+        <aside className={styles.side}>
+          <AccountsOverview />
+          <TopSpending />
+        </aside>
+      </div>
     </div>
   );
 }

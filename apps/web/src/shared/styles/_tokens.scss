@@ -14,19 +14,22 @@
 @mixin light-theme {
   color-scheme: light;
 
-  --c-bg: #f6f7f4;
+  --c-bg: #f3f4f6;
   --c-surface: #ffffff;
   --c-surface-raised: #ffffff;
-  --c-surface-sunken: #eceee8;
-  --c-border: #e0e3db;
-  --c-border-strong: #c7cbc0;
+  --c-surface-sunken: #e9ebee;
+  --c-border: #e2e4e8;
+  --c-border-strong: #c9cdd3;
 
-  --c-text: #1b1c1a;
-  --c-text-muted: #595d55;
-  --c-text-faint: #8b8f86;
+  --c-text: #14161a;
+  --c-text-muted: #565b64;
+  --c-text-faint: #868b94;
 
   --c-accent: #c0e24a;
   --c-accent-ink: #1b1c1a;
+  /// Акцент как линия или значок, а не как заливка под тёмным текстом:
+  /// светлый лайм на белом не виден, поэтому здесь шаг темнее.
+  --c-accent-line: #5f8f0f;
 
   --c-income: oklch(52% 0.14 150);
   --c-expense: oklch(53% 0.19 25);
@@ -47,8 +50,8 @@
   /// Секторы сверх палитры: каждый остаётся отдельной дугой и строкой
   /// легенды, но без собственного оттенка — девятый цвет неотличим от соседа.
   --chart-rest: #b9b8b0;
-  --chart-grid: #e1e0d9;
-  --chart-axis: #c3c2b7;
+  --chart-grid: #e4e6ea;
+  --chart-axis: #c9cdd3;
 
   --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.06), 0 8px 24px oklch(0% 0 0 / 0.06);
 }
@@ -57,26 +60,32 @@
   :root {
     /* ─────────────────────────── тема по умолчанию ──────────────────────────── */
 
-    /* Тёмная: перенесена из прототипа, чтобы приложение осталось узнаваемым. */
+    /* Тёмная — «графит»: почти чёрный фон и поверхности, которые отличаются
+       от него на полшага. Разделяет не рамка, а сама ступень светлоты,
+       поэтому границы здесь едва видны и нужны только там, где без них
+       сливается (поля ввода, всплывающие окна). */
     color-scheme: dark;
 
-    --c-bg: #242529;
-    --c-surface: #2e2f34;
-    --c-surface-raised: #36373b;
-    --c-surface-sunken: #1e1f22;
-    --c-border: #3f4045;
-    --c-border-strong: #55565c;
+    --c-bg: #0e0f11;
+    --c-surface: #16181b;
+    --c-surface-raised: #1d2024;
+    --c-surface-sunken: #0a0b0c;
+    --c-border: #23262b;
+    --c-border-strong: #353940;
 
-    --c-text: #f5f5f5;
-    --c-text-muted: #c5c5c5;
-    --c-text-faint: #8a8b90;
+    --c-text: #ecedee;
+    --c-text-muted: #a3a8b0;
+    --c-text-faint: #6f757e;
 
-    /* Лаймовый акцент прототипа. */
-    --c-accent: #d3f467;
+    /* Лайм остаётся, но только акцентом: основная кнопка, активный раздел,
+       линия графика. Чем реже он встречается, тем лучше работает. */
+    --c-accent: #c6f24e;
     /* Текст на акцентной плашке: тёмный, потому что сам акцент очень светлый. */
-    --c-accent-ink: #1b1c1a;
+    --c-accent-ink: #111214;
+    /* Акцент линией или значком. На тёмном фоне это сам лайм. */
+    --c-accent-line: var(--c-accent);
 
-    --c-income: oklch(82% 0.16 150);
+    --c-income: oklch(80% 0.15 148);
     --c-expense: oklch(72% 0.18 25);
     --c-warning: oklch(80% 0.14 85);
     --c-danger: oklch(68% 0.2 25);
@@ -91,9 +100,9 @@
     --chart-series-6: #008300;
     --chart-series-7: #9085e9;
     --chart-series-8: #e66767;
-    --chart-rest: #5c5c58;
-    --chart-grid: #2c2c2a;
-    --chart-axis: #383835;
+    --chart-rest: #4a4e55;
+    --chart-grid: #1f2226;
+    --chart-axis: #2c3036;
 
     --c-focus: var(--c-accent);
 
@@ -152,6 +161,8 @@
     --border-width: 1px;
 
     --container-max: #{fn.rem(1200)};
+    /* Предельная ширина страницы внутри приложения (справа от панели). */
+    --page-max: #{fn.rem(1320)};
     --container-gutter: #{fn.fluid(32, 16)};
 
     --control-height: #{fn.rem(44)};

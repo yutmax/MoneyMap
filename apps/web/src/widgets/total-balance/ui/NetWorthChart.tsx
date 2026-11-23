@@ -43,7 +43,9 @@ export function NetWorthChart({ points, currency, decimals, symbol }: NetWorthCh
   const first = data[0]?.value ?? 0;
   const last = data.at(-1)?.value ?? 0;
   const rising = last >= first;
-  const line = rising ? 'var(--c-income)' : 'var(--c-expense)';
+  // Растущий баланс рисуется акцентом, падающий — цветом расхода: линия
+  // графика — одно из немногих мест, где лайм уместен.
+  const line = rising ? 'var(--c-accent-line)' : 'var(--c-expense)';
 
   const money = (value: number) =>
     formatMoney(String(value), { currency, decimals, locale, ...(symbol ? { symbol } : {}) });
@@ -72,7 +74,7 @@ export function NetWorthChart({ points, currency, decimals, symbol }: NetWorthCh
   return (
     <div className={styles.root}>
       <ResponsiveContainer width="100%" height={160}>
-        <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
           <defs>
             {/* Заливка под линией — тот же цвет, уведённый в прозрачность:
                 она подсказывает направление, но не спорит с самой линией. */}
@@ -91,12 +93,14 @@ export function NetWorthChart({ points, currency, decimals, symbol }: NetWorthCh
             axisLine={{ stroke: 'var(--chart-axis)' }}
             minTickGap={24}
           />
+          {/* Ось значений скрыта: точное число есть в итоге над графиком и
+              в подсказке под курсором, а шестизначные деления не помещались
+              в колонку и обрезались. Сама шкала осталась — по ней строится
+              линия. */}
           <YAxis
+            hide
             tickFormatter={tick}
-            tick={{ fill: 'var(--c-text-faint)', fontSize: 11 }}
-            tickLine={false}
-            axisLine={false}
-            width={44}
+            width={0}
             // Шкала не обязана начинаться с нуля: баланс колеблется в узкой
             // полосе, и растянутая до нуля ось превращает её в прямую.
             domain={['dataMin', 'dataMax']}

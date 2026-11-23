@@ -23,11 +23,13 @@
 }
 
 .active {
-  color: var(--c-accent-ink);
-  background-color: var(--c-accent);
+  color: var(--c-text);
+  // Нейтральная подложка вместо лаймовой: переключатель встречается на
+  // многих экранах, и залитый акцентом он перебивал основную кнопку.
+  background-color: color-mix(in oklab, var(--c-text) 12%, transparent);
 
   @include hover {
-    color: var(--c-accent-ink);
+    color: var(--c-text);
   }
 }
 

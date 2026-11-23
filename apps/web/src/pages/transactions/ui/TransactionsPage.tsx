@@ -2,12 +2,12 @@ import { TRANSACTION_KINDS, type TransactionResponse } from '@moneymap/shared';
 import { useState } from 'react';
 import { useAccounts } from '@/entities/account';
 import { categoryName, useCategories } from '@/entities/category';
-import { TransactionRow, useTransactions, type TransactionFilters } from '@/entities/transaction';
+import { TransactionList, useTransactions, type TransactionFilters } from '@/entities/transaction';
 import { ImportModal } from '@/features/import-csv';
-import { TransactionFormModal, useDeleteTransaction } from '@/features/transaction-form';
+import { TransactionFormModal } from '@/features/transaction-form';
 import { useT } from '@/shared/i18n';
 import { ROUTES } from '@/shared/config';
-import { Alert, Button, Field, SectionTabs, Select, toast } from '@/shared/ui';
+import { Alert, Button, Field, SectionTabs, Select } from '@/shared/ui';
 import styles from './TransactionsPage.module.scss';
 
 type FormState = null | 'new' | TransactionResponse;
@@ -23,20 +23,12 @@ export function TransactionsPage() {
   const accounts = useAccounts();
   const categories = useCategories();
   const query = useTransactions(filters);
-  const remove = useDeleteTransaction();
 
   const rows = query.data?.pages.flatMap((page) => page.transactions) ?? [];
   const filtered = Object.values(filters).some((v) => v !== undefined && v !== '');
 
   const patch = (next: Partial<TransactionFilters>) =>
     setFilters((current) => ({ ...current, ...next }));
-
-  const handleDelete = (transaction: TransactionResponse) => {
-    remove.mutate(transaction.id, {
-      onSuccess: () => toast.success(t('transactions.deleted')),
-      onError: (error) => toast.error(t(error.message)),
-    });
-  };
 
   return (
     <div className={styles.root}>
@@ -139,28 +131,8 @@ export function TransactionsPage() {
         </p>
       ) : (
         <>
-          <ul className={styles.list}>
-            {rows.map((transaction) => (
-              <TransactionRow
-                key={transaction.id}
-                transaction={transaction}
-                actions={
-                  <>
-                    {/* Ногу перевода отдельно не правят — она связана
-                        со второй суммой и курсом. */}
-                    {transaction.kind !== 'transfer' && (
-                      <Button variant="secondary" size="small" onClick={() => setForm(transaction)}>
-                        {t('transactions.edit')}
-                      </Button>
-                    )}
-                    <Button variant="danger" size="small" onClick={() => handleDelete(transaction)}>
-                      {t('transactions.delete')}
-                    </Button>
-                  </>
-                }
-              />
-            ))}
-          </ul>
+          {/* Нажатие на строку открывает операцию: там и правка, и удаление. */}
+          <TransactionList transactions={rows} onOpen={setForm} />
 
           {query.hasNextPage && (
             <Button

@@ -1,0 +1,126 @@
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2xs);
+}
+
+.tile {
+  display: grid;
+  row-gap: var(--space-3xs);
+  min-width: 0;
+  padding: var(--space-xs) var(--space-s);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
+}
+
+.tileLabel {
+  font-size: var(--step--2);
+  color: var(--c-text-faint);
+
+  @include clamp-lines(1);
+}
+
+// Месяц в подписи прячется на телефоне: три плитки в ряд там и так узкие.
+.tileMonth {
+  @include until("sm") {
+    display: none;
+  }
+}
+
+.tileValue {
+  font-size: var(--step-0);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @include tabular-numbers;
+
+  @include from("sm") {
+    font-size: var(--step-1);
+  }
+}
+
+.income {
+  color: var(--c-income);
+}
+
+.expense {
+  color: var(--c-expense);
+}
+
+/* ─────────────────────────────── главные траты ─────────────────────────────── */
+
+.block {
+  display: grid;
+  row-gap: var(--space-s);
+  padding: var(--space-s) var(--space-m) var(--space-m);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
+}
+
+.blockHeader {
+  display: flex;
+  gap: var(--space-s);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.blockTitle {
+  font-size: var(--step-0);
+  font-weight: var(--weight-medium);
+}
+
+.more {
+  font-size: var(--step--1);
+  color: var(--c-text-faint);
+
+  @include transition(color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+  }
+}
+
+.empty {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.bars {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: var(--space-3xs);
+  font-size: var(--step--1);
+}
+
+.barName {
+  @include clamp-lines(1);
+}
+
+.barValue {
+  color: var(--c-text-muted);
+
+  @include tabular-numbers;
+}
+
+.track {
+  grid-column: 1 / -1;
+  block-size: rem(4);
+  background-color: var(--c-surface-raised);
+  border-radius: var(--radius-pill);
+}
+
+// Одна полоса цветом акцента: категории здесь различает подпись, а не цвет.
+.fill {
+  display: block;
+  block-size: 100%;
+  background-color: var(--c-accent-line);
+  border-radius: var(--radius-pill);
+}

@@ -13,10 +13,12 @@ import { useCurrencies } from '@/entities/currency';
 import { useConvert } from '@/entities/rate';
 import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
+import { formatDate } from '@/shared/lib';
 import { Alert, Button, Field, Modal, Select, toast } from '@/shared/ui';
 import {
   useCreateTransaction,
   useCreateTransfer,
+  useDeleteTransaction,
   useUpdateTransaction,
 } from '../api/use-transaction-mutations.ts';
 import styles from './TransactionFormModal.module.scss';
@@ -56,6 +58,10 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   const create = useCreateTransaction();
   const transfer = useCreateTransfer();
   const update = useUpdateTransaction();
+  const remove = useDeleteTransaction();
+  // Удаление в два нажатия: первое спрашивает, второе удаляет. Отдельное
+  // окно подтверждения поверх окна операции было бы третьим слоем.
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const isEdit = transaction !== undefined;
   const [mode, setMode] = useState<Mode>(
@@ -211,6 +217,82 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
 
   const busy = create.isPending || transfer.isPending || update.isPending;
 
+  const deleteTransaction = () => {
+    if (!transaction) return;
+    remove.mutate(transaction.id, {
+      onSuccess: () => {
+        toast.success(t('transactions.deleted'));
+        onClose();
+      },
+      onError: (err) => setError(err.message),
+    });
+  };
+
+  const deleteControls = isEdit && (
+    <div className={styles.danger}>
+      {confirmingDelete ? (
+        <>
+          <span className={styles.dangerAsk}>{t('transactions.deleteAsk')}</span>
+          <Button variant="secondary" size="small" onClick={() => setConfirmingDelete(false)}>
+            {t('accounts.deleteCancel')}
+          </Button>
+          <Button
+            variant="danger"
+            size="small"
+            loading={remove.isPending}
+            onClick={deleteTransaction}
+          >
+            {t('transactions.deleteConfirm')}
+          </Button>
+        </>
+      ) : (
+        <Button variant="ghost" size="small" onClick={() => setConfirmingDelete(true)}>
+          {t('transactions.delete')}
+        </Button>
+      )}
+    </div>
+  );
+
+  /*
+   * Перевод не правится: его ноги связаны второй суммой и курсом, и сервер
+   * отказывает в изменении одной из них. Поэтому окно перевода — сводка
+   * и удаление, без формы, которая заведомо не сохранится.
+   */
+  if (isEdit && transaction.kind === 'transfer') {
+    return (
+      <Modal open title={t('transactions.transferTitle')} onClose={onClose}>
+        <div className={styles.form}>
+          {error && <Alert>{t(error)}</Alert>}
+          <dl className={styles.summary}>
+            <dt>{t('transactions.account')}</dt>
+            <dd>{transaction.accountName}</dd>
+            <dt>{t('transactions.amount')}</dt>
+            <dd>
+              {formatMoney(transaction.amountAccount, {
+                currency: transaction.accountCurrency,
+                decimals:
+                  currencies.data?.find((c) => c.code === transaction.accountCurrency)?.decimals ??
+                  2,
+                locale,
+                signDisplay: 'always',
+              })}
+            </dd>
+            <dt>{t('transactions.date')}</dt>
+            <dd>{formatDate(transaction.occurredOn, locale)}</dd>
+            {transaction.note && (
+              <>
+                <dt>{t('transactions.note')}</dt>
+                <dd>{transaction.note}</dd>
+              </>
+            )}
+          </dl>
+          <p className={styles.hint}>{t('transactions.deleteTransferHint')}</p>
+          {deleteControls}
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <Modal
       open
@@ -358,6 +440,8 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
         <Button type="submit" block loading={busy}>
           {isEdit ? t('transactions.save') : t('transactions.submit')}
         </Button>
+
+        {deleteControls}
       </form>
     </Modal>
   );

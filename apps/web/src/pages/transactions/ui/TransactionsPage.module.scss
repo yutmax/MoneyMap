@@ -26,8 +26,9 @@
   gap: var(--space-s);
   width: 100%;
   align-items: end;
-
-  @include surface(var(--space-m));
+  padding: var(--space-s) var(--space-m) var(--space-m);
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
 
   @include from("sm") {
     grid-template-columns: repeat(auto-fit, minmax(rem(160), 1fr));
@@ -50,7 +51,6 @@
 .skeleton {
   height: rem(60);
   background-color: var(--c-surface);
-  border: var(--border-width) solid var(--c-border);
   border-radius: var(--radius-l);
   animation: pulse 1.4s ease-in-out infinite;
 }

@@ -1,38 +1,83 @@
 .root {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2xs) var(--space-s);
-  align-items: center;
+  // Разделитель между строками внутри дня — линия, а не зазор между
+  // карточками: так день читается одним блоком.
+  & + & {
+    border-block-start: var(--border-width) solid var(--c-border);
+  }
+}
 
-  @include surface(var(--space-xs) var(--space-m));
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: var(--space-xs);
+  align-items: center;
+  inline-size: 100%;
+  padding: var(--space-xs) var(--space-s);
+  text-align: start;
+  color: inherit;
+
+  @include transition(background-color);
+}
+
+button.row {
+  @include focus-ring($offset: -2px);
+
+  @include hover {
+    background-color: var(--c-surface-hover);
+  }
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  inline-size: rem(36);
+  block-size: rem(36);
+  color: var(--c-text-muted);
+  background-color: var(--c-surface-raised);
+  border-radius: 50%;
+}
+
+.iconIncome {
+  color: var(--c-income);
+}
+
+.iconTransfer {
+  color: var(--c-text-faint);
+}
+
+.glyph {
+  inline-size: rem(18);
+  block-size: rem(18);
 }
 
 .info {
   display: grid;
-  row-gap: rem(2);
+  row-gap: rem(1);
   min-width: 0;
-  // Описание занимает свободное место, дата и сумма прижаты вправо.
-  flex: 1 1 rem(160);
 }
 
 .title {
   font-weight: var(--weight-medium);
+
+  @include clamp-lines(1);
 }
 
 .meta {
   font-size: var(--step--2);
   color: var(--c-text-faint);
+
+  @include clamp-lines(1);
 }
 
-.date {
-  font-size: var(--step--2);
-  color: var(--c-text-faint);
-
-  @include tabular-numbers;
+.amounts {
+  display: grid;
+  row-gap: rem(1);
+  justify-items: end;
 }
 
 .amount {
   font-weight: var(--weight-medium);
+  white-space: nowrap;
 
   @include tabular-numbers;
 }
@@ -41,24 +86,10 @@
   color: var(--c-income);
 }
 
-.negative {
-  color: var(--c-text);
-}
-
-.actions {
-  display: flex;
-  gap: var(--space-2xs);
-}
-
-.amounts {
-  display: grid;
-  row-gap: rem(2);
-  justify-items: end;
-}
-
 .original {
   font-size: var(--step--2);
   color: var(--c-text-faint);
+  white-space: nowrap;
 
   @include tabular-numbers;
 }

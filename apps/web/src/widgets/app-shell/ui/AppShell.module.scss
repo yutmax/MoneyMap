@@ -1,11 +1,10 @@
 /**
- * С планшета боковая панель и верхняя строка лежат на одной поверхности, а
- * содержимое — в окне, вставленном в неё.
+ * Панель, шапка и содержимое лежат на одном фоне, без рамок между ними.
  *
- * Раньше их разделяла линия, и экран читался как три приклеенных друг к другу
- * прямоугольника. Общий фон делает панель и шапку одной рамой приложения, а
- * скруглённое окно внутри отделяет то, что меняется от раздела к разделу, от
- * того, что остаётся на месте.
+ * Раньше содержимое сидело в скруглённом окне, вставленном в раму, а внутри
+ * окна — карточки в рамках: коробка в коробке. В «графите» части экрана
+ * разделяет расстояние и ступень светлоты у самих блоков, а не обводка
+ * вокруг каждого уровня.
  */
 .root {
   min-block-size: 100svh;
@@ -14,8 +13,8 @@
   // а навигация уезжает вниз.
   @include from("md") {
     display: grid;
-    grid-template-columns: rem(220) 1fr;
-    background-color: var(--c-surface);
+    grid-template-columns: rem(232) 1fr;
+    background-color: var(--c-bg);
   }
 }
 
@@ -44,10 +43,22 @@
 }
 
 .brand {
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: center;
   padding-inline: var(--space-2xs);
-  font-size: var(--step-1);
+  font-size: var(--step-0);
   font-weight: var(--weight-semibold);
-  color: var(--c-accent);
+  color: var(--c-text);
+
+  // Знак — лаймовый квадратик: акцент живёт в марке точкой, а не всем словом.
+  &::before {
+    content: "";
+    inline-size: rem(10);
+    block-size: rem(10);
+    background-color: var(--c-accent);
+    border-radius: rem(3);
+  }
 
   @include focus-ring($offset: 3px);
 }
@@ -73,6 +84,11 @@
     color: var(--c-text);
     background-color: var(--c-surface);
   }
+}
+
+.railLink.active {
+  color: var(--c-text);
+  background-color: var(--c-surface-raised);
 }
 
 /* ────────────────────────────── верхняя строка ──────────────────────────── */
@@ -110,17 +126,15 @@
      * накладывается, она продолжает панель слева.
      */
     position: static;
-    min-block-size: rem(64);
-    background-color: var(--c-surface);
+    min-block-size: rem(72);
+    background-color: var(--c-bg);
     backdrop-filter: none;
-    /*
-     * Поле собрано из того же, что отделяет содержимое окна от края колонки:
-     * отступ окна от панели, его рамка и внутреннее поле. Иначе заголовок
-     * стоит левее карточек — на целое поле, если забыть про него, и на
-     * пиксель, если забыть про рамку.
-     */
-    max-width: none;
-    padding-inline: calc(var(--space-m) * 2 + var(--border-width));
+    // Те же поля, ширина и центровка, что у содержимого: заголовок
+    // начинается на одной вертикали с первым блоком страницы.
+    inline-size: 100%;
+    max-width: var(--page-max);
+    margin-inline: auto;
+    padding-inline: var(--space-l);
   }
 }
 
@@ -167,7 +181,7 @@
 
 .headerActive {
   color: var(--c-text);
-  background-color: var(--c-surface);
+  background-color: var(--c-surface-raised);
 }
 
 .badge {
@@ -192,28 +206,17 @@
   @include container;
 
   /*
-   * Окно, вставленное в поверхность приложения.
-   *
-   * Фон здесь на ступень глубже, чем у панели и шапки, поэтому карточки
-   * внутри остаются светлыми и читаются как карточки, а не сливаются с
-   * подложкой. Поля — снаружи окна: отступ от содержимого даёт само окно.
-   *
-   * Ограничение ширины снято: контейнер центрировал содержимое внутри
-   * колонки, и справа оставалась пустая полоса поверхности, из-за которой
-   * окно переставало выглядеть вставленным.
+   * Предельная ширина — чтобы на большом мониторе строка операции не
+   * растягивалась в метр между названием и суммой. Сверх неё страница
+   * центрируется в колонке: прижатая к панели, она оставляла справа пустую
+   * полосу в треть экрана.
    */
   @include from("md") {
-    // width вместе с max-width: контейнер задаёт `width: 100%`, и окно с
-    // полями оказывалось шире колонки ровно на эти поля — страница ехала
-    // вбок. С auto ширину определяют сами поля.
-    width: auto;
-    max-width: none;
-    margin-inline: var(--space-m);
-    margin-block-end: var(--space-m);
-    padding-inline: var(--space-m);
-    background-color: var(--c-bg);
-    border: var(--border-width) solid var(--c-border);
-    border-radius: var(--radius-l);
+    inline-size: 100%;
+    max-width: var(--page-max);
+    margin-inline: auto;
+    padding-block-start: 0;
+    padding-inline: var(--space-l);
   }
 
   // Место под нижнюю панель, чтобы она не накрывала последнюю карточку.
@@ -286,19 +289,22 @@
   block-size: rem(24);
 }
 
+/*
+ * Активный раздел — нейтральная подсветка и лаймовый значок. Цветная
+ * таблетка на каждом экране делала акцент фоном, а не акцентом.
+ */
 .active {
-  color: var(--c-accent);
-  background-color: color-mix(in oklab, var(--c-accent) 10%, transparent);
+  color: var(--c-text);
 }
 
-/*
- * Подсветка в нижней панели чуть плотнее, чем в боковой: там она лежит на
- * фоне страницы, здесь — на уже подсвеченной поверхности самой панели, и
- * десяти процентов на ней не видно. Правило отдельное, чтобы боковая панель
- * от этого не изменилась.
- */
+.active .icon {
+  color: var(--c-accent-line);
+}
+
+// В нижней панели подложка светлее: панель сама лежит на приподнятой
+// поверхности, и ступень `surface-raised` на ней не видна.
 .tab.active {
-  background-color: color-mix(in oklab, var(--c-accent) 16%, transparent);
+  background-color: color-mix(in oklab, var(--c-text) 9%, transparent);
 }
 
 .icon {

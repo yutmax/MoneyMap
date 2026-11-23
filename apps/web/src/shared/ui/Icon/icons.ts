@@ -2,6 +2,7 @@ import {
   ArrowLeftRight,
   ArrowUpDown,
   Banknote,
+  Bitcoin,
   Bell,
   Briefcase,
   Bus,
@@ -12,6 +13,7 @@ import {
   CircleEllipsis,
   Clapperboard,
   Coins,
+  CreditCard,
   Dumbbell,
   Eye,
   EyeOff,
@@ -25,6 +27,7 @@ import {
   Moon,
   PartyPopper,
   PawPrint,
+  PiggyBank,
   Plane,
   Plug,
   Repeat,
@@ -73,6 +76,10 @@ export const ICONS = {
   // Конвертер валют в шапке и кнопка «поменять местами» в нём.
   converter: Coins,
   swap: ArrowUpDown,
+  // Типы счетов на главной.
+  'credit-card': CreditCard,
+  'piggy-bank': PiggyBank,
+  bitcoin: Bitcoin,
 
   // Всплывающие уведомления: свои значки вместо залитых глифов sonner —
   // у них другая толщина и заливка, и на фоне обведённых lucide они

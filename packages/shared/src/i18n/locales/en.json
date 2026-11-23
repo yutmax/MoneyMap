@@ -215,7 +215,15 @@
   "dashboard": {
     "title": "Overview",
     "recent": "Last transactions",
-    "showAll": "See all"
+    "showAll": "See all",
+    "income": "Income",
+    "expense": "Expenses",
+    "net": "Net",
+    "accounts": "Accounts",
+    "allAccounts": "All accounts",
+    "topSpending": "Top spending",
+    "noSpending": "No spending this month yet.",
+    "toReports": "Reports"
   },
   "summary": {
     "title": "Total balance",
@@ -383,7 +391,13 @@
     "searchPlaceholder": "Search in notes",
     "noCategory": "No category",
     "kindFilter": "Kind",
-    "submit": "Add"
+    "submit": "Add",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "deleteAsk": "Delete this transaction?",
+    "deleteConfirm": "Yes, delete",
+    "deleteTransferHint": "A transfer is deleted as a whole, from both accounts. It can’t be edited: delete it and create a new one.",
+    "transferTitle": "Transfer"
   },
   "recurring": {
     "title": "Recurring",

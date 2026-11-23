@@ -1,0 +1,28 @@
+.root {
+  display: grid;
+  row-gap: var(--space-m);
+  inline-size: 100%;
+}
+
+.day {
+  display: grid;
+  row-gap: var(--space-2xs);
+}
+
+.date {
+  padding-inline: var(--space-s);
+  font-size: var(--step--1);
+  font-weight: var(--weight-regular);
+  color: var(--c-text-faint);
+
+  // Первая буква заглавная: Intl отдаёт «пт, 21 ноября», а это заголовок.
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+.list {
+  overflow: hidden;
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
+}

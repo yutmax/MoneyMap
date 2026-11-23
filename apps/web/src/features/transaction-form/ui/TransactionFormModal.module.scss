@@ -34,11 +34,13 @@
 
 .modeActive {
   composes: mode;
-  color: var(--c-accent-ink);
-  background-color: var(--c-accent);
+  color: var(--c-text);
+  // Нейтральная подложка вместо лаймовой: переключатель встречается на
+  // многих экранах, и залитый акцентом он перебивал основную кнопку.
+  background-color: color-mix(in oklab, var(--c-text) 12%, transparent);
 
   @include hover {
-    color: var(--c-accent-ink);
+    color: var(--c-text);
   }
 }
 
@@ -51,4 +53,39 @@
   // валюты разъехалась бы с подписью суммы.
   align-content: start;
   align-items: start;
+}
+
+.danger {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  align-items: center;
+  justify-content: center;
+}
+
+.dangerAsk {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2xs) var(--space-s);
+  font-size: var(--step--1);
+
+  dt {
+    color: var(--c-text-faint);
+  }
+
+  dd {
+    text-align: end;
+
+    @include tabular-numbers;
+  }
+}
+
+.hint {
+  font-size: var(--step--1);
+  color: var(--c-text-muted);
 }

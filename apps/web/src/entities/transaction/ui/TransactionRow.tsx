@@ -1,47 +1,71 @@
 import { formatMoney, isNegative, type TransactionResponse } from '@moneymap/shared';
-import type { ReactNode } from 'react';
-import { categoryNameOrNull } from '@/entities/category';
+import { categoryNameOrNull, useCategories } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
 import { useT } from '@/shared/i18n';
-import { cx, formatDate } from '@/shared/lib';
+import { cx } from '@/shared/lib';
+import { Icon, isIconName, type IconName } from '@/shared/ui';
 import styles from './TransactionRow.module.scss';
 
 interface TransactionRowProps {
   transaction: TransactionResponse;
-  actions?: ReactNode;
+  /** Нажатие на строку открывает операцию. Без него строка просто читается. */
+  onOpen?: (transaction: TransactionResponse) => void;
 }
 
-export function TransactionRow({ transaction, actions }: TransactionRowProps) {
+/**
+ * Строка операции: значок категории, название со счётом, сумма справа.
+ *
+ * Ни рамки, ни кнопок у строки нет. Рамка вокруг каждой операции делала
+ * ленту стопкой коробок, а «Изменить» и «Удалить» в каждой строке — шумом
+ * ради действий, которые нужны раз в неделю. Теперь строка сама кнопка:
+ * нажал — открыл, а удалить можно в открывшемся окне.
+ */
+export function TransactionRow({ transaction, onOpen }: TransactionRowProps) {
   const { t, locale } = useT();
   const currencies = useCurrencies();
+  const categories = useCategories();
   const currency = currencies.data?.find((c) => c.code === transaction.accountCurrency);
   const original = currencies.data?.find((c) => c.code === transaction.currencyOriginal);
 
   const negative = isNegative(transaction.amountAccount);
+  const transfer = transaction.kind === 'transfer';
   // Операция в чужой валюте показывает обе суммы: в валюте счёта считается
   // баланс, а в валюте чека человек её и запомнил (§8.5).
   const foreign = transaction.currencyOriginal !== transaction.accountCurrency;
 
-  return (
-    <li className={styles.root}>
-      <div className={styles.info}>
-        <p className={styles.title}>
-          {transaction.kind === 'transfer'
-            ? t('transactions.transfer')
-            : (categoryNameOrNull(t, transaction.categoryKey) ?? t('transactions.noCategory'))}
-        </p>
-        <p className={styles.meta}>
+  const categoryIcon = categories.data?.find((c) => c.id === transaction.categoryId)?.icon;
+  const icon: IconName = transfer
+    ? 'transactions'
+    : categoryIcon && isIconName(categoryIcon)
+      ? categoryIcon
+      : 'circle-ellipsis';
+
+  const title = transfer
+    ? t('transactions.transfer')
+    : (categoryNameOrNull(t, transaction.categoryKey) ?? t('transactions.noCategory'));
+
+  const body = (
+    <>
+      <span
+        className={cx(
+          styles.icon,
+          transaction.kind === 'income' && styles.iconIncome,
+          transfer && styles.iconTransfer,
+        )}
+      >
+        <Icon name={icon} className={styles.glyph} />
+      </span>
+
+      <span className={styles.info}>
+        <span className={styles.title}>{title}</span>
+        <span className={styles.meta}>
+          {transaction.note ? `${transaction.note} · ` : ''}
           {transaction.accountName}
-          {transaction.note && ` · ${transaction.note}`}
-        </p>
-      </div>
+        </span>
+      </span>
 
-      <time className={styles.date} dateTime={transaction.occurredOn}>
-        {formatDate(transaction.occurredOn, locale)}
-      </time>
-
-      <div className={styles.amounts}>
-        <p className={cx(styles.amount, negative ? styles.negative : styles.positive)}>
+      <span className={styles.amounts}>
+        <span className={cx(styles.amount, !negative && styles.positive)}>
           {formatMoney(transaction.amountAccount, {
             currency: transaction.accountCurrency,
             decimals: currency?.decimals ?? 2,
@@ -51,21 +75,31 @@ export function TransactionRow({ transaction, actions }: TransactionRowProps) {
             signDisplay: 'always',
             ...(currency?.symbol ? { symbol: currency.symbol } : {}),
           })}
-        </p>
+        </span>
 
         {foreign && (
-          <p className={styles.original}>
+          <span className={styles.original}>
             {formatMoney(transaction.amountOriginal, {
               currency: transaction.currencyOriginal,
               decimals: original?.decimals ?? 2,
               locale,
               ...(original?.symbol ? { symbol: original.symbol } : {}),
             })}
-          </p>
+          </span>
         )}
-      </div>
+      </span>
+    </>
+  );
 
-      {actions && <div className={styles.actions}>{actions}</div>}
+  return (
+    <li className={styles.root}>
+      {onOpen ? (
+        <button type="button" className={styles.row} onClick={() => onOpen(transaction)}>
+          {body}
+        </button>
+      ) : (
+        <div className={styles.row}>{body}</div>
+      )}
     </li>
   );
 }
