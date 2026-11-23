@@ -111,9 +111,22 @@ export function ReportsPage() {
   const today = todayIn(user?.timezone ?? 'UTC');
   const period = useMemo(() => periodOf(range, today), [range, today]);
 
+  /*
+   * График по месяцам смотрит минимум на полгода назад, даже когда выбран
+   * текущий месяц. За один месяц он рисовал единственный толстый столбик —
+   * сравнивать было не с чем, а ради сравнения этот график и нужен. Год
+   * остаётся годом: там месяцев и так достаточно.
+   */
+  const cashflowPeriod = useMemo(() => {
+    if (range === 'year') return period;
+    const [year, month] = today.split('-').map(Number) as [number, number];
+    const start = new Date(Date.UTC(year, month - 1 - 5, 1)).toISOString().slice(0, 10);
+    return { from: start, to: today };
+  }, [range, period, today]);
+
   const summary = useReportSummary(period);
   const expenses = useCategoryReport(period, 'expense');
-  const cashflow = useCashflowReport(period);
+  const cashflow = useCashflowReport(cashflowPeriod);
 
   const base = summary.data?.baseCurrency ?? user?.baseCurrency ?? '';
   const currency = currencies.data?.find((c) => c.code === base);

@@ -8,7 +8,7 @@ import {
   type CreateAccountInput,
 } from '@moneymap/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { CurrencySelect } from '@/entities/currency';
@@ -16,7 +16,11 @@ import { useMe } from '@/entities/user';
 import { useT } from '@/shared/i18n';
 import { applyServerError } from '@/shared/lib';
 import { Alert, Button, Field, Modal, Select, toast } from '@/shared/ui';
-import { useCreateAccount, useUpdateAccount } from '../api/use-account-mutations.ts';
+import {
+  useCreateAccount,
+  useDeleteAccount,
+  useUpdateAccount,
+} from '../api/use-account-mutations.ts';
 import styles from './AccountFormModal.module.scss';
 
 /**
@@ -38,9 +42,21 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
   const { t } = useT();
   const create = useCreateAccount();
   const update = useUpdateAccount();
+  const remove = useDeleteAccount();
   const { user } = useMe();
   const [formError, setFormError] = useState<string | null>(null);
+  // Удаление в два нажатия, как у операций: вопрос встаёт на место кнопки,
+  // а не третьим окном поверх этого.
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const confirmRef = useRef<HTMLDivElement>(null);
   const isEdit = account !== undefined;
+
+  // Вопрос появляется под основной кнопкой и на невысоком экране уходит за
+  // край окна — подкручиваем к нему, чтобы его не пришлось искать.
+  useEffect(() => {
+    if (confirmingDelete)
+      confirmRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [confirmingDelete]);
 
   const {
     register,
@@ -52,7 +68,10 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
     defaultValues: {
       name: account?.name ?? '',
       type: account?.type ?? 'cash',
-      currencyCode: account?.currencyCode ?? '',
+      // Базовая валюта по умолчанию. Пустая строка показывала в списке
+      // первую валюту, но значением не была, и сохранение падало с
+      // «некорректным кодом валюты», хотя на экране всё выглядело выбранным.
+      currencyCode: account?.currencyCode ?? user?.baseCurrency ?? '',
       // Из базы приходит '1250.400000000000000000' — все 18 знаков NUMERIC.
       // toMoney убирает хвостовые нули, не трогая значимые: у счёта в BTC
       // восьмизначная дробь останется целой. Округлять по разрядности
@@ -98,6 +117,33 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
     }
   });
 
+  const toggleArchive = () => {
+    if (!account) return;
+    update.mutate(
+      { id: account.id, input: { isArchived: !account.isArchived } },
+      {
+        onSuccess: () => {
+          toast.success(
+            t(account.isArchived ? 'accounts.unarchivedToast' : 'accounts.archivedToast'),
+          );
+          onClose();
+        },
+        onError: () => toast.error(t('settings.saveFailed')),
+      },
+    );
+  };
+
+  const deleteAccount = () => {
+    if (!account) return;
+    remove.mutate(account.id, {
+      onSuccess: () => {
+        toast.success(t('accounts.deleted'));
+        onClose();
+      },
+      onError: () => toast.error(t('accounts.deleteFailed')),
+    });
+  };
+
   return (
     <Modal
       open
@@ -127,7 +173,7 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
               оставить историю операций под чужим заголовком. */}
           {isEdit ? (
             <Field
-              label={t('fields.baseCurrency')}
+              label={t('accounts.currency')}
               value={account.currencyCode}
               hint={t('accounts.currencyHint')}
               readOnly
@@ -135,7 +181,7 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
             />
           ) : (
             <CurrencySelect
-              label={t('fields.baseCurrency')}
+              label={t('accounts.currency')}
               hint={t('accounts.currencyHint')}
               error={t(errors.currencyCode?.message)}
               {...register('currencyCode')}
@@ -165,6 +211,46 @@ export function AccountFormModal({ account, onClose }: AccountFormModalProps) {
         <Button type="submit" block loading={isSubmitting}>
           {isEdit ? t('accounts.save') : t('accounts.create')}
         </Button>
+
+        {/* Редкие действия — под основной кнопкой, тихими. Удаление сначала
+            говорит, что пропадёт вместе со счётом, и только потом удаляет. */}
+        {isEdit &&
+          (confirmingDelete ? (
+            <div className={styles.confirm} ref={confirmRef}>
+              <p className={styles.confirmText}>
+                {account.hasTransactions
+                  ? t('accounts.deleteWithHistory')
+                  : t('accounts.deleteEmpty')}
+              </p>
+              <div className={styles.actions}>
+                <Button variant="secondary" size="small" onClick={() => setConfirmingDelete(false)}>
+                  {t('accounts.deleteCancel')}
+                </Button>
+                <Button
+                  variant="danger"
+                  size="small"
+                  loading={remove.isPending}
+                  onClick={deleteAccount}
+                >
+                  {t('accounts.deleteConfirm')}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.actions}>
+              <Button
+                variant="ghost"
+                size="small"
+                loading={update.isPending}
+                onClick={toggleArchive}
+              >
+                {account.isArchived ? t('accounts.unarchive') : t('accounts.archive')}
+              </Button>
+              <Button variant="ghost" size="small" onClick={() => setConfirmingDelete(true)}>
+                {t('accounts.delete')}
+              </Button>
+            </div>
+          ))}
       </form>
     </Modal>
   );

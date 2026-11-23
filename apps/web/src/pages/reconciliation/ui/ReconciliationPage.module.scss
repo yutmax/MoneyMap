@@ -24,16 +24,17 @@
 }
 
 .sectionTitle {
+  padding-inline: var(--space-s);
   font-size: var(--step--1);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   color: var(--c-text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
+// Один блок со строками через линию — как счета и операции.
 .list {
-  display: grid;
-  row-gap: var(--space-2xs);
+  overflow: hidden;
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
 }
 
 .account,
@@ -43,8 +44,11 @@
   gap: var(--space-s);
   align-items: center;
   justify-content: space-between;
+  padding: var(--space-s) var(--space-m);
 
-  @include surface(var(--space-s) var(--space-m));
+  & + & {
+    border-block-start: var(--border-width) solid var(--c-border);
+  }
 }
 
 .info {

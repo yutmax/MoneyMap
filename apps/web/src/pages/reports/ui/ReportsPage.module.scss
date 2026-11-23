@@ -35,8 +35,16 @@
   @include focus-ring;
 }
 
+// Четыре плитки — четыре равные колонки на всю ширину. Сетка с
+// автозаполнением оставляла справа пустые колонки под плитки, которых нет.
 .totals {
-  @include auto-grid(rem(150), var(--space-s));
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2xs);
+
+  @include from("md") {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 /* Плитка, а не график из одного столбца: одно число — это одно число. */
@@ -50,8 +58,6 @@
 .tileLabel {
   font-size: var(--step--2);
   color: var(--c-text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .tileValue {
@@ -69,8 +75,10 @@
   color: var(--c-expense);
 }
 
+// auto-fit, а не fill: два кольца делят ширину пополам, а не оставляют
+// справа пустую колонку под третье.
 .columns {
-  @include auto-grid(rem(300), var(--space-m));
+  @include auto-grid(rem(300), var(--space-m), fit);
 }
 
 .block {
@@ -82,11 +90,8 @@
 }
 
 .blockTitle {
-  font-size: var(--step--1);
+  font-size: var(--step-0);
   font-weight: var(--weight-medium);
-  color: var(--c-text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .empty {

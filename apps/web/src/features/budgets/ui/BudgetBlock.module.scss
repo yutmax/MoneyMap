@@ -132,7 +132,7 @@
  * искали по styles[`fill_${status}`], а такого ключа не существует.
  */
 .fillOk {
-  background-color: var(--c-accent);
+  background-color: var(--c-accent-line);
 }
 
 .fillWarning {

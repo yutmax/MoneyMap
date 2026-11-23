@@ -19,9 +19,11 @@
   color: var(--c-text-muted);
 }
 
+// Счета — один блок со строками через линию, как день в ленте операций.
 .list {
-  display: grid;
-  row-gap: var(--space-2xs);
+  overflow: hidden;
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
 }
 
 .empty {
@@ -38,34 +40,15 @@
 }
 
 .sectionTitle {
+  padding-inline: var(--space-s);
   font-size: var(--step--1);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   color: var(--c-text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.confirm {
-  display: grid;
-  row-gap: var(--space-m);
-}
-
-.confirmText {
-  font-size: var(--step--1);
-  color: var(--c-text-muted);
-}
-
-.confirmActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2xs);
-  justify-content: end;
 }
 
 .skeleton {
-  height: rem(68);
+  height: rem(200);
   background-color: var(--c-surface);
-  border: var(--border-width) solid var(--c-border);
   border-radius: var(--radius-l);
   animation: pulse 1.4s ease-in-out infinite;
 }

@@ -117,8 +117,11 @@ export function ReconciliationPage() {
                     setDrafts((prev) => ({ ...prev, [row.accountId]: value }));
                   }}
                 />
+                {/* Лаймовой кнопка становится, только когда есть что сверять:
+                    пять ярких «Сверить» в столбик спорили между собой. */}
                 <Button
                   size="small"
+                  variant={drafts[row.accountId] ? 'primary' : 'secondary'}
                   disabled={!drafts[row.accountId]}
                   onClick={() => check(row.accountId)}
                 >

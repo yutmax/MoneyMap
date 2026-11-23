@@ -1,11 +1,15 @@
+// Строка в общем списке, а не отдельная карточка: соседей отделяет линия.
 .root {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-s);
   align-items: center;
   justify-content: space-between;
+  padding: var(--space-s) var(--space-m);
 
-  @include surface(var(--space-s) var(--space-m));
+  & + & {
+    border-block-start: var(--border-width) solid var(--c-border);
+  }
 }
 
 .info {

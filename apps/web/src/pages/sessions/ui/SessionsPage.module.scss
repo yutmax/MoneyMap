@@ -19,15 +19,18 @@
 }
 
 .list {
-  display: grid;
-  row-gap: var(--space-2xs);
+  overflow: hidden;
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
 }
 
 .skeleton {
   height: rem(84);
-  background-color: var(--c-surface);
-  border: var(--border-width) solid var(--c-border);
-  border-radius: var(--radius-l);
+
+  & + & {
+    border-block-start: var(--border-width) solid var(--c-border);
+  }
+
   // Пульсация выключается вместе со всеми анимациями через
   // prefers-reduced-motion в reset — отдельного правила здесь не нужно.
   animation: pulse 1.4s ease-in-out infinite;

@@ -42,6 +42,9 @@
 
   @include surface(var(--space-l));
 
+  // Окно лежит на затемнённой странице: без края оно в тёмной теме
+  // растворяется в подложке.
+  border: var(--border-width) solid var(--c-border);
   box-shadow: var(--shadow-card);
 }
 

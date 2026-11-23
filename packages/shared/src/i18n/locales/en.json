@@ -311,7 +311,8 @@
     "deleteWithHistory": "All its transactions, transfers with other accounts, recurring payments and its budget will be deleted too. Other balances will be recalculated. To keep the history, archive the account instead.",
     "deleteConfirm": "Delete",
     "deleteCancel": "Cancel",
-    "deleteFailed": "Could not delete the account"
+    "deleteFailed": "Could not delete the account",
+    "currency": "Currency"
   },
   "categories": {
     "title": "Categories",

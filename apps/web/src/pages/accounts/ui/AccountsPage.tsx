@@ -1,53 +1,26 @@
 import type { AccountResponse } from '@moneymap/shared';
 import { useState } from 'react';
 import { AccountCard, useAccounts } from '@/entities/account';
-import { AccountFormModal, useDeleteAccount, useUpdateAccount } from '@/features/account-form';
+import { AccountFormModal } from '@/features/account-form';
 import { useT } from '@/shared/i18n';
 import { ROUTES } from '@/shared/config';
-import { Alert, Button, Modal, SectionTabs, toast } from '@/shared/ui';
+import { Alert, Button, SectionTabs } from '@/shared/ui';
 import styles from './AccountsPage.module.scss';
 
-/** `null` — форма закрыта, `'new'` — создание, объект — правка. */
+/** `null` — форма закрыта, `'new'` — создание, объект — открытый счёт. */
 type FormState = null | 'new' | AccountResponse;
 
+/**
+ * Счета. Действующие одним списком, архив — отдельным под ним.
+ *
+ * Счёт открывается нажатием на строку: в окне и правка, и архив, и
+ * удаление. Отдельного окна подтверждения удаления больше нет — вопрос
+ * задаётся там же, где нажали «Удалить», и в нём сказано, что пропадёт.
+ */
 export function AccountsPage() {
   const { t } = useT();
   const accounts = useAccounts();
-  const update = useUpdateAccount();
-  const remove = useDeleteAccount();
   const [form, setForm] = useState<FormState>(null);
-  /** Счёт, удаление которого ждёт подтверждения. */
-  const [pendingDelete, setPendingDelete] = useState<AccountResponse | null>(null);
-
-  const toggleArchive = (account: AccountResponse) => {
-    update.mutate(
-      { id: account.id, input: { isArchived: !account.isArchived } },
-      {
-        onSuccess: () =>
-          toast.success(
-            t(account.isArchived ? 'accounts.unarchivedToast' : 'accounts.archivedToast'),
-          ),
-        onError: () => toast.error(t('settings.saveFailed')),
-      },
-    );
-  };
-
-  const confirmDelete = () => {
-    if (!pendingDelete) return;
-    remove.mutate(pendingDelete.id, {
-      onSuccess: () => {
-        toast.success(t('accounts.deleted'));
-        setPendingDelete(null);
-      },
-      onError: () => toast.error(t('accounts.deleteFailed')),
-    });
-  };
-
-  const deleteButton = (account: AccountResponse) => (
-    <Button variant="danger" size="small" onClick={() => setPendingDelete(account)}>
-      {t('accounts.delete')}
-    </Button>
-  );
 
   const list = accounts.data ?? [];
   const active = list.filter((a) => !a.isArchived);
@@ -75,11 +48,7 @@ export function AccountsPage() {
       {accounts.isError && <Alert>{t('accounts.loadFailed')}</Alert>}
 
       {accounts.isPending ? (
-        <ul className={styles.list} aria-busy="true">
-          {[0, 1].map((i) => (
-            <li key={i} className={styles.skeleton} />
-          ))}
-        </ul>
+        <div className={styles.skeleton} aria-busy="true" />
       ) : (
         <>
           {active.length === 0 && archived.length === 0 && (
@@ -89,25 +58,7 @@ export function AccountsPage() {
           {active.length > 0 && (
             <ul className={styles.list}>
               {active.map((account) => (
-                <AccountCard
-                  key={account.id}
-                  account={account}
-                  actions={
-                    <>
-                      <Button variant="secondary" size="small" onClick={() => setForm(account)}>
-                        {t('accounts.edit')}
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        onClick={() => toggleArchive(account)}
-                      >
-                        {t('accounts.archive')}
-                      </Button>
-                      {deleteButton(account)}
-                    </>
-                  }
-                />
+                <AccountCard key={account.id} account={account} onOpen={setForm} />
               ))}
             </ul>
           )}
@@ -117,22 +68,7 @@ export function AccountsPage() {
               <h2 className={styles.sectionTitle}>{t('accounts.archivedSection')}</h2>
               <ul className={styles.list}>
                 {archived.map((account) => (
-                  <AccountCard
-                    key={account.id}
-                    account={account}
-                    actions={
-                      <>
-                        <Button
-                          variant="secondary"
-                          size="small"
-                          onClick={() => toggleArchive(account)}
-                        >
-                          {t('accounts.unarchive')}
-                        </Button>
-                        {deleteButton(account)}
-                      </>
-                    }
-                  />
+                  <AccountCard key={account.id} account={account} onOpen={setForm} />
                 ))}
               </ul>
             </section>
@@ -140,39 +76,9 @@ export function AccountsPage() {
         </>
       )}
 
-      {/* Удалить можно любой счёт, но счёт с историей уносит её с собой —
-          поэтому сначала вопрос, и в нём сказано, что именно пропадёт. */}
-      <Modal
-        open={pendingDelete !== null}
-        title={t('accounts.deleteTitle', { name: pendingDelete?.name ?? '' })}
-        onClose={() => {
-          if (!remove.isPending) setPendingDelete(null);
-        }}
-      >
-        <div className={styles.confirm}>
-          <p className={styles.confirmText}>
-            {pendingDelete?.hasTransactions
-              ? t('accounts.deleteWithHistory')
-              : t('accounts.deleteEmpty')}
-          </p>
-          <div className={styles.confirmActions}>
-            <Button
-              variant="secondary"
-              onClick={() => setPendingDelete(null)}
-              disabled={remove.isPending}
-            >
-              {t('accounts.deleteCancel')}
-            </Button>
-            <Button variant="danger" onClick={confirmDelete} loading={remove.isPending}>
-              {t('accounts.deleteConfirm')}
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
       {form !== null && (
         <AccountFormModal
-          account={form === 'new' ? undefined : form}
+          {...(form === 'new' ? {} : { account: form })}
           onClose={() => setForm(null)}
         />
       )}

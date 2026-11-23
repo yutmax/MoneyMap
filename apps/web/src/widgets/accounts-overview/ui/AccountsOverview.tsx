@@ -1,20 +1,12 @@
-import { formatMoney, isNegative, type AccountResponse } from '@moneymap/shared';
+import { formatMoney, isNegative } from '@moneymap/shared';
 import { Link } from 'react-router';
-import { useAccounts } from '@/entities/account';
+import { accountTypeIcon, useAccounts } from '@/entities/account';
 import { useCurrencies } from '@/entities/currency';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
-import { Icon, type IconName } from '@/shared/ui';
+import { Icon } from '@/shared/ui';
 import styles from './AccountsOverview.module.scss';
-
-const TYPE_ICON: Record<AccountResponse['type'], IconName> = {
-  cash: 'banknote',
-  bank: 'landmark',
-  card: 'credit-card',
-  savings: 'piggy-bank',
-  crypto_wallet: 'bitcoin',
-};
 
 /**
  * Счета на главной — коротким списком, каждый в своей валюте.
@@ -49,7 +41,7 @@ export function AccountsOverview() {
             return (
               <li key={account.id} className={styles.row}>
                 <span className={styles.icon}>
-                  <Icon name={TYPE_ICON[account.type]} className={styles.glyph} />
+                  <Icon name={accountTypeIcon(account.type)} className={styles.glyph} />
                 </span>
                 <span className={styles.name}>{account.name}</span>
                 <span

@@ -25,16 +25,16 @@
 }
 
 .sectionTitle {
+  padding-inline: var(--space-s);
   font-size: var(--step--1);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   color: var(--c-text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .list {
-  display: grid;
-  row-gap: var(--space-2xs);
+  overflow: hidden;
+  background-color: var(--c-surface);
+  border-radius: var(--radius-l);
 }
 
 .empty {
@@ -47,21 +47,22 @@
 
 .skeleton {
   block-size: rem(64);
-  background-color: var(--c-surface-sunken);
-  border-radius: var(--radius-l);
 }
 
-/* Очередь подтверждений выделена рамкой акцента: это не сводка, а вопрос. */
+/* Очередь подтверждений отмечена полоской акцента слева: это не сводка,
+   а вопрос. Строки — внутри общего блока списка, через линию. */
 .pending {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-s);
   align-items: center;
   justify-content: space-between;
+  padding: var(--space-s) var(--space-m);
+  box-shadow: inset 3px 0 0 var(--c-accent-line);
 
-  @include surface(var(--space-s) var(--space-m));
-
-  border-color: color-mix(in oklab, var(--c-accent) 55%, var(--c-border));
+  & + & {
+    border-block-start: var(--border-width) solid var(--c-border);
+  }
 }
 
 .info {

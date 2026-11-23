@@ -6,7 +6,7 @@ import {
   toMoney,
   type TransactionResponse,
 } from '@moneymap/shared';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAccounts } from '@/entities/account';
 import { categoryName, useCategories } from '@/entities/category';
 import { useCurrencies } from '@/entities/currency';
@@ -62,6 +62,13 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   // Удаление в два нажатия: первое спрашивает, второе удаляет. Отдельное
   // окно подтверждения поверх окна операции было бы третьим слоем.
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const dangerRef = useRef<HTMLDivElement>(null);
+
+  // Вопрос об удалении — внизу длинной формы: подкручиваем к нему.
+  useEffect(() => {
+    if (confirmingDelete)
+      dangerRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [confirmingDelete]);
 
   const isEdit = transaction !== undefined;
   const [mode, setMode] = useState<Mode>(
@@ -229,7 +236,7 @@ export function TransactionFormModal({ transaction, onClose }: TransactionFormMo
   };
 
   const deleteControls = isEdit && (
-    <div className={styles.danger}>
+    <div className={styles.danger} ref={dangerRef}>
       {confirmingDelete ? (
         <>
           <span className={styles.dangerAsk}>{t('transactions.deleteAsk')}</span>
