@@ -20,6 +20,9 @@
   --c-surface-sunken: #e9ebee;
   --c-border: #e2e4e8;
   --c-border-strong: #c9cdd3;
+  /// Заливка полей ввода: на белой карточке на полтона темнее неё.
+  --c-field: #eef0f3;
+  --c-field-hover: #e6e8ec;
 
   --c-text: #14161a;
   --c-text-muted: #565b64;
@@ -72,6 +75,9 @@
     --c-surface-sunken: #0a0b0c;
     --c-border: #23262b;
     --c-border-strong: #353940;
+    /* Заливка полей ввода: на полтона светлее карточки, на которой лежит. */
+    --c-field: #1d2024;
+    --c-field-hover: #23262b;
 
     --c-text: #ecedee;
     --c-text-muted: #a3a8b0;

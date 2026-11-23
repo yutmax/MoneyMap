@@ -6,7 +6,7 @@ import { ThemeToggle } from '@/features/theme-switch';
 import { ROUTES } from '@/shared/config';
 import { useT } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
-import { Icon, type IconName } from '@/shared/ui';
+import { Icon, Logo, type IconName } from '@/shared/ui';
 import styles from './AppShell.module.scss';
 
 /**
@@ -97,8 +97,8 @@ export function AppShell() {
     <div className={styles.root}>
       {/* Боковая панель появляется с планшета и заменяет нижнюю. */}
       <aside className={styles.rail}>
-        <NavLink to={ROUTES.home} className={styles.brand}>
-          {t('common.appName')}
+        <NavLink to={ROUTES.home} className={styles.brand} aria-label={t('common.appName')}>
+          <Logo />
         </NavLink>
         <nav className={styles.railNav} aria-label={t('nav.aria')}>
           <Tabs variant="rail" />

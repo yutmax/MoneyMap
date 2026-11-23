@@ -39,8 +39,132 @@
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus {
     -webkit-text-fill-color: var(--c-text);
-    box-shadow: 0 0 0 1000px var(--c-surface-raised) inset;
+    box-shadow: 0 0 0 1000px var(--c-field) inset;
     caret-color: var(--c-text);
+  }
+
+  /*
+   * Выпадающий список селекта.
+   *
+   * Системный список Chrome на Windows — плоские строки без отступов,
+   * слипшиеся друг с другом, и белая полоса выбора. Настраиваемый select
+   * (base-select, Chrome и Edge 135+) позволяет оформить его как остальные
+   * всплывающие панели: приподнятая поверхность, скругление, строки с
+   * отступами, подсветка под курсором и галочка у выбранного. Где этого нет,
+   * остаётся системный список — @supports не даёт стилям сломать его.
+   */
+  @supports (appearance: base-select) {
+    ::picker(select) {
+      appearance: base-select;
+      margin-block: fn.rem(6);
+      padding: fn.rem(4);
+      max-block-size: min(fn.rem(360), 60svh);
+      color: var(--c-text);
+      background-color: var(--c-surface-raised);
+      border: var(--border-width) solid var(--c-border-strong);
+      border-radius: var(--radius-m);
+      box-shadow: var(--shadow-card);
+    }
+
+    /* Стрелку у самого поля рисуем мы — одинаковую во всех браузерах. */
+    select::picker-icon {
+      display: none;
+    }
+
+    option {
+      display: flex;
+      gap: var(--space-2xs);
+      align-items: center;
+      padding: fn.rem(8) fn.rem(10);
+      font-size: var(--step--1);
+      border-radius: var(--radius-s);
+      cursor: pointer;
+
+      &:hover,
+      &:focus-visible {
+        background-color: var(--c-surface-hover);
+        outline: none;
+      }
+
+      &:checked {
+        font-weight: var(--weight-medium);
+      }
+
+      /* Галочка выбранного — справа и цветом акцента, а не слева чёрной. */
+      &::checkmark {
+        order: 1;
+        margin-inline-start: auto;
+        color: var(--c-accent-line);
+      }
+    }
+
+    /* Заголовки групп (фиат, крипта) — мелкие и тихие, как подписи дней. */
+    optgroup {
+      padding-block-start: fn.rem(4);
+      font-size: var(--step--2);
+      font-weight: var(--weight-regular);
+      color: var(--c-text-faint);
+
+      option {
+        color: var(--c-text);
+      }
+    }
+  }
+
+  /*
+   * Галочки — свои, а не системные. Квадрат со скруглением на заливке поля;
+   * отмеченный — лаймовый с тёмной галкой, как основная кнопка. Переключатели
+   * (role="switch") оформлены отдельно и сюда не попадают.
+   */
+  input[type="checkbox"]:not([role="switch"]) {
+    display: inline-grid;
+    flex: none;
+    place-content: center;
+    inline-size: fn.rem(18);
+    block-size: fn.rem(18);
+    margin: 0;
+    appearance: none;
+    background-color: var(--c-field);
+    border: var(--border-width) solid var(--c-border-strong);
+    border-radius: fn.rem(5);
+    cursor: pointer;
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out);
+
+    &::before {
+      content: "";
+      inline-size: fn.rem(12);
+      block-size: fn.rem(12);
+      background-color: var(--c-accent-ink);
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E")
+        center / contain no-repeat;
+      scale: 0;
+      transition: scale var(--duration-fast) var(--ease-out);
+    }
+
+    &:hover:not(:checked) {
+      border-color: var(--c-text-faint);
+    }
+
+    &:checked {
+      background-color: var(--c-accent);
+      border-color: var(--c-accent);
+    }
+
+    &:checked::before {
+      scale: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--c-focus);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
   }
 
   /* Любые суммы и даты — моноширинными цифрами. */

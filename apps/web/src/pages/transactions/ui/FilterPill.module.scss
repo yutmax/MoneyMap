@@ -1,0 +1,109 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  color: var(--c-text-muted);
+  background-color: var(--c-field);
+  border-radius: var(--radius-pill);
+
+  @include transition(background-color, color);
+
+  @include hover {
+    background-color: var(--c-field-hover);
+  }
+
+  &:focus-within {
+    box-shadow: inset 0 0 0 var(--border-width) var(--c-accent-line);
+  }
+}
+
+// Заданный фильтр — тонированный акцентом: его видно, не вчитываясь.
+.active {
+  color: var(--c-accent-line);
+  background-color: color-mix(in oklab, var(--c-accent-line) 14%, transparent);
+
+  @include hover {
+    background-color: color-mix(in oklab, var(--c-accent-line) 20%, transparent);
+  }
+}
+
+.icon {
+  position: absolute;
+  inset-inline-start: rem(12);
+  inline-size: rem(14);
+  block-size: rem(14);
+  pointer-events: none;
+}
+
+/*
+ * Сам select растянут на всю таблетку и прозрачен: кликабельна вся
+ * пилюля, а не только текст. Шеврон — тот же, что у полей, но цветом
+ * текста таблетки, поэтому нарисован маской, а не фоновой картинкой.
+ */
+.select {
+  min-block-size: rem(34);
+  max-inline-size: rem(220);
+  padding: 0 rem(30) 0 rem(14);
+  font-size: var(--step--1);
+  color: inherit;
+  text-overflow: ellipsis;
+  background-color: transparent;
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+  // Ширина по выбранному значению, а не по самому длинному пункту списка:
+  // иначе «Любой тип» занимал место «Последних 3 месяцев». Браузеры без
+  // поддержки просто оставят прежнюю ширину.
+  field-sizing: content;
+
+  @include select-appearance;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.withIcon {
+  padding-inline-start: rem(32);
+}
+
+.root::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: rem(11);
+  inline-size: rem(14);
+  block-size: rem(14);
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  pointer-events: none;
+}
+
+// У заданного фильтра шеврон уступает место крестику.
+.active::after {
+  display: none;
+}
+
+.clear {
+  position: absolute;
+  inset-inline-end: rem(4);
+  display: grid;
+  place-items: center;
+  inline-size: rem(26);
+  block-size: rem(26);
+  color: inherit;
+  border-radius: 50%;
+
+  @include transition(background-color);
+  @include focus-ring($offset: -2px);
+
+  @include hover {
+    background-color: color-mix(in oklab, currentColor 18%, transparent);
+  }
+}
+
+.clearIcon {
+  inline-size: rem(14);
+  block-size: rem(14);
+}

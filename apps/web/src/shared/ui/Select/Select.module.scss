@@ -1,6 +1,6 @@
 .root {
   display: grid;
-  row-gap: var(--space-3xs);
+  row-gap: rem(6);
 
   // Без этого поле, растянутое по высоте соседа в строке, раздаёт свободное
   // место своим строкам, и контрол уезжает вниз относительно соседнего.
@@ -12,54 +12,60 @@
   color: var(--c-text-muted);
 }
 
+/*
+ * Та же заливка, что у текстового поля, и своя стрелка вместо системной.
+ *
+ * Системная стрелка рисовалась у каждого браузера на свой лад и с разным
+ * отступом от края, отсюда и «кривые» селекты. appearance: none её убирает,
+ * а наша — шеврон того же рисунка, что значки lucide, — стоит фоном на
+ * одном и том же месте. Цвет у неё один на обе темы: серый, читаемый и на
+ * тёмной, и на светлой заливке.
+ */
 .control {
   width: 100%;
   min-height: var(--control-height);
-  padding: var(--space-2xs) var(--space-s) var(--space-2xs) 0;
+  padding: var(--space-2xs) rem(40) var(--space-2xs) var(--space-s);
   color: var(--c-text);
-  background-color: transparent;
+  background-color: var(--c-field);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c828b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right rem(12) center;
+  background-size: rem(16);
   border: 0;
-  border-bottom: 2px solid var(--c-border);
-  border-radius: 0;
+  border-radius: var(--radius-m);
+  box-shadow: inset 0 0 0 var(--border-width) transparent;
+  cursor: pointer;
 
-  @include transition(border-color);
+  @include select-appearance;
+  text-overflow: ellipsis;
+
+  @include transition(box-shadow, background-color);
+
+  @include hover {
+    background-color: var(--c-field-hover);
+  }
 
   &:focus {
-    border-bottom-color: var(--c-accent);
+    box-shadow: inset 0 0 0 var(--border-width) var(--c-accent-line);
     outline: none;
   }
 
-  // Нативный <select> рисует список средствами ОС, и его фон не наследуется
-  // от страницы. color-scheme в :root заставляет систему отрисовать его
-  // в тёмном варианте — поэтому опции здесь не требуют отдельных цветов.
-  option {
-    color: var(--c-text);
-    background-color: var(--c-surface-raised);
+  &:disabled {
+    color: var(--c-text-muted);
+    cursor: default;
   }
 }
 
 .pill {
-  min-height: rem(40);
-  padding: var(--space-2xs) var(--space-l) var(--space-2xs) var(--space-s);
+  min-height: rem(36);
+  padding-inline-end: rem(36);
   font-weight: var(--weight-medium);
-  background-color: var(--c-surface);
-  border: var(--border-width) solid var(--c-border);
   border-radius: var(--radius-pill);
-  cursor: pointer;
-
-  @include transition(border-color, background-color);
-
-  @include hover {
-    border-color: var(--c-border-strong);
-  }
-
-  &:focus {
-    border-color: var(--c-accent-line);
-  }
 }
 
-.invalid {
-  border-bottom-color: var(--c-danger);
+.invalid,
+.invalid:focus {
+  box-shadow: inset 0 0 0 var(--border-width) var(--c-danger);
 }
 
 .error {

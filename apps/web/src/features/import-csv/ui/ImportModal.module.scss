@@ -9,6 +9,28 @@
   font-size: var(--step--1);
 }
 
+// Кнопка выбора файла — системная, но одета как наша вторичная кнопка:
+// иначе она одна на экране выглядела бы элементом другой программы.
+.file input {
+  color: var(--c-text-muted);
+
+  &::file-selector-button {
+    margin-inline-end: var(--space-xs);
+    padding: var(--space-2xs) var(--space-s);
+    font: inherit;
+    font-weight: var(--weight-medium);
+    color: var(--c-text);
+    background-color: var(--c-field);
+    border: 0;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+  }
+
+  &:hover::file-selector-button {
+    background-color: var(--c-field-hover);
+  }
+}
+
 .fileLabel {
   color: var(--c-text-muted);
 }

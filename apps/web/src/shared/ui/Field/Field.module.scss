@@ -1,6 +1,6 @@
 .root {
   display: grid;
-  row-gap: var(--space-3xs);
+  row-gap: rem(6);
 
   // Без этого поле, растянутое по высоте соседа в строке, раздаёт свободное
   // место своим строкам, и контрол уезжает вниз относительно соседнего.
@@ -19,34 +19,62 @@
   color: var(--c-text-muted);
 }
 
+/*
+ * Поле с заливкой, а не с подчёркиванием.
+ *
+ * Подчёркивание осталось от прототипа и рядом со скруглёнными блоками
+ * «графита» выглядело линией, забытой поверх карточки. Заливка на полтона
+ * светлее карточки делает поле частью той же системы поверхностей.
+ *
+ * Обводка рисуется внутренней тенью, а не рамкой: она появляется при
+ * фокусе и ошибке и не сдвигает текст на пиксель.
+ */
 .control {
   width: 100%;
   min-height: var(--control-height);
-  padding: var(--space-2xs) 0;
+  padding: var(--space-2xs) var(--space-s);
   color: var(--c-text);
-  background-color: transparent;
-  // Подчёркивание вместо рамки — приём из прототипа, он тут к месту:
-  // форма входа выглядит легче, чем из коробочных полей.
+  background-color: var(--c-field);
   border: 0;
-  border-bottom: 2px solid var(--c-border);
-  border-radius: 0;
+  border-radius: var(--radius-m);
+  box-shadow: inset 0 0 0 var(--border-width) transparent;
 
-  @include transition(border-color, background-color);
+  @include transition(box-shadow, background-color);
 
   &::placeholder {
     color: var(--c-text-faint);
   }
 
+  @include hover {
+    background-color: var(--c-field-hover);
+  }
+
   // Поле ввода — единственное место, где :focus уместнее :focus-visible:
-  // в текстовом поле каретка уже стоит, и подсветка границы ожидаема
-  // независимо от того, мышью в него попали или с клавиатуры.
+  // в текстовом поле каретка уже стоит, и подсветка ожидаема независимо
+  // от того, мышью в него попали или с клавиатуры.
   &:focus {
-    border-bottom-color: var(--c-accent);
+    background-color: var(--c-field);
+    box-shadow: inset 0 0 0 var(--border-width) var(--c-accent-line);
     outline: none;
   }
 
   &:focus-visible {
     outline: none;
+  }
+
+  &:disabled,
+  &[readonly] {
+    color: var(--c-text-muted);
+    background-color: transparent;
+    box-shadow: inset 0 0 0 var(--border-width) var(--c-border);
+    cursor: default;
+  }
+
+  // Значок календаря у поля даты: системный, но приглушённый под остальные
+  // значки интерфейса.
+  &::-webkit-calendar-picker-indicator {
+    opacity: 0.55;
+    cursor: pointer;
   }
 }
 
@@ -67,8 +95,9 @@
   align-items: center;
 }
 
-.invalid {
-  border-bottom-color: var(--c-danger);
+.invalid,
+.invalid:focus {
+  box-shadow: inset 0 0 0 var(--border-width) var(--c-danger);
 }
 
 .error {

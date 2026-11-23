@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { LocaleSwitch } from '@/features/locale-switch';
 import { ThemeToggle } from '@/features/theme-switch';
+import { Logo } from '@/shared/ui';
 import styles from './AuthCard.module.scss';
 
 interface AuthCardProps {
@@ -26,6 +27,10 @@ export function AuthCard({ title, subtitle, children, footer }: AuthCardProps) {
       </div>
 
       <div className={styles.card}>
+        {/* Марка над формой: страницы входа — первое, что видит новый
+            человек, и без неё они не говорили, куда он попал. */}
+        <Logo className={styles.logo} />
+
         <header className={styles.header}>
           <h1 className={styles.title}>{title}</h1>
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}

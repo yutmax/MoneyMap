@@ -407,7 +407,21 @@
     "deleteAsk": "Удалить операцию?",
     "deleteConfirm": "Да, удалить",
     "deleteTransferHint": "Перевод удаляется целиком — с обоих счетов. Изменить его нельзя: удалите и создайте заново.",
-    "transferTitle": "Перевод"
+    "transferTitle": "Перевод",
+    "createShort": "Операция",
+    "allAccounts": "Все счета",
+    "allCategories": "Все категории",
+    "anyKind": "Любой тип",
+    "clearFilter": "Сбросить фильтр",
+    "periodLabel": "Период",
+    "periodAll": "За всё время",
+    "periodThisMonth": "Этот месяц",
+    "periodLastMonth": "Прошлый месяц",
+    "periodLast3": "Последние 3 месяца",
+    "periodThisYear": "Этот год",
+    "periodCustom": "Свой период…",
+    "dateFrom": "С",
+    "dateTo": "По"
   },
   "recurring": {
     "title": "Регулярные операции",

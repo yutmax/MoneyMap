@@ -1,42 +1,125 @@
-import { TRANSACTION_KINDS, type TransactionResponse } from '@moneymap/shared';
-import { useState } from 'react';
+import { shiftDays, todayIn, TRANSACTION_KINDS, type TransactionResponse } from '@moneymap/shared';
+import { useEffect, useId, useState } from 'react';
 import { useAccounts } from '@/entities/account';
 import { categoryName, useCategories } from '@/entities/category';
 import { TransactionList, useTransactions, type TransactionFilters } from '@/entities/transaction';
+import { useMe } from '@/entities/user';
 import { ImportModal } from '@/features/import-csv';
 import { TransactionFormModal } from '@/features/transaction-form';
-import { useT } from '@/shared/i18n';
 import { ROUTES } from '@/shared/config';
-import { Alert, Button, Field, SectionTabs, Select } from '@/shared/ui';
+import { useT } from '@/shared/i18n';
+import { Alert, Button, Icon, SectionTabs } from '@/shared/ui';
+import { FilterPill } from './FilterPill.tsx';
 import styles from './TransactionsPage.module.scss';
 
 type FormState = null | 'new' | TransactionResponse;
 
-const EMPTY: TransactionFilters = {};
+/** Готовые периоды. Пустая строка — «за всё время», `custom` — две даты руками. */
+const PERIODS = ['thisMonth', 'lastMonth', 'last3', 'thisYear', 'custom'] as const;
+type Period = '' | (typeof PERIODS)[number];
 
+const PERIOD_LABEL: Record<(typeof PERIODS)[number], string> = {
+  thisMonth: 'transactions.periodThisMonth',
+  lastMonth: 'transactions.periodLastMonth',
+  last3: 'transactions.periodLast3',
+  thisYear: 'transactions.periodThisYear',
+  custom: 'transactions.periodCustom',
+};
+
+/** Первое число месяца, сдвинутого на `offset` от месяца даты `today`. */
+function monthStart(today: string, offset: number): string {
+  const [year, month] = today.split('-').map(Number) as [number, number];
+  return new Date(Date.UTC(year, month - 1 + offset, 1)).toISOString().slice(0, 10);
+}
+
+/** Границы готового периода. Для «своего» даты задаёт человек. */
+function periodRange(period: Period, today: string): { from?: string; to?: string } {
+  switch (period) {
+    case 'thisMonth':
+      return { from: monthStart(today, 0), to: today };
+    case 'lastMonth':
+      return { from: monthStart(today, -1), to: shiftDays(monthStart(today, 0), -1) };
+    case 'last3':
+      return { from: monthStart(today, -2), to: today };
+    case 'thisYear':
+      return { from: `${today.slice(0, 4)}-01-01`, to: today };
+    default:
+      return {};
+  }
+}
+
+/** Пауза перед поиском: запрос уходит, когда человек перестал печатать. */
+const SEARCH_DELAY = 300;
+
+/**
+ * Операции: вкладки и действия в одной строке, под ними — поиск и фильтры
+ * таблетками, ниже лента по дням.
+ *
+ * Раньше фильтр был коробкой из пяти полей с подписями, где почти всегда
+ * стояло «Все», а дата вводилась руками в системном «дд.мм.гггг». Теперь
+ * незаданный фильтр — это короткая таблетка, заданный — подсвеченная с
+ * крестиком, а период выбирается готовыми вариантами; две даты появляются,
+ * только если выбран «свой период».
+ */
 export function TransactionsPage() {
   const { t } = useT();
-  const [filters, setFilters] = useState<TransactionFilters>(EMPTY);
+  const { user } = useMe();
+  const today = todayIn(user?.timezone ?? 'UTC');
+  const searchId = useId();
+
+  const [accountId, setAccountId] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [kind, setKind] = useState('');
+  const [period, setPeriod] = useState<Period>('');
+  const [custom, setCustom] = useState<{ from: string; to: string }>({ from: '', to: '' });
+  const [searchText, setSearchText] = useState('');
+  const [search, setSearch] = useState('');
   const [form, setForm] = useState<FormState>(null);
   const [importing, setImporting] = useState(false);
+
+  // Поиск с задержкой: без неё каждая буква — отдельный запрос и мигание
+  // ленты, хотя нужен только результат по последней.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchText.trim()), SEARCH_DELAY);
+    return () => clearTimeout(timer);
+  }, [searchText]);
+
+  const range =
+    period === 'custom'
+      ? {
+          ...(custom.from ? { from: custom.from } : {}),
+          ...(custom.to ? { to: custom.to } : {}),
+        }
+      : periodRange(period, today);
+
+  const filters: TransactionFilters = {
+    ...(accountId ? { accountId } : {}),
+    ...(categoryId ? { categoryId } : {}),
+    ...(kind ? { kind: kind as TransactionFilters['kind'] } : {}),
+    ...(search ? { search } : {}),
+    ...range,
+  };
 
   const accounts = useAccounts();
   const categories = useCategories();
   const query = useTransactions(filters);
 
   const rows = query.data?.pages.flatMap((page) => page.transactions) ?? [];
-  const filtered = Object.values(filters).some((v) => v !== undefined && v !== '');
+  const filtered = Object.keys(filters).length > 0 || searchText !== '';
 
-  const patch = (next: Partial<TransactionFilters>) =>
-    setFilters((current) => ({ ...current, ...next }));
+  const resetAll = () => {
+    setAccountId('');
+    setCategoryId('');
+    setKind('');
+    setPeriod('');
+    setCustom({ from: '', to: '' });
+    setSearchText('');
+    setSearch('');
+  };
 
   return (
     <div className={styles.root}>
       <header className={styles.header}>
-        <div>
-          <p className={styles.subtitle}>{t('transactions.subtitle')}</p>
-        </div>
-
         <SectionTabs
           tabs={[
             { to: ROUTES.transactions, label: t('nav.transactions') },
@@ -45,75 +128,109 @@ export function TransactionsPage() {
         />
 
         <div className={styles.headerActions}>
-          <Button variant="secondary" size="small" onClick={() => setImporting(true)}>
-            {t('import.open')}
-          </Button>
+          {/* Импорт — значком: им пользуются раз в месяц, а подпись рядом с
+              «+ Операция» спорила с ней за внимание. Название — в подсказке
+              и для скринридера. */}
+          <button
+            type="button"
+            className={styles.iconButton}
+            onClick={() => setImporting(true)}
+            aria-label={t('import.open')}
+            title={t('import.open')}
+          >
+            <Icon name="file-up" className={styles.iconButtonGlyph} />
+          </button>
           <Button size="small" onClick={() => setForm('new')}>
-            {t('transactions.create')}
+            <Icon name="plus" className={styles.plus} />
+            {t('transactions.createShort')}
           </Button>
         </div>
       </header>
 
       <section className={styles.filters} aria-label={t('transactions.filters')}>
-        <Select
-          label={t('transactions.account')}
-          value={filters.accountId ?? ''}
-          onChange={(e) => patch({ accountId: e.currentTarget.value || undefined })}
-        >
-          <option value="">{t('transactions.filterAll')}</option>
+        <label className={styles.search} htmlFor={searchId}>
+          <Icon name="search" className={styles.searchIcon} />
+          <span className="visually-hidden">{t('transactions.note')}</span>
+          <input
+            id={searchId}
+            type="search"
+            className={styles.searchInput}
+            placeholder={t('transactions.searchPlaceholder')}
+            value={searchText}
+            onChange={(e) => setSearchText(e.currentTarget.value)}
+          />
+        </label>
+
+        <FilterPill label={t('transactions.account')} value={accountId} onChange={setAccountId}>
+          <option value="">{t('transactions.allAccounts')}</option>
           {(accounts.data ?? []).map((account) => (
             <option key={account.id} value={account.id}>
               {account.name}
             </option>
           ))}
-        </Select>
+        </FilterPill>
 
-        <Select
-          label={t('transactions.category')}
-          value={filters.categoryId ?? ''}
-          onChange={(e) => patch({ categoryId: e.currentTarget.value || undefined })}
-        >
-          <option value="">{t('transactions.filterAll')}</option>
+        <FilterPill label={t('transactions.category')} value={categoryId} onChange={setCategoryId}>
+          <option value="">{t('transactions.allCategories')}</option>
           {(categories.data ?? []).map((category) => (
             <option key={category.id} value={category.id}>
               {categoryName(t, category.key)}
             </option>
           ))}
-        </Select>
+        </FilterPill>
 
-        <Select
-          label={t('transactions.kindFilter')}
-          value={filters.kind ?? ''}
-          onChange={(e) =>
-            patch({ kind: (e.currentTarget.value || undefined) as TransactionFilters['kind'] })
-          }
-        >
-          <option value="">{t('transactions.filterAll')}</option>
-          {TRANSACTION_KINDS.map((kind) => (
-            <option key={kind} value={kind}>
-              {t(`transactions.${kind}`)}
+        <FilterPill label={t('transactions.kindFilter')} value={kind} onChange={setKind}>
+          <option value="">{t('transactions.anyKind')}</option>
+          {TRANSACTION_KINDS.map((value) => (
+            <option key={value} value={value}>
+              {t(`transactions.${value}`)}
             </option>
           ))}
-        </Select>
+        </FilterPill>
 
-        <Field
-          label={t('transactions.date')}
-          type="date"
-          value={filters.from ?? ''}
-          onChange={(e) => patch({ from: e.currentTarget.value || undefined })}
-        />
+        <FilterPill
+          label={t('transactions.periodLabel')}
+          value={period}
+          onChange={(value) => setPeriod(value as Period)}
+          icon="calendar"
+        >
+          <option value="">{t('transactions.periodAll')}</option>
+          {PERIODS.map((value) => (
+            <option key={value} value={value}>
+              {t(PERIOD_LABEL[value])}
+            </option>
+          ))}
+        </FilterPill>
 
-        <Field
-          label={t('transactions.note')}
-          placeholder={t('transactions.searchPlaceholder')}
-          value={filters.search ?? ''}
-          onChange={(e) => patch({ search: e.currentTarget.value || undefined })}
-        />
+        {period === 'custom' && (
+          <span className={styles.range}>
+            <label className={styles.dateLabel}>
+              <span>{t('transactions.dateFrom')}</span>
+              <input
+                type="date"
+                className={styles.date}
+                value={custom.from}
+                max={custom.to || undefined}
+                onChange={(e) => setCustom((c) => ({ ...c, from: e.currentTarget.value }))}
+              />
+            </label>
+            <label className={styles.dateLabel}>
+              <span>{t('transactions.dateTo')}</span>
+              <input
+                type="date"
+                className={styles.date}
+                value={custom.to}
+                min={custom.from || undefined}
+                onChange={(e) => setCustom((c) => ({ ...c, to: e.currentTarget.value }))}
+              />
+            </label>
+          </span>
+        )}
 
         {filtered && (
-          <Button variant="secondary" size="small" onClick={() => setFilters(EMPTY)}>
+          <button type="button" className={styles.reset} onClick={resetAll}>
             {t('transactions.filterReset')}
-          </Button>
+          </button>
         )}
       </section>
 

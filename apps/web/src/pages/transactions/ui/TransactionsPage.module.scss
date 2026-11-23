@@ -5,35 +5,174 @@
   justify-items: start;
 }
 
+/* ─────────────────────────────── шапка ─────────────────────────────── */
+
 .header {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-s);
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
   width: 100%;
 }
 
-.subtitle {
-  max-width: 60ch;
-  margin-block-start: var(--space-3xs);
-  font-size: var(--step--1);
-  color: var(--c-text-muted);
+// margin-inline-start: auto — чтобы на телефоне, перенесясь под вкладки,
+// действия оставались справа, а не съезжали к левому краю.
+.headerActions {
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  margin-inline-start: auto;
 }
 
-.filters {
+.iconButton {
   display: grid;
-  gap: var(--space-s);
-  width: 100%;
-  align-items: end;
-  padding: var(--space-s) var(--space-m) var(--space-m);
-  background-color: var(--c-surface);
-  border-radius: var(--radius-l);
+  place-items: center;
+  inline-size: rem(36);
+  block-size: rem(36);
+  color: var(--c-text-muted);
+  background-color: var(--c-field);
+  border-radius: 50%;
 
-  @include from("sm") {
-    grid-template-columns: repeat(auto-fit, minmax(rem(160), 1fr));
+  @include transition(color, background-color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+    background-color: var(--c-field-hover);
   }
 }
+
+.iconButtonGlyph {
+  inline-size: rem(17);
+  block-size: rem(17);
+}
+
+.plus {
+  inline-size: rem(16);
+  block-size: rem(16);
+  margin-inline-start: rem(-4);
+}
+
+/* ─────────────────────────────── фильтры ─────────────────────────────── */
+
+// Одна строка без коробки вокруг: поиск тянется, таблетки — по содержимому.
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  align-items: center;
+  width: 100%;
+}
+
+// На телефоне поиск — во всю ширину, таблетки строкой под ним.
+.search {
+  position: relative;
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  min-inline-size: 0;
+  color: var(--c-text-faint);
+
+  @include from("sm") {
+    flex-basis: rem(220);
+  }
+}
+
+.searchIcon {
+  position: absolute;
+  inset-inline-start: rem(12);
+  inline-size: rem(15);
+  block-size: rem(15);
+  pointer-events: none;
+}
+
+.searchInput {
+  inline-size: 100%;
+  min-block-size: rem(34);
+  padding: 0 var(--space-s) 0 rem(34);
+  font-size: var(--step--1);
+  color: var(--c-text);
+  background-color: var(--c-field);
+  border: 0;
+  border-radius: var(--radius-pill);
+
+  @include transition(box-shadow, background-color);
+
+  &::placeholder {
+    color: var(--c-text-faint);
+  }
+
+  @include hover {
+    background-color: var(--c-field-hover);
+  }
+
+  &:focus {
+    box-shadow: inset 0 0 0 var(--border-width) var(--c-accent-line);
+    outline: none;
+  }
+
+  // Системный крестик очистки — приглушённый, под остальные значки.
+  &::-webkit-search-cancel-button {
+    opacity: 0.5;
+    cursor: pointer;
+  }
+}
+
+.range {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+
+.dateLabel {
+  display: inline-flex;
+  gap: var(--space-3xs);
+  align-items: center;
+  padding-inline-start: var(--space-xs);
+  font-size: var(--step--1);
+  color: var(--c-text-faint);
+  background-color: var(--c-field);
+  border-radius: var(--radius-pill);
+}
+
+.date {
+  min-block-size: rem(34);
+  padding: 0 var(--space-xs) 0 0;
+  font-size: var(--step--1);
+  color: var(--c-text);
+  background: transparent;
+  border: 0;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    opacity: 0.55;
+    cursor: pointer;
+  }
+}
+
+.dateLabel:focus-within {
+  box-shadow: inset 0 0 0 var(--border-width) var(--c-accent-line);
+}
+
+.reset {
+  padding: var(--space-2xs) var(--space-xs);
+  font-size: var(--step--1);
+  color: var(--c-text-faint);
+  border-radius: var(--radius-pill);
+
+  @include transition(color);
+  @include focus-ring;
+
+  @include hover {
+    color: var(--c-text);
+  }
+}
+
+/* ─────────────────────────────── список ─────────────────────────────── */
 
 .list {
   display: grid;
@@ -59,10 +198,4 @@
   50% {
     opacity: 0.55;
   }
-}
-
-.headerActions {
-  display: flex;
-  gap: var(--space-2xs);
-  flex-wrap: wrap;
 }

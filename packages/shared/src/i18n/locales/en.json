@@ -403,7 +403,21 @@
     "deleteAsk": "Delete this transaction?",
     "deleteConfirm": "Yes, delete",
     "deleteTransferHint": "A transfer is deleted as a whole, from both accounts. It can’t be edited: delete it and create a new one.",
-    "transferTitle": "Transfer"
+    "transferTitle": "Transfer",
+    "createShort": "Transaction",
+    "allAccounts": "All accounts",
+    "allCategories": "All categories",
+    "anyKind": "Any type",
+    "clearFilter": "Clear filter",
+    "periodLabel": "Period",
+    "periodAll": "All time",
+    "periodThisMonth": "This month",
+    "periodLastMonth": "Last month",
+    "periodLast3": "Last 3 months",
+    "periodThisYear": "This year",
+    "periodCustom": "Custom range…",
+    "dateFrom": "From",
+    "dateTo": "To"
   },
   "recurring": {
     "title": "Recurring",

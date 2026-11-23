@@ -94,3 +94,25 @@
   margin-inline: auto;
   padding-inline: var(--container-gutter);
 }
+
+/// Внешний вид селекта, которому мы рисуем стрелку сами.
+///
+/// Там, где браузер умеет настраиваемый select (Chrome и Edge 135+), он
+/// получает `base-select`: тогда и выпадающий список оформлен нашими стилями
+/// (см. ::picker(select) в _base.scss). Остальные получают `none` и
+/// показывают системный список — опрятный, просто не наш.
+@mixin select-appearance {
+  appearance: none;
+
+  @supports (appearance: base-select) {
+    // В режиме base-select содержимое поля — флекс-строка, и без этого
+    // текст прижимался к верху, а не стоял по центру высоты поля.
+    display: inline-flex;
+    align-items: center;
+    // Длинное значение не переносится на вторую строку, а обрезается
+    // краем поля, как и в системном селекте.
+    overflow: hidden;
+    white-space: nowrap;
+    appearance: base-select;
+  }
+}

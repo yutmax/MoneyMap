@@ -7,8 +7,8 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f6f7f4",
-  "theme_color": "#f6f7f4",
+  "background_color": "#0e0f11",
+  "theme_color": "#0e0f11",
   "categories": ["finance"],
   "icons": [
     {

@@ -5,6 +5,8 @@ import {
   Bitcoin,
   Bell,
   Briefcase,
+  Calendar,
+  ChevronDown,
   ChevronRight,
   Bus,
   Car,
@@ -18,6 +20,7 @@ import {
   Dumbbell,
   Eye,
   EyeOff,
+  FileUp,
   Gift,
   GraduationCap,
   HeartPulse,
@@ -34,10 +37,12 @@ import {
   PartyPopper,
   PawPrint,
   PiggyBank,
+  Plus,
   Plane,
   Plug,
   Repeat,
   RotateCcw,
+  Search,
   Shirt,
   ShoppingCart,
   Sparkles,
@@ -95,6 +100,12 @@ export const ICONS = {
   palette: Palette,
   'key-round': KeyRound,
   'mail-warning': MailWarning,
+  // Панель операций: поиск, фильтры, действия.
+  plus: Plus,
+  'file-up': FileUp,
+  search: Search,
+  calendar: Calendar,
+  'chevron-down': ChevronDown,
 
   // Всплывающие уведомления: свои значки вместо залитых глифов sonner —
   // у них другая толщина и заливка, и на фоне обведённых lucide они

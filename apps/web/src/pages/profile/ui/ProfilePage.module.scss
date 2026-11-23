@@ -88,7 +88,9 @@
   gap: var(--space-m);
   align-items: start;
 
-  @include from("lg") {
+  // Две колонки — только с широкого экрана: на ноутбуке левая сжималась
+  // так, что в полях профиля оставалось «RUB …».
+  @include from("xl") {
     grid-template-columns: minmax(0, 1fr) minmax(0, rem(400));
   }
 }

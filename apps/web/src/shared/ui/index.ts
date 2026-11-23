@@ -6,6 +6,7 @@ export { StackedBar, type StackedSegment } from './Chart/StackedBar.tsx';
 export { Button } from './Button/Button.tsx';
 export { Field } from './Field/Field.tsx';
 export { Icon } from './Icon/Icon.tsx';
+export { Logo } from './Logo/Logo.tsx';
 export { ICONS, isIconName, type IconName } from './Icon/icons.ts';
 export { Modal } from './Modal/Modal.tsx';
 export { PasswordInput } from './PasswordInput/PasswordInput.tsx';
